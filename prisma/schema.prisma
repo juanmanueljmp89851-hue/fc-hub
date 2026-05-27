@@ -1,0 +1,756 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── USUARIOS ───────────────────────────────────────────────
+
+model User {
+  id               String   @id @default(uuid())
+  username         String   @unique
+  email            String   @unique
+  avatarUrl        String?  @map("avatar_url")
+  bio              String?
+  supabaseId       String   @unique @map("supabase_id")
+  role             UserRole @default(PLAYER)
+  reputationPoints Int      @default(100) @map("reputation_points")
+  rankingPoints    Int      @default(0) @map("ranking_points")
+  psnUsername       String?  @map("psn_username")
+  xboxUsername      String?  @map("xbox_username")
+  pcUsername        String?  @map("pc_username")
+  favoriteTeam     String?  @map("favorite_team")
+  nationality      String?
+  phone            String?
+  location         String?
+  profileCompleted Boolean  @default(false) @map("profile_completed")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  createdTournaments    Tournament[]
+  participations        TournamentParticipant[]
+  waitlistEntries       TournamentWaitlist[]
+  matchesAsPlayer1      TournamentMatch[]       @relation("MatchPlayer1")
+  matchesAsPlayer2      TournamentMatch[]       @relation("MatchPlayer2")
+  wonMatches            TournamentMatch[]       @relation("MatchWinner")
+  leagueStandings       LeagueStanding[]
+  openedDisputes        TournamentDispute[]     @relation("DisputeOpener")
+  resolvedDisputes      TournamentDispute[]     @relation("DisputeResolver")
+  matchMessages         MatchMessage[]
+  auditActions          TournamentAuditLog[]
+  sanctions             UserSanction[]          @relation("SanctionedUser")
+  givenSanctions        UserSanction[]          @relation("SanctionGiver")
+  casualChallenges      CasualMatch[]           @relation("Challenger")
+  casualChallenged      CasualMatch[]           @relation("Challenged")
+  casualWins            CasualMatch[]           @relation("CasualWinner")
+  rankingHistory        RankingHistory[]
+  predictions           ProdePrediction[]
+  createdProdes         Prode[]                 @relation("ProdeCreator")
+  prodeParticipations   ProdeParticipant[]
+  prodeGroupPredictions ProdeGroupPrediction[]
+  prodeAdvancePredictions ProdeAdvancePrediction[]
+  notifications         Notification[]
+  influencerComments    InfluencerComment[]
+  lobbyMessages         LobbyMessage[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  PLAYER
+  ADMIN
+}
+
+// ─── TORNEOS ────────────────────────────────────────────────
+
+model Tournament {
+  id                     String              @id @default(uuid())
+  name                   String
+  description            String?
+  rules                  String?
+  format                 TournamentFormat
+  leagueLegs             Int?                @map("league_legs")
+  status                 TournamentStatus    @default(DRAFT)
+  maxPlayers             Int                 @map("max_players")
+  platforms              Platform[]
+  teamType               TeamType            @default(ULTIMATE_TEAM) @map("team_type")
+  startDate              DateTime?           @map("start_date")
+  registrationOpen       DateTime?           @map("registration_open")
+  registrationDeadline   DateTime?           @map("registration_deadline")
+  prize                  String?
+  visibility             TournamentVisibility @default(PUBLIC)
+  verificationLevel      VerificationLevel   @default(NONE) @map("verification_level")
+  bannerUrl              String?             @map("banner_url")
+  requiresVerification   Boolean             @default(false) @map("requires_verification")
+  matchTime              String?             @map("match_time")
+  difficulty             String?
+  controls               String?
+  stadium                String?
+  groupCount             Int?                @map("group_count")
+  qualifyPerGroup        Int?                @map("qualify_per_group")
+  knockoutSeeding        KnockoutSeeding     @default(RANDOM) @map("knockout_seeding")
+  randomDrawUntil        DrawUntilStage      @default(FINAL) @map("random_draw_until")
+  hasLosersBracket       Boolean             @default(false) @map("has_losers_bracket")
+  createdById            String              @map("created_by")
+  cancelledAt            DateTime?           @map("cancelled_at")
+  cancelReason           String?             @map("cancel_reason")
+  createdAt              DateTime            @default(now()) @map("created_at")
+
+  createdBy     User                    @relation(fields: [createdById], references: [id])
+  participants  TournamentParticipant[]
+  waitlist      TournamentWaitlist[]
+  matches       TournamentMatch[]
+  standings     LeagueStanding[]
+  disputes      TournamentDispute[]
+  auditLog      TournamentAuditLog[]
+
+  @@map("tournaments")
+}
+
+enum TournamentFormat {
+  SINGLE_ELIMINATION
+  DOUBLE_ELIMINATION
+  LEAGUE
+  GROUP_KNOCKOUT
+}
+
+enum KnockoutSeeding {
+  RANDOM
+  TRADITIONAL
+}
+
+enum DrawUntilStage {
+  INITIAL_ONLY
+  QUARTERFINALS
+  SEMIFINALS
+  FINAL
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+}
+
+enum Platform {
+  PS5
+  XBOX
+  PC
+}
+
+enum TeamType {
+  ULTIMATE_TEAM
+  REAL_TEAMS
+}
+
+enum TournamentVisibility {
+  PUBLIC
+  PRIVATE_LINK
+  INVITE_ONLY
+}
+
+enum VerificationLevel {
+  NONE
+  VERIFIED_ORGANIZER
+  OFFICIAL
+}
+
+// ─── INSCRIPCIONES ──────────────────────────────────────────
+
+model TournamentParticipant {
+  id            String              @id @default(uuid())
+  tournamentId  String              @map("tournament_id")
+  userId        String              @map("user_id")
+  status        ParticipantStatus   @default(PENDING)
+  positionFinal Int?                @map("position_final")
+  joinedAt      DateTime            @default(now()) @map("joined_at")
+  confirmedAt   DateTime?           @map("confirmed_at")
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@map("tournament_participants")
+}
+
+enum ParticipantStatus {
+  PENDING
+  CONFIRMED
+  WAITLIST
+  REJECTED
+  DISQUALIFIED
+}
+
+model TournamentWaitlist {
+  id           String   @id @default(uuid())
+  tournamentId String   @map("tournament_id")
+  userId       String   @map("user_id")
+  position     Int
+  joinedAt     DateTime @default(now()) @map("joined_at")
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@map("tournament_waitlist")
+}
+
+// ─── PARTIDOS DE TORNEO ─────────────────────────────────────
+
+model TournamentMatch {
+  id           String       @id @default(uuid())
+  tournamentId String       @map("tournament_id")
+  player1Id    String?      @map("player1_id")
+  player2Id    String?      @map("player2_id")
+  resultP1     Int?         @map("result_p1")
+  resultP2     Int?         @map("result_p2")
+  winnerId     String?      @map("winner_id")
+  round        String?
+  bracket      BracketType?
+  leg          Int?
+  matchday     Int?
+  groupName    String?      @map("group_name")
+  status       MatchStatus  @default(SCHEDULED)
+  deadline     DateTime?
+  confirmedAt  DateTime?    @map("confirmed_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  tournament Tournament          @relation(fields: [tournamentId], references: [id])
+  player1    User?               @relation("MatchPlayer1", fields: [player1Id], references: [id])
+  player2    User?               @relation("MatchPlayer2", fields: [player2Id], references: [id])
+  winner     User?               @relation("MatchWinner", fields: [winnerId], references: [id])
+  disputes   TournamentDispute[]
+  messages   MatchMessage[]      @relation("TournamentMatchMessages")
+
+  @@map("tournament_matches")
+}
+
+enum BracketType {
+  WINNERS
+  LOSERS
+  GRAND_FINAL
+}
+
+enum MatchStatus {
+  SCHEDULED
+  PENDING_CONFIRMATION
+  DISPUTED
+  FINISHED
+  WALKOVER
+  CANCELLED
+}
+
+// ─── TABLA POSICIONES LIGA ──────────────────────────────────
+
+model LeagueStanding {
+  id           String   @id @default(uuid())
+  tournamentId String   @map("tournament_id")
+  userId       String   @map("user_id")
+  played       Int      @default(0)
+  won          Int      @default(0)
+  drawn        Int      @default(0)
+  lost         Int      @default(0)
+  goalsFor     Int      @default(0) @map("goals_for")
+  goalsAgainst Int      @default(0) @map("goals_against")
+  points       Int      @default(0)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@map("league_standings")
+}
+
+// ─── DISPUTAS ───────────────────────────────────────────────
+
+model TournamentDispute {
+  id             String        @id @default(uuid())
+  matchId        String        @map("match_id")
+  tournamentId   String        @map("tournament_id")
+  openedById     String        @map("opened_by")
+  description    String
+  evidenceUrls   String[]      @map("evidence_urls")
+  status         DisputeStatus @default(OPEN)
+  resolvedById   String?       @map("resolved_by")
+  resolutionNote String?       @map("resolution_note")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  resolvedAt     DateTime?     @map("resolved_at")
+
+  match      TournamentMatch @relation(fields: [matchId], references: [id])
+  tournament Tournament      @relation(fields: [tournamentId], references: [id])
+  openedBy   User            @relation("DisputeOpener", fields: [openedById], references: [id])
+  resolvedBy User?           @relation("DisputeResolver", fields: [resolvedById], references: [id])
+
+  @@map("tournament_disputes")
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  ESCALATED
+}
+
+// ─── CHAT DE PARTIDOS ───────────────────────────────────────
+
+model MatchMessage {
+  id              String    @id @default(uuid())
+  tournamentMatchId String? @map("tournament_match_id")
+  casualMatchId   String?   @map("casual_match_id")
+  userId          String    @map("user_id")
+  message         String
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  tournamentMatch TournamentMatch? @relation("TournamentMatchMessages", fields: [tournamentMatchId], references: [id])
+  casualMatch     CasualMatch?     @relation(fields: [casualMatchId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+
+  @@map("match_messages")
+}
+
+// ─── AUDITORÍA ──────────────────────────────────────────────
+
+model TournamentAuditLog {
+  id           String   @id @default(uuid())
+  tournamentId String   @map("tournament_id")
+  action       String
+  performedById String  @map("performed_by")
+  details      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tournament  Tournament @relation(fields: [tournamentId], references: [id])
+  performedBy User       @relation(fields: [performedById], references: [id])
+
+  @@map("tournament_audit_log")
+}
+
+// ─── SANCIONES ──────────────────────────────────────────────
+
+model UserSanction {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  reason          String
+  pointsDeducted  Int       @map("points_deducted")
+  sanctionedById  String    @map("sanctioned_by")
+  expiresAt       DateTime? @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user          User @relation("SanctionedUser", fields: [userId], references: [id])
+  sanctionedBy  User @relation("SanctionGiver", fields: [sanctionedById], references: [id])
+
+  @@map("user_sanctions")
+}
+
+// ─── PARTIDOS CASUALES ──────────────────────────────────────
+
+model CasualMatch {
+  id                String            @id @default(uuid())
+  challengerId      String            @map("challenger_id")
+  challengedId      String            @map("challenged_id")
+  status            CasualMatchStatus @default(PENDING)
+  resultChallenger  Int?              @map("result_challenger")
+  resultChallenged  Int?              @map("result_challenged")
+  proofImageUrl     String?           @map("proof_image_url")
+  winnerId          String?           @map("winner_id")
+  pointsAwarded     Int?              @map("points_awarded")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  confirmedAt       DateTime?         @map("confirmed_at")
+
+  challenger User            @relation("Challenger", fields: [challengerId], references: [id])
+  challenged User            @relation("Challenged", fields: [challengedId], references: [id])
+  winner     User?           @relation("CasualWinner", fields: [winnerId], references: [id])
+  messages   MatchMessage[]
+  rankings   RankingHistory[]
+
+  @@map("casual_matches")
+}
+
+enum CasualMatchStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  PENDING_CONFIRMATION
+  DISPUTED
+  FINISHED
+  REJECTED
+  CANCELLED
+}
+
+// ─── RANKING HISTORIAL ──────────────────────────────────────
+
+model RankingHistory {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  casualMatchId String? @map("casual_match_id")
+  pointsChange Int      @map("points_change")
+  reason       String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user        User         @relation(fields: [userId], references: [id])
+  casualMatch CasualMatch? @relation(fields: [casualMatchId], references: [id])
+
+  @@map("ranking_history")
+}
+
+// ─── PRODE MUNDIAL 2026 ─────────────────────────────────────
+
+model Prode {
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  createdById     String      @map("created_by")
+  shareCode       String      @unique @map("share_code")
+  status          ProdeStatus @default(OPEN)
+  prizeGeneral    String?     @map("prize_general")
+  prizePerWeek    String?     @map("prize_per_week")
+  prizeGroupOrder String?     @map("prize_group_order")
+  prizeRounds     String?     @map("prize_rounds")
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  createdBy          User                    @relation("ProdeCreator", fields: [createdById], references: [id])
+  participants       ProdeParticipant[]
+  predictions        ProdePrediction[]
+  groupPredictions   ProdeGroupPrediction[]
+  advancePredictions ProdeAdvancePrediction[]
+
+  @@map("prodes")
+}
+
+enum ProdeStatus {
+  OPEN
+  IN_PROGRESS
+  FINISHED
+}
+
+model ProdeParticipant {
+  id       String   @id @default(uuid())
+  prodeId  String   @map("prode_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  prode Prode @relation(fields: [prodeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([prodeId, userId])
+  @@map("prode_participants")
+}
+
+model ProdeWeek {
+  id        String         @id @default(uuid())
+  title     String
+  deadline  DateTime
+  status    ProdeWeekStatus @default(UPCOMING)
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  matches ProdeMatch[]
+
+  @@map("prode_weeks")
+}
+
+enum ProdeWeekStatus {
+  UPCOMING
+  OPEN
+  CLOSED
+  SCORED
+}
+
+model ProdeMatch {
+  id         String          @id @default(uuid())
+  weekId     String          @map("week_id")
+  externalId Int?            @unique @map("external_id")
+  homeTeam   String          @map("home_team")
+  awayTeam   String          @map("away_team")
+  homeScore  Int?            @map("home_score")
+  awayScore  Int?            @map("away_score")
+  matchDate  DateTime        @map("match_date")
+  venue      String?
+  stage      String?
+  group      String?
+  status     ProdeMatchStatus @default(SCHEDULED)
+
+  week        ProdeWeek         @relation(fields: [weekId], references: [id])
+  predictions ProdePrediction[]
+
+  @@map("prode_matches")
+}
+
+enum ProdeMatchStatus {
+  SCHEDULED
+  IN_PROGRESS
+  FINISHED
+}
+
+model ProdePrediction {
+  id            String   @id @default(uuid())
+  prodeId       String   @map("prode_id")
+  userId        String   @map("user_id")
+  matchId       String   @map("match_id")
+  predHomeScore Int      @map("pred_home_score")
+  predAwayScore Int      @map("pred_away_score")
+  pointsEarned  Int      @default(0) @map("points_earned")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  prode Prode      @relation(fields: [prodeId], references: [id])
+  user  User       @relation(fields: [userId], references: [id])
+  match ProdeMatch @relation(fields: [matchId], references: [id])
+
+  @@unique([prodeId, userId, matchId])
+  @@map("prode_predictions")
+}
+
+model ProdeGroupPrediction {
+  id           String   @id @default(uuid())
+  prodeId      String   @map("prode_id")
+  userId       String   @map("user_id")
+  groupName    String   @map("group_name")
+  first        String
+  second       String
+  third        String
+  fourth       String
+  pointsEarned Int      @default(0) @map("points_earned")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  prode Prode @relation(fields: [prodeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([prodeId, userId, groupName])
+  @@map("prode_group_predictions")
+}
+
+model ProdeAdvancePrediction {
+  id           String   @id @default(uuid())
+  prodeId      String   @map("prode_id")
+  userId       String   @map("user_id")
+  round        String
+  teams        String[]
+  pointsEarned Int      @default(0) @map("points_earned")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  prode Prode @relation(fields: [prodeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([prodeId, userId, round])
+  @@map("prode_advance_predictions")
+}
+
+// ─── ESCENA COMPETITIVA (LIGAS EXTERNAS) ────────────────────
+
+model ExternalLeague {
+  id            String              @id @default(uuid())
+  name          String              @unique
+  slug          String              @unique
+  description   String?
+  logoUrl       String?             @map("logo_url")
+  websiteUrl    String?             @map("website_url")
+  instagramUrl  String?             @map("instagram_url")
+  discordUrl    String?             @map("discord_url")
+  platform      Platform[]
+  gameMode      ExternalGameMode    @default(CLUBS_PRO) @map("game_mode")
+  country       String              @default("Argentina")
+  active        Boolean             @default(true)
+  fetchSource   ExternalFetchSource @default(MANUAL) @map("fetch_source")
+  fetchUrl      String?             @map("fetch_url")
+  fetchConfig   String?             @map("fetch_config")
+  lastFetchAt   DateTime?           @map("last_fetch_at")
+  fetchError    String?             @map("fetch_error")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  seasons ExternalSeason[]
+
+  @@map("external_leagues")
+}
+
+model ExternalSeason {
+  id        String              @id @default(uuid())
+  leagueId  String              @map("league_id")
+  name      String
+  status    ExternalSeasonStatus @default(UPCOMING)
+  startDate DateTime?           @map("start_date")
+  endDate   DateTime?           @map("end_date")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  league    ExternalLeague     @relation(fields: [leagueId], references: [id])
+  standings ExternalStanding[]
+  matches   ExternalMatch[]
+
+  @@map("external_seasons")
+}
+
+model ExternalStanding {
+  id           String   @id @default(uuid())
+  seasonId     String   @map("season_id")
+  teamName     String   @map("team_name")
+  division     String?
+  position     Int
+  played       Int      @default(0)
+  won          Int      @default(0)
+  drawn        Int      @default(0)
+  lost         Int      @default(0)
+  goalsFor     Int      @default(0) @map("goals_for")
+  goalsAgainst Int      @default(0) @map("goals_against")
+  points       Int      @default(0)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  season ExternalSeason @relation(fields: [seasonId], references: [id])
+
+  @@unique([seasonId, teamName])
+  @@map("external_standings")
+}
+
+model ExternalMatch {
+  id         String              @id @default(uuid())
+  seasonId   String              @map("season_id")
+  homeTeam   String              @map("home_team")
+  awayTeam   String              @map("away_team")
+  homeScore  Int?                @map("home_score")
+  awayScore  Int?                @map("away_score")
+  round      String?
+  matchDate  DateTime?           @map("match_date")
+  status     ExternalMatchStatus @default(SCHEDULED)
+  createdAt  DateTime            @default(now()) @map("created_at")
+
+  season ExternalSeason @relation(fields: [seasonId], references: [id])
+
+  @@map("external_matches")
+}
+
+enum ExternalGameMode {
+  CLUBS_PRO
+  ULTIMATE_TEAM
+  SEASONS
+  MIXED
+}
+
+enum ExternalFetchSource {
+  MANUAL
+  SCRAPER_IESA
+  SCRAPER_ELPF
+  API_VPG
+  SCRAPER_CUSTOM
+}
+
+enum ExternalSeasonStatus {
+  UPCOMING
+  IN_PROGRESS
+  FINISHED
+}
+
+enum ExternalMatchStatus {
+  SCHEDULED
+  FINISHED
+  CANCELLED
+}
+
+// ─── INFLUENCERS ────────────────────────────────────────────
+
+model Influencer {
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  description      String?
+  youtubeChannelId String?  @unique @map("youtube_channel_id")
+  twitchUsername   String?  @map("twitch_username")
+  twitterHandle    String?  @map("twitter_handle")
+  instagramHandle  String?  @map("instagram_handle")
+  tiktokHandle    String?  @map("tiktok_handle")
+  avatarUrl        String?  @map("avatar_url")
+  bannerUrl        String?  @map("banner_url")
+  subscribers      String?
+  country          String?
+  specialty        String[]
+  platforms        String[]
+  featured         Boolean  @default(false)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  videos   InfluencerVideo[]
+  comments InfluencerComment[]
+
+  @@map("influencers")
+}
+
+model InfluencerVideo {
+  id           String   @id @default(uuid())
+  influencerId String   @map("influencer_id")
+  externalId   String   @unique @map("external_id")
+  title        String
+  thumbnailUrl String?  @map("thumbnail_url")
+  videoUrl     String   @map("video_url")
+  views        String?
+  publishedAt  DateTime @map("published_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  influencer Influencer @relation(fields: [influencerId], references: [id])
+
+  @@map("influencer_videos")
+}
+
+// ─── NOTIFICACIONES ─────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  relatedId String?          @map("related_id")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  TOURNAMENT_INSCRIPTION
+  TOURNAMENT_STARTING
+  MATCH_ASSIGNED
+  RESULT_LOADED
+  RESULT_VALIDATED
+  DISPUTE_OPENED
+  ADVANCED_ROUND
+  ELIMINATED
+  TOURNAMENT_FINISHED
+  CASUAL_CHALLENGE
+  CASUAL_RESULT
+  PRODE_DEADLINE
+  PRODE_SCORED
+  SANCTION
+}
+
+// ─── LOBBY CHAT ─────────────────────────────────────────────
+
+model LobbyMessage {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  text      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@map("lobby_messages")
+}
+
+// ─── COMENTARIOS ─────────────────────────────────────────────
+
+model InfluencerComment {
+  id           String   @id @default(uuid())
+  influencerId String   @map("influencer_id")
+  userId       String   @map("user_id")
+  text         String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  influencer Influencer @relation(fields: [influencerId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@index([influencerId, createdAt])
+  @@map("influencer_comments")
+}

@@ -1,0 +1,77 @@
+import { notFound } from "next/navigation";
+import { Navbar } from "@/components/layout/Navbar";
+import { getProde, getProdeWeek, getUserPredictions } from "@/lib/actions/prode";
+import { PredictionForm } from "@/components/prode/PredictionForm";
+import Link from "next/link";
+
+interface PageProps {
+  params: { id: string; weekId: string };
+}
+
+export default async function ProdeWeekPage({ params }: PageProps) {
+  const [prode, week, userPreds] = await Promise.all([
+    getProde(params.id),
+    getProdeWeek(params.weekId),
+    getUserPredictions(params.id, params.weekId),
+  ]);
+
+  if (!prode || !week) {
+    notFound();
+  }
+
+  // Merge user predictions with matches
+  const predMap = new Map(userPreds.map((p) => [p.matchId, p]));
+
+  const serializedMatches = week.matches.map((m) => {
+    const pred = predMap.get(m.id);
+    return {
+      id: m.id,
+      homeTeam: m.homeTeam,
+      awayTeam: m.awayTeam,
+      matchDate: m.matchDate.toISOString(),
+      venue: m.venue,
+      stage: m.stage,
+      group: m.group,
+      homeScore: m.homeScore,
+      awayScore: m.awayScore,
+      status: m.status,
+      predictions: pred
+        ? [{ predHomeScore: pred.predHomeScore, predAwayScore: pred.predAwayScore }]
+        : undefined,
+    };
+  });
+
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+      <main className="mx-auto max-w-4xl px-4 py-8">
+        <Link
+          href={`/prode/${prode.id}`}
+          className="mb-4 inline-flex items-center text-sm text-foreground/50 hover:text-accent"
+        >
+          ← {prode.name}
+        </Link>
+
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">{week.title}</h1>
+          <p className="mt-1 text-sm text-foreground/60">
+            {week.status === "OPEN"
+              ? `Cierre: ${new Date(week.deadline).toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`
+              : week.status === "SCORED"
+                ? "Fecha puntuada"
+                : week.status === "CLOSED"
+                  ? "Esperando resultados"
+                  : "Próximamente"}
+          </p>
+        </div>
+
+        <PredictionForm
+          prodeId={prode.id}
+          weekId={week.id}
+          weekStatus={week.status}
+          matches={serializedMatches}
+        />
+      </main>
+    </div>
+  );
+}
