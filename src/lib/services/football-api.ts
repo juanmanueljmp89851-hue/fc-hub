@@ -184,7 +184,7 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
     );
 
     // Filter to only our tracked leagues
-    const trackedIds = new Set(Object.values(LEAGUE_IDS));
+    const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
     return data.response
       .filter((f: ApiFixture) => trackedIds.has(f.league.id))
       .map(normalizeFixture);
@@ -199,7 +199,7 @@ export async function getLiveAllLeagues(): Promise<NormalizedFixture[]> {
 
   try {
     const data = await fetchApi(`/fixtures?live=all`, 120); // 2 min cache
-    const trackedIds = new Set(Object.values(LEAGUE_IDS));
+    const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
     return data.response
       .filter((f: ApiFixture) => trackedIds.has(f.league.id))
       .map(normalizeFixture);
