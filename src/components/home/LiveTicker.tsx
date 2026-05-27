@@ -43,7 +43,7 @@ function StatusBadge({ match }: { match: TickerMatch }) {
 
 export function LiveTicker() {
   const [matches, setMatches] = useState<TickerMatch[]>(FALLBACK_MATCHES);
-  const [isPaused, setIsPaused] = useState(false);
+
   const fetchTicker = useCallback(async () => {
     try {
       const res = await fetch("/api/ticker", { cache: "no-store" });
@@ -65,13 +65,12 @@ export function LiveTicker() {
 
   // Duplicate for seamless loop
   const tickerItems = [...matches, ...matches];
-  const duration = Math.max(matches.length * 4, 30);
+  // Faster: ~2s per item instead of 4s
+  const duration = Math.max(matches.length * 2, 15);
 
   return (
     <div
       className="relative overflow-hidden border-y border-surface-light bg-surface/50"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       {/* Fade edges */}
       <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-12 bg-gradient-to-r from-background to-transparent" />
@@ -81,7 +80,6 @@ export function LiveTicker() {
         className="flex whitespace-nowrap py-2 animate-[ticker_var(--ticker-duration)_linear_infinite]"
         style={{
           "--ticker-duration": `${duration}s`,
-          animationPlayState: isPaused ? "paused" : "running",
         } as React.CSSProperties}
       >
         {tickerItems.map((match, i) => (

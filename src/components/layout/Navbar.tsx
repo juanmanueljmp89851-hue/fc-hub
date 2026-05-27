@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { syncUserWithDB } from "@/lib/actions/user";
-import { Logo } from "@/components/ui/Logo";
 import type { User as DbUser } from "@/types";
 
 const navLinks = [
@@ -144,13 +143,13 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-surface-light bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <Logo size={36} className="text-accent" />
+          <img src="/logo.svg" alt="Modo Fosa" className="h-9 w-9" />
           <div className="flex flex-col leading-none">
             <div className="flex items-baseline gap-0.5">
               <span className="text-lg font-black tracking-tight text-accent">MODO</span>
               <span className="text-lg font-black tracking-tight text-foreground">FOSA</span>
             </div>
-            <span className="text-[9px] font-medium uppercase tracking-widest text-accent/50">EA FC · Argentina</span>
+            <span className="text-[9px] font-medium uppercase tracking-widest text-foreground/40">desde argentina</span>
           </div>
         </Link>
 

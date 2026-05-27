@@ -43,18 +43,21 @@ export default function HomePage() {
           <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
 
+          {/* Logo watermark */}
+          <div className="pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 opacity-[0.04] md:right-8">
+            <img src="/logo.svg" alt="" className="h-48 w-48 md:h-72 md:w-72" />
+          </div>
+
           <p className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-accent">
             <span className="inline-block h-px w-5 bg-accent" />
-            EA FC · Argentina y LATAM
+            Todo el universo EA FC y fútbol en una sola plataforma
           </p>
           <h1 className="mb-3 text-4xl font-black leading-[1.1] md:text-5xl">
-            <span className="italic text-foreground">Tu fosa, </span>
-            <span className="italic text-foreground">tu ranking, </span>
-            <span className="italic text-accent">tu comunidad.</span>
+            <span className="italic text-foreground">Stats, mercado y fútbol. </span>
+            <span className="italic text-accent">No salís más, caíste.</span>
           </h1>
           <p className="max-w-xl text-sm text-foreground/50">
-            La comunidad #1 de EA FC en Argentina. Organizá torneos, competí en
-            el ranking, predecí el Mundial 2026 y más.
+            Donde vive el meta. Armá squads, seguí precios, competí y viví fútbol sin pausa.
           </p>
         </section>
 

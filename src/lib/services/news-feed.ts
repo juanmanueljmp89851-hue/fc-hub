@@ -77,7 +77,12 @@ const RELEVANCE_KEYWORDS = [
   "racing", "independiente", "san lorenzo",
 ];
 
+// Sources whose feeds are already topic-specific (no filtering needed)
+const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "ESPN"]);
+
 function isRelevantNews(item: NewsItem): boolean {
+  // Skip filter for topic-specific feeds
+  if (TRUSTED_SOURCES.has(item.source)) return true;
   const text = `${item.title} ${item.description}`.toLowerCase();
   return RELEVANCE_KEYWORDS.some((kw) => text.includes(kw));
 }

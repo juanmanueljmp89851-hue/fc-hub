@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchNews } from "@/lib/actions/news";
-import type { NewsItem } from "@/lib/actions/news";
+
+interface NewsItem {
+  title: string;
+  description: string;
+  link: string;
+  imageUrl: string | null;
+  source: string;
+  sourceIcon: string;
+  pubDate: string;
+  language: "es" | "en";
+}
 
 function timeAgo(date: Date): string {
   const now = new Date();
@@ -22,8 +31,11 @@ export function NewsFeed() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchNews(16)
-      .then(setNews)
+    fetch("/api/news?limit=16")
+      .then((res) => res.json())
+      .then((data: NewsItem[]) => {
+        if (data.length > 0) setNews(data);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
