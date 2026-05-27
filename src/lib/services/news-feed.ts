@@ -52,8 +52,8 @@ const FEEDS: FeedConfig[] = [
     category: "Fútbol",
   },
   {
-    url: "https://www.espn.com/espn/rss/soccer/news",
-    source: "ESPN",
+    url: "https://feeds.bbci.co.uk/sport/football/rss.xml",
+    source: "BBC Sport",
     sourceIcon: "📺",
     language: "en",
     category: "Fútbol",
@@ -78,7 +78,7 @@ const RELEVANCE_KEYWORDS = [
 ];
 
 // Sources whose feeds are already topic-specific (no filtering needed)
-const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "ESPN"]);
+const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "BBC Sport"]);
 
 function isRelevantNews(item: NewsItem): boolean {
   // Skip filter for topic-specific feeds
@@ -102,21 +102,24 @@ function extractFromTag(xml: string, tag: string): string {
 }
 
 function extractImageUrl(itemXml: string): string | null {
-  // Try media:content
-  const mediaContent = itemXml.match(/url="([^"]+)"/);
+  // Try media:content with image
+  const mediaContent = itemXml.match(/<media:content[^>]+url="([^"]+)"/);
   if (mediaContent) {
     const url = mediaContent[1];
     if (url.match(/\.(jpg|jpeg|png|webp|gif)/i)) return url;
   }
-  // Try media:thumbnail
-  const mediaThumbnail = itemXml.match(/<media:thumbnail[^>]+url="([^"]+)"/);
+  // Try media:thumbnail (BBC Sport, Marca)
+  const mediaThumbnail = itemXml.match(/<media:thumbnail[^>]*url="([^"]+)"/);
   if (mediaThumbnail) return mediaThumbnail[1];
-  // Try enclosure
-  const enclosure = itemXml.match(/<enclosure[^>]+url="([^"]+)"/);
+  // Try enclosure (Dexerto)
+  const enclosure = itemXml.match(/<enclosure[^>]+url="([^"]+)"[^>]+type="image/);
   if (enclosure) return enclosure[1];
-  // Try img in description
+  // Try enclosure without type check
+  const enclosureAny = itemXml.match(/<enclosure[^>]+url="([^"]+)"/);
+  if (enclosureAny && enclosureAny[1].match(/\.(jpg|jpeg|png|webp|gif)/i)) return enclosureAny[1];
+  // Try img in description (skip tracking pixels)
   const imgMatch = itemXml.match(/<img[^>]+src="([^"]+)"/);
-  if (imgMatch && !imgMatch[1].includes("imrworldwide")) return imgMatch[1];
+  if (imgMatch && !imgMatch[1].includes("imrworldwide") && imgMatch[1].match(/\.(jpg|jpeg|png|webp|gif)/i)) return imgMatch[1];
   return null;
 }
 
@@ -159,9 +162,10 @@ async function fetchFeed(config: FeedConfig): Promise<NewsItem[]> {
     const res = await fetch(config.url, {
       next: { revalidate: 900 }, // 15 min cache
       headers: {
-        "User-Agent": "ModoFosa/1.0 (RSS Reader)",
+        "User-Agent": "Mozilla/5.0 (compatible; ModoFosa/1.0; +https://modofosa.com.ar)",
       },
       signal: controller.signal,
+      redirect: "follow",
     });
     clearTimeout(timeout);
     if (!res.ok) return [];
