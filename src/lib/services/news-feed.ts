@@ -152,30 +152,18 @@ function parseRSSItems(xml: string, config: FeedConfig): NewsItem[] {
   return items;
 }
 
-async function translateText(text: string): Promise<string> {
-  try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(text)}`;
-    const res = await fetch(url, { next: { revalidate: 86400 } });
-    if (!res.ok) return text;
-    const data = await res.json();
-    // Response format: [[["translated","original",...],...],...]
-    if (Array.isArray(data) && Array.isArray(data[0])) {
-      return data[0].map((segment: string[]) => segment[0]).join("");
-    }
-    return text;
-  } catch {
-    return text;
-  }
-}
-
 async function fetchFeed(config: FeedConfig): Promise<NewsItem[]> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
     const res = await fetch(config.url, {
       next: { revalidate: 900 }, // 15 min cache
       headers: {
         "User-Agent": "ModoFosa/1.0 (RSS Reader)",
       },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) return [];
     const xml = await res.text();
     return parseRSSItems(xml, config);
@@ -201,21 +189,5 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   allItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
 
   // Take top items
-  const topItems = allItems.slice(0, limit);
-
-  // Translate English titles
-  const translated = await Promise.all(
-    topItems.map(async (item) => {
-      if (item.language === "en") {
-        const [translatedTitle, translatedDesc] = await Promise.all([
-          translateText(item.title),
-          item.description ? translateText(item.description) : Promise.resolve(""),
-        ]);
-        return { ...item, title: translatedTitle, description: translatedDesc };
-      }
-      return item;
-    })
-  );
-
-  return translated;
+  return allItems.slice(0, limit);
 }

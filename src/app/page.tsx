@@ -43,11 +43,6 @@ export default function HomePage() {
           <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
 
-          {/* Logo watermark */}
-          <div className="pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 opacity-[0.04] md:right-8">
-            <img src="/logo.svg" alt="" className="h-48 w-48 md:h-72 md:w-72" />
-          </div>
-
           <p className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-accent">
             <span className="inline-block h-px w-5 bg-accent" />
             Todo el universo EA FC y fútbol en una sola plataforma
