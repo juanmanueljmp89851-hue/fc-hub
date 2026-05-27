@@ -44,8 +44,6 @@ function StatusBadge({ match }: { match: TickerMatch }) {
 export function LiveTicker() {
   const [matches, setMatches] = useState<TickerMatch[]>(FALLBACK_MATCHES);
   const [isPaused, setIsPaused] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
   const fetchTicker = useCallback(async () => {
     try {
       const res = await fetch("/api/ticker", { cache: "no-store" });
@@ -53,7 +51,6 @@ export function LiveTicker() {
       const data: TickerMatch[] = await res.json();
       if (data.length > 0) {
         setMatches(data);
-        setLoaded(true);
       }
     } catch {
       // Keep fallback
