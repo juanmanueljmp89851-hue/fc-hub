@@ -38,11 +38,18 @@ const FEEDS: FeedConfig[] = [
     category: "Gaming",
   },
   {
-    url: "https://www.dexerto.com/feed/",
+    url: "https://www.dexerto.com/ea-sports-fc/feed/",
     source: "Dexerto",
     sourceIcon: "⚡",
     language: "en",
-    category: "Esports",
+    category: "EA FC",
+  },
+  {
+    url: "https://www.dexerto.com/soccer/feed/",
+    source: "Dexerto",
+    sourceIcon: "⚡",
+    language: "en",
+    category: "Fútbol",
   },
   {
     url: "https://www.espn.com/espn/rss/soccer/news",
@@ -52,6 +59,28 @@ const FEEDS: FeedConfig[] = [
     category: "Fútbol",
   },
 ];
+
+// Keywords that indicate relevant content (football, EA FC, gaming)
+const RELEVANCE_KEYWORDS = [
+  // Football
+  "futbol", "fútbol", "football", "soccer", "gol", "goal", "liga", "league",
+  "champions", "libertadores", "mundial", "world cup", "copa", "selección",
+  "messi", "mbappé", "mbappe", "haaland", "neymar", "premier", "laliga",
+  "serie a", "bundesliga", "transfer", "fichaje", "traspaso",
+  // EA FC / Gaming
+  "ea fc", "ea sports", "fc 25", "fc 26", "fc25", "fc26", "fut ", "ultimate team",
+  "fifa", "pro clubs", "esports", "esport", "e-sport", "gaming", "videojuego",
+  "playstation", "xbox", "pc gaming", "torneo", "tournament",
+  // Teams
+  "barcelona", "real madrid", "boca", "river", "arsenal", "liverpool",
+  "man city", "manchester", "bayern", "inter", "milan", "juventus", "psg",
+  "racing", "independiente", "san lorenzo",
+];
+
+function isRelevantNews(item: NewsItem): boolean {
+  const text = `${item.title} ${item.description}`.toLowerCase();
+  return RELEVANCE_KEYWORDS.some((kw) => text.includes(kw));
+}
 
 function extractCDATA(text: string): string {
   return text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").trim();
@@ -159,6 +188,9 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
       allItems = allItems.concat(result.value);
     }
   }
+
+  // Filter irrelevant content (e.g. crime news from general feeds)
+  allItems = allItems.filter(isRelevantNews);
 
   // Sort by date, newest first
   allItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());

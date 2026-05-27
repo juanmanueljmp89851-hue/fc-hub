@@ -66,12 +66,21 @@ export function NewsFeed() {
         className="group block overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/50"
       >
         <div className="grid md:grid-cols-2">
-          <div className="h-48 bg-surface-light md:h-64">
+          <div className="relative h-48 bg-surface-light md:h-64">
             {featured.imageUrl ? (
               <img
                 src={featured.imageUrl}
                 alt=""
                 className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = "none";
+                  target.parentElement!.classList.add("flex", "items-center", "justify-center");
+                  const fallback = document.createElement("span");
+                  fallback.className = "text-4xl text-foreground/20";
+                  fallback.textContent = "📰";
+                  target.parentElement!.appendChild(fallback);
+                }}
               />
             ) : (
               <div className="flex h-full items-center justify-center text-4xl text-foreground/20">📰</div>
@@ -103,12 +112,21 @@ export function NewsFeed() {
             rel="noopener noreferrer"
             className="group overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/50"
           >
-            <div className="h-36 bg-surface-light">
+            <div className="relative h-36 bg-surface-light">
               {item.imageUrl ? (
                 <img
                   src={item.imageUrl}
                   alt=""
                   className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = "none";
+                    target.parentElement!.classList.add("flex", "items-center", "justify-center");
+                    const fallback = document.createElement("span");
+                    fallback.className = "text-3xl text-foreground/20";
+                    fallback.textContent = "📰";
+                    target.parentElement!.appendChild(fallback);
+                  }}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-3xl text-foreground/20">📰</div>
