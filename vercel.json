@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/update-matches",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron/sync-fixtures",
@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/refresh-videos",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
