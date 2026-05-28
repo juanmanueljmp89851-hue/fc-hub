@@ -88,10 +88,27 @@ const RELEVANCE_KEYWORDS = [
 // Sources whose feeds are already topic-specific (no filtering needed)
 const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "BBC Sport", "Olé"]);
 
+// Negative keywords — filter out non-sport content that sneaks through
+const NEGATIVE_KEYWORDS = [
+  "cia ", "espionaje", "envenenó", "envenenamiento", "asesinato", "murder",
+  "crimen", "crime", "criminal", "policía", "police", "arrested", "detenido",
+  "drogas", "drug", "narcotráfico", "robo", "robbery", "violencia doméstica",
+  "abuso", "abuse", "accidente", "accident", "muerto", "fallecido", "obituary",
+  "política", "político", "election", "elección", "parlamento", "parliament",
+  "brexit", "trump", "biden", "putin", "guerra", "war ", "conflicto bélico",
+  "terremoto", "earthquake", "incendio forestal", "wildfire",
+  "reality show", "big brother", "kardashian",
+];
+
 function isRelevantNews(item: NewsItem): boolean {
-  // Skip filter for topic-specific feeds
-  if (TRUSTED_SOURCES.has(item.source)) return true;
   const text = `${item.title} ${item.description}`.toLowerCase();
+
+  // Check negative keywords first (applies to ALL sources)
+  if (NEGATIVE_KEYWORDS.some((kw) => text.includes(kw))) return false;
+
+  // Skip positive filter for topic-specific feeds
+  if (TRUSTED_SOURCES.has(item.source)) return true;
+
   return RELEVANCE_KEYWORDS.some((kw) => text.includes(kw));
 }
 
