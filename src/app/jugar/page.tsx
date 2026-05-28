@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getTopRanking, getActiveMatches } from "@/lib/actions/lobby";
 import { LobbyChat } from "@/components/jugar/LobbyChat";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Jugar",
+  description: "Desafiá rivales de EA FC, subí en el ranking y demostrá quién manda.",
+};
 
 function getMedalEmoji(pos: number) {
   if (pos === 1) return "🥇";

@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMyProdes, getActiveWeek } from "@/lib/actions/prode";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Prode Mundial 2026",
+  description: "Predecí los resultados del Mundial 2026. Competí con amigos y ganá premios.",
+};
 
 function getStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string }> = {

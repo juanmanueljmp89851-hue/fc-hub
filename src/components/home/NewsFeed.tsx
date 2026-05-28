@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface NewsItem {
   title: string;
@@ -24,6 +25,37 @@ function timeAgo(date: Date): string {
   const days = Math.floor(hours / 24);
   if (days === 1) return "ayer";
   return `hace ${days}d`;
+}
+
+function NewsImage({ src, alt, className, fallbackSize = "text-4xl" }: {
+  src: string | null;
+  alt: string;
+  className: string;
+  fallbackSize?: string;
+}) {
+  const [error, setError] = useState(false);
+
+  if (!src || error) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-surface-light`}>
+        <span className={`${fallbackSize} text-foreground/20`}>📰</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${className} relative overflow-hidden bg-surface-light`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        className="object-cover transition-transform group-hover:scale-105"
+        onError={() => setError(true)}
+        unoptimized
+      />
+    </div>
+  );
 }
 
 export function NewsFeed() {
@@ -63,7 +95,6 @@ export function NewsFeed() {
     return null;
   }
 
-  // First item = featured (big), rest = grid
   const [featured, ...rest] = news;
 
   return (
@@ -78,26 +109,11 @@ export function NewsFeed() {
         className="group block overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/50"
       >
         <div className="grid md:grid-cols-2">
-          <div className="relative h-48 bg-surface-light md:h-64">
-            {featured.imageUrl ? (
-              <img
-                src={featured.imageUrl}
-                alt=""
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = "none";
-                  target.parentElement!.classList.add("flex", "items-center", "justify-center");
-                  const fallback = document.createElement("span");
-                  fallback.className = "text-4xl text-foreground/20";
-                  fallback.textContent = "📰";
-                  target.parentElement!.appendChild(fallback);
-                }}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-4xl text-foreground/20">📰</div>
-            )}
-          </div>
+          <NewsImage
+            src={featured.imageUrl}
+            alt=""
+            className="h-48 md:h-64"
+          />
           <div className="flex flex-col justify-center p-6">
             <div className="mb-2 flex items-center gap-2">
               <span className="text-sm">{featured.sourceIcon}</span>
@@ -124,26 +140,12 @@ export function NewsFeed() {
             rel="noopener noreferrer"
             className="group overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/50"
           >
-            <div className="relative h-36 bg-surface-light">
-              {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt=""
-                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.style.display = "none";
-                    target.parentElement!.classList.add("flex", "items-center", "justify-center");
-                    const fallback = document.createElement("span");
-                    fallback.className = "text-3xl text-foreground/20";
-                    fallback.textContent = "📰";
-                    target.parentElement!.appendChild(fallback);
-                  }}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-3xl text-foreground/20">📰</div>
-              )}
-            </div>
+            <NewsImage
+              src={item.imageUrl}
+              alt=""
+              className="h-36"
+              fallbackSize="text-3xl"
+            />
             <div className="p-3">
               <div className="mb-1 flex items-center gap-1.5">
                 <span className="text-xs">{item.sourceIcon}</span>

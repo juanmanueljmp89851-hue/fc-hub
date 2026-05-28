@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getInfluencers, getAllSpecialties } from "@/lib/actions/influencers";
 import Link from "next/link";
 import { InfluencerFilters } from "@/components/influencers/InfluencerFilters";
+
+export const metadata: Metadata = {
+  title: "Influencers",
+  description: "Los mejores creadores de contenido de EA FC en español. Videos, streams y comunidad.",
+};
 import { CommentSection } from "@/components/influencers/CommentSection";
 
 interface PageProps {

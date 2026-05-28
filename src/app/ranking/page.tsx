@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getRanking } from "@/lib/actions/casual";
 import { RankingFilters } from "@/components/ranking/RankingFilters";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Ranking",
+  description: "Ranking de jugadores de EA FC Argentina. Subí posiciones ganando partidas.",
+};
 
 function getMedalClass(pos: number) {
   if (pos === 1) return "bg-gold text-background";

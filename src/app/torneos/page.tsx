@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { listTournaments } from "@/lib/actions/tournament";
 import { TournamentFilters } from "@/components/tournaments/TournamentFilters";
+
+export const metadata: Metadata = {
+  title: "Torneos",
+  description: "Creá o unite a torneos de EA FC. Competí contra jugadores de toda Argentina.",
+};
 
 function getStatusLabel(status: string) {
   const map: Record<string, string> = {

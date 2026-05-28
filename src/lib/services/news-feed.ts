@@ -269,7 +269,12 @@ function deduplicateNews(items: NewsItem[]): NewsItem[] {
   });
 }
 
-export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
+// --- In-memory cache (5 min TTL, avoids 6 RSS fetches per request) ---
+let cachedNews: NewsItem[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function fetchAllNews(): Promise<NewsItem[]> {
   const results = await Promise.allSettled(FEEDS.map(fetchFeed));
 
   let allItems: NewsItem[] = [];
@@ -288,11 +293,25 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   // Deduplicate similar titles
   allItems = deduplicateNews(allItems);
 
-  // Take top items
-  allItems = allItems.slice(0, limit);
+  // Take top 30 (cache more than needed so limit param still works)
+  allItems = allItems.slice(0, 30);
 
   // Translate English titles to Spanish (with timeout)
   allItems = await translateItems(allItems);
 
   return allItems;
+}
+
+export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
+  const now = Date.now();
+
+  if (cachedNews && now - cacheTimestamp < CACHE_TTL) {
+    return cachedNews.slice(0, limit);
+  }
+
+  const news = await fetchAllNews();
+  cachedNews = news;
+  cacheTimestamp = now;
+
+  return news.slice(0, limit);
 }

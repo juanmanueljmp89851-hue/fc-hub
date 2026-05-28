@@ -1,0 +1,18 @@
+{
+  "name": "Modo Fosa",
+  "short_name": "ModoFosa",
+  "description": "Comunidad EA FC Argentina — Torneos, ranking, prode y más",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00ff87",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
