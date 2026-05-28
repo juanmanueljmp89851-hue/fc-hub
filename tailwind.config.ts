@@ -9,19 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0A0E1A",
-        foreground: "#F8FAFC",
+        background: "rgb(var(--color-background) / <alpha-value>)",
+        foreground: "rgb(var(--color-foreground) / <alpha-value>)",
         accent: {
-          DEFAULT: "#00FF87",
-          dark: "#00CC6A",
+          DEFAULT: "rgb(var(--color-accent) / <alpha-value>)",
+          dark: "rgb(var(--color-accent-dark) / <alpha-value>)",
         },
         gold: {
           DEFAULT: "#FFD700",
           dark: "#B8960F",
         },
         surface: {
-          DEFAULT: "#131929",
-          light: "#1C2333",
+          DEFAULT: "rgb(var(--color-surface) / <alpha-value>)",
+          light: "rgb(var(--color-surface-light) / <alpha-value>)",
         },
       },
       fontFamily: {

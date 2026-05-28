@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -48,7 +49,7 @@ export default async function ExternalLeagueDetailPage({ params }: PageProps) {
         <div className="mb-8">
           <div className="flex items-center gap-4">
             {league.logoUrl ? (
-              <img src={league.logoUrl} alt={league.name} className="h-16 w-16 rounded-xl object-cover" />
+              <Image src={league.logoUrl} alt={league.name} width={64} height={64} className="h-16 w-16 rounded-xl object-cover" />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-accent/10 text-3xl">
                 🏆

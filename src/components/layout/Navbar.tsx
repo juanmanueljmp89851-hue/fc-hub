@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { syncUserWithDB } from "@/lib/actions/user";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import type { User as DbUser } from "@/types";
 
 const navLinks = [
@@ -42,12 +44,13 @@ function UserMenu({ user }: { user: DbUser }) {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-lg border border-surface-light px-3 py-1.5 transition-colors hover:border-accent"
       >
-        <div className="h-7 w-7 overflow-hidden rounded-full bg-surface">
+        <div className="relative h-7 w-7 overflow-hidden rounded-full bg-surface">
           {user.avatarUrl ? (
-            <img
+            <Image
               src={user.avatarUrl}
               alt={user.username}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-foreground/40">
@@ -143,7 +146,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-surface-light bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Modo Fosa" className="h-9 w-9" />
+          <Image src="/logo.svg" alt="Modo Fosa" width={36} height={36} className="h-9 w-9" />
           <div className="flex flex-col leading-none">
             <div className="flex items-baseline gap-0.5">
               <span className="text-lg font-black tracking-tight text-accent">MODO</span>
@@ -167,6 +170,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {!authChecked ? (
             <div className="h-9 w-32 animate-pulse rounded-lg bg-surface" />
           ) : user ? (
@@ -220,6 +224,10 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          <div className="mt-3 flex items-center justify-between border-t border-surface-light pt-3">
+            <span className="text-xs text-foreground/40">Tema</span>
+            <ThemeToggle />
+          </div>
           <div className="mt-3 flex flex-col gap-2">
             {user ? (
               <>

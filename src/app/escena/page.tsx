@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getExternalLeagues } from "@/lib/actions/external-leagues";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Escena Competitiva",
+  description: "Ligas y torneos de EA FC en Argentina y Latam: IESA, eLPF, VPG y más.",
+};
 
 function getGameModeLabel(mode: string) {
   const map: Record<string, string> = {
@@ -45,9 +52,11 @@ export default async function EscenaPage() {
                   <Card className="h-full transition-colors hover:border-accent/50">
                     <div className="mb-3 flex items-center gap-3">
                       {league.logoUrl ? (
-                        <img
+                        <Image
                           src={league.logoUrl}
                           alt={league.name}
+                          width={48}
+                          height={48}
                           className="h-12 w-12 rounded-lg object-cover"
                         />
                       ) : (

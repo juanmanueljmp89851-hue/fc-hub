@@ -3,6 +3,26 @@
 @tailwind utilities;
 
 @layer base {
+  /* Dark theme (default) */
+  :root {
+    --color-background: 10 14 26;
+    --color-foreground: 248 250 252;
+    --color-accent: 0 255 135;
+    --color-accent-dark: 0 204 106;
+    --color-surface: 19 25 41;
+    --color-surface-light: 28 35 51;
+  }
+
+  /* Light theme */
+  :root.light {
+    --color-background: 248 250 252;
+    --color-foreground: 15 23 42;
+    --color-accent: 5 150 105;
+    --color-accent-dark: 4 120 87;
+    --color-surface: 255 255 255;
+    --color-surface-light: 226 232 240;
+  }
+
   * {
     @apply border-surface-light;
   }

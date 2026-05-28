@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getInfluencers, getAllSpecialties } from "@/lib/actions/influencers";
 import Link from "next/link";
 import { InfluencerFilters } from "@/components/influencers/InfluencerFilters";
 
+import { CommentSection } from "@/components/influencers/CommentSection";
+
 export const metadata: Metadata = {
   title: "Influencers",
   description: "Los mejores creadores de contenido de EA FC en español. Videos, streams y comunidad.",
 };
-import { CommentSection } from "@/components/influencers/CommentSection";
 
 interface PageProps {
   searchParams: { specialty?: string };
@@ -50,9 +52,11 @@ export default async function InfluencersPage({ searchParams }: PageProps) {
                   className="mb-4 flex items-center gap-3 group"
                 >
                   {influencer.avatarUrl ? (
-                    <img
+                    <Image
                       src={influencer.avatarUrl}
                       alt={influencer.name}
+                      width={48}
+                      height={48}
                       className="h-12 w-12 rounded-full object-cover"
                     />
                   ) : (
@@ -96,11 +100,14 @@ export default async function InfluencersPage({ searchParams }: PageProps) {
                       >
                         <Card className="cursor-pointer transition-colors hover:border-accent/50">
                           {video.thumbnailUrl ? (
-                            <img
-                              src={video.thumbnailUrl}
-                              alt={video.title}
-                              className="mb-3 aspect-video w-full rounded-lg object-cover"
-                            />
+                            <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-lg">
+                              <Image
+                                src={video.thumbnailUrl}
+                                alt={video.title}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
                           ) : (
                             <div className="mb-3 flex aspect-video items-center justify-center rounded-lg bg-surface-light">
                               <span className="text-3xl text-foreground/20">▶</span>

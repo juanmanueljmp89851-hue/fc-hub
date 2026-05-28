@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
@@ -37,19 +38,24 @@ export default async function InfluencerDetailPage({ params }: PageProps) {
         {/* Banner + Avatar */}
         <div className="relative mb-8 overflow-hidden rounded-xl">
           {influencer.bannerUrl ? (
-            <img
-              src={influencer.bannerUrl}
-              alt=""
-              className="h-40 w-full object-cover sm:h-56"
-            />
+            <div className="relative h-40 w-full sm:h-56">
+              <Image
+                src={influencer.bannerUrl}
+                alt=""
+                fill
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="h-40 w-full bg-gradient-to-r from-accent/20 to-gold/20 sm:h-56" />
           )}
           <div className="absolute -bottom-8 left-6">
             {influencer.avatarUrl ? (
-              <img
+              <Image
                 src={influencer.avatarUrl}
                 alt={influencer.name}
+                width={80}
+                height={80}
                 className="h-20 w-20 rounded-full border-4 border-background object-cover"
               />
             ) : (
@@ -128,11 +134,14 @@ export default async function InfluencerDetailPage({ params }: PageProps) {
               >
                 <Card className="cursor-pointer transition-colors hover:border-accent/50">
                   {video.thumbnailUrl ? (
-                    <img
-                      src={video.thumbnailUrl}
-                      alt={video.title}
-                      className="mb-3 aspect-video w-full rounded-lg object-cover"
-                    />
+                    <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-lg">
+                      <Image
+                        src={video.thumbnailUrl}
+                        alt={video.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="mb-3 flex aspect-video items-center justify-center rounded-lg bg-surface-light">
                       <span className="text-3xl text-foreground/20">▶</span>

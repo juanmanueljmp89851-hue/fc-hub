@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { searchPlayers, challengeUser } from "@/lib/actions/casual";
@@ -79,9 +80,9 @@ export function PlayerSearch() {
               className="flex items-center justify-between rounded-lg border border-surface-light bg-background p-3"
             >
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 overflow-hidden rounded-full bg-surface">
+                <div className="relative h-8 w-8 overflow-hidden rounded-full bg-surface">
                   {player.avatarUrl ? (
-                    <img src={player.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    <Image src={player.avatarUrl} alt="" fill className="object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">
                       👤

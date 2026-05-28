@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PlayerSearch } from "@/components/casual/PlayerSearch";
@@ -79,9 +80,9 @@ export default async function CasualPage() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 overflow-hidden rounded-full bg-surface">
+                            <div className="relative h-7 w-7 overflow-hidden rounded-full bg-surface">
                               {match.challenger.avatarUrl ? (
-                                <img src={match.challenger.avatarUrl} alt="" className="h-full w-full object-cover" />
+                                <Image src={match.challenger.avatarUrl} alt="" fill className="object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/30">👤</div>
                               )}
@@ -90,9 +91,9 @@ export default async function CasualPage() {
                           </div>
                           <span className="text-xs text-foreground/40">vs</span>
                           <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 overflow-hidden rounded-full bg-surface">
+                            <div className="relative h-7 w-7 overflow-hidden rounded-full bg-surface">
                               {match.challenged.avatarUrl ? (
-                                <img src={match.challenged.avatarUrl} alt="" className="h-full w-full object-cover" />
+                                <Image src={match.challenged.avatarUrl} alt="" fill className="object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/30">👤</div>
                               )}

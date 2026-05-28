@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getRanking } from "@/lib/actions/casual";
@@ -66,9 +67,9 @@ export default async function RankingPage({ searchParams }: PageProps) {
                   </span>
                 </div>
                 <div className="mb-1 flex justify-center">
-                  <div className="h-12 w-12 overflow-hidden rounded-full bg-surface">
+                  <div className="relative h-12 w-12 overflow-hidden rounded-full bg-surface">
                     {entry!.avatarUrl ? (
-                      <img src={entry!.avatarUrl} alt="" className="h-full w-full object-cover" />
+                      <Image src={entry!.avatarUrl} alt="" fill className="object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-lg text-foreground/30">👤</div>
                     )}
@@ -142,9 +143,9 @@ export default async function RankingPage({ searchParams }: PageProps) {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 overflow-hidden rounded-full bg-surface">
+                          <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
                             {entry!.avatarUrl ? (
-                              <img src={entry!.avatarUrl} alt="" className="h-full w-full object-cover" />
+                              <Image src={entry!.avatarUrl} alt="" fill className="object-cover" />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
                             )}

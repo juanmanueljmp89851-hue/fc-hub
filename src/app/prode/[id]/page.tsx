@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -166,9 +167,9 @@ export default async function ProdeDetailPage({ params }: PageProps) {
                     key={p.id}
                     className="flex items-center gap-2 rounded-lg bg-background/50 px-3 py-2"
                   >
-                    <div className="h-6 w-6 overflow-hidden rounded-full bg-surface">
+                    <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
                       {p.user.avatarUrl ? (
-                        <img src={p.user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                        <Image src={p.user.avatarUrl} alt="" fill className="object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
                       )}
@@ -203,9 +204,9 @@ export default async function ProdeDetailPage({ params }: PageProps) {
                         >
                           {i + 1}
                         </span>
-                        <div className="h-6 w-6 overflow-hidden rounded-full bg-surface">
+                        <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
                           {entry.avatarUrl ? (
-                            <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
+                            <Image src={entry.avatarUrl} alt="" fill className="object-cover" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
                           )}

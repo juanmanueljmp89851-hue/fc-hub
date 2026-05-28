@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -201,12 +202,13 @@ export function LobbyChat() {
                 className="group flex items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-surface-light/50 transition-colors"
               >
                 {/* Avatar */}
-                <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-surface-light">
+                <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-surface-light">
                   {msg.user.avatarUrl ? (
-                    <img
+                    <Image
                       src={msg.user.avatarUrl}
                       alt=""
-                      className="h-full w-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/30">

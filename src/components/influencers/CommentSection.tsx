@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getInfluencerComments, addInfluencerComment } from "@/lib/actions/comments";
@@ -151,12 +152,13 @@ export function CommentSection({ influencerId }: { influencerId: string }) {
           {comments.map((comment) => (
             <div key={comment.id} className="group">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 overflow-hidden rounded-full bg-surface-light">
+                <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface-light">
                   {comment.user.avatarUrl ? (
-                    <img
+                    <Image
                       src={comment.user.avatarUrl}
                       alt=""
-                      className="h-full w-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/30">

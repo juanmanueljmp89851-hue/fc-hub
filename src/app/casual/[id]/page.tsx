@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
@@ -44,9 +45,9 @@ export default async function CasualMatchPage({ params }: PageProps) {
           {/* Players */}
           <div className="mb-8 flex items-center justify-center gap-6">
             <div className="text-center">
-              <div className="mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
+              <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
                 {match.challenger.avatarUrl ? (
-                  <img src={match.challenger.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  <Image src={match.challenger.avatarUrl} alt="" fill className="object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl text-foreground/30">👤</div>
                 )}
@@ -74,9 +75,9 @@ export default async function CasualMatchPage({ params }: PageProps) {
             </div>
 
             <div className="text-center">
-              <div className="mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
+              <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
                 {match.challenged.avatarUrl ? (
-                  <img src={match.challenged.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  <Image src={match.challenged.avatarUrl} alt="" fill className="object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl text-foreground/30">👤</div>
                 )}

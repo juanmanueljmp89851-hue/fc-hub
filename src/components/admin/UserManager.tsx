@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { toggleUserRole } from "@/lib/actions/admin";
@@ -74,7 +75,7 @@ export function UserManager({ users, search }: { users: User[]; search?: string 
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt="" className="h-7 w-7 rounded-full" />
+                      <Image src={user.avatarUrl} alt="" width={28} height={28} className="h-7 w-7 rounded-full" />
                     ) : (
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">
                         {(user.username ?? "?")[0].toUpperCase()}

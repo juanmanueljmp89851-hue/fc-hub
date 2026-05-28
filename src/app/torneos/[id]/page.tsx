@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -68,8 +69,8 @@ export default async function TorneoDetailPage({ params }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           {tournament.bannerUrl && (
-            <div className="mb-4 h-48 overflow-hidden rounded-xl">
-              <img src={tournament.bannerUrl} alt={tournament.name} className="h-full w-full object-cover" />
+            <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
+              <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" />
             </div>
           )}
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -195,9 +196,9 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                     key={p.id}
                     className="flex items-center gap-2 rounded-lg bg-background/50 px-3 py-2"
                   >
-                    <div className="h-6 w-6 overflow-hidden rounded-full bg-surface">
+                    <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
                       {p.user.avatarUrl ? (
-                        <img src={p.user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                        <Image src={p.user.avatarUrl} alt="" fill className="object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
                       )}

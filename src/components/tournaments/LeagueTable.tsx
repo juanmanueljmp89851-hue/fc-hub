@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface StandingData {
   id: string;
   played: number;
@@ -53,9 +55,9 @@ export function LeagueTable({ standings }: LeagueTableProps) {
               <td className="px-2 py-2 font-bold text-foreground/60">{i + 1}</td>
               <td className="px-2 py-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 overflow-hidden rounded-full bg-surface">
+                  <div className="relative h-5 w-5 overflow-hidden rounded-full bg-surface">
                     {s.user.avatarUrl ? (
-                      <img src={s.user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                      <Image src={s.user.avatarUrl} alt="" fill className="object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/30">
                         👤

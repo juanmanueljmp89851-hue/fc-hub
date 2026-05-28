@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { updateAvatar } from "@/lib/actions/user";
@@ -67,10 +68,11 @@ export function AvatarUpload({ currentUrl, userId }: AvatarUploadProps) {
         className="group relative h-24 w-24 overflow-hidden rounded-full border-2 border-surface-light transition-colors hover:border-accent"
       >
         {preview ? (
-          <img
+          <Image
             src={preview}
             alt="Avatar"
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-surface text-3xl text-foreground/30">

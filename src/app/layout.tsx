@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Footer } from "@/components/layout/Footer";
 import { AdScripts } from "@/components/ads/AdScripts";
 import "./globals.css";
@@ -46,8 +48,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light')}catch(e){}})()`,
+          }}
+        />
         <meta name="google-adsense-account" content="ca-pub-1298419664713208" />
         <meta name="theme-color" content="#00ff87" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -59,6 +66,8 @@ export default function RootLayout({
         <AdScripts />
         <div className="flex-1">{children}</div>
         <Footer />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
