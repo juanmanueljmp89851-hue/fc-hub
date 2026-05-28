@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
+import { AdScripts } from "@/components/ads/AdScripts";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,9 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <meta name="google-adsense-account" content="ca-pub-1298419664713208" />
+      </head>
       <body
         className={`${inter.variable} font-sans bg-background text-foreground antialiased flex min-h-screen flex-col`}
       >
+        <AdScripts />
         <div className="flex-1">{children}</div>
         <Footer />
       </body>

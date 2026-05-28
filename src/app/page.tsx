@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { NewsFeed } from "@/components/home/NewsFeed";
 import { LiveTicker } from "@/components/home/LiveTicker";
+import { AdSlot } from "@/components/ads/AdSlot";
 
 const quickLinks = [
   {
@@ -81,10 +82,20 @@ export default function HomePage() {
           ))}
         </section>
 
+        {/* Ad Banner */}
+        <div className="mb-8 flex justify-center">
+          <AdSlot slot="banner" />
+        </div>
+
         {/* News Feed */}
         <section className="mb-8">
           <NewsFeed />
         </section>
+
+        {/* Ad In-Feed */}
+        <div className="mb-8 flex justify-center">
+          <AdSlot slot="inFeed" />
+        </div>
       </main>
     </div>
   );

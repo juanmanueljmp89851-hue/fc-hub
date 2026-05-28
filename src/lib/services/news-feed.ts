@@ -38,6 +38,13 @@ const FEEDS: FeedConfig[] = [
     category: "Gaming",
   },
   {
+    url: "https://www.ole.com.ar/rss/ultimas-noticias/",
+    source: "Olé",
+    sourceIcon: "🇦🇷",
+    language: "es",
+    category: "Fútbol",
+  },
+  {
     url: "https://www.dexerto.com/ea-sports-fc/feed/",
     source: "Dexerto",
     sourceIcon: "⚡",
@@ -68,9 +75,10 @@ const RELEVANCE_KEYWORDS = [
   "messi", "mbappé", "mbappe", "haaland", "neymar", "premier", "laliga",
   "serie a", "bundesliga", "transfer", "fichaje", "traspaso",
   // EA FC / Gaming
-  "ea fc", "ea sports", "fc 25", "fc 26", "fc25", "fc26", "fut ", "ultimate team",
+  "ea fc", "ea sports", "fc 25", "fc 26", "fc25", "fc26", "fc 27", "fut ", "ultimate team",
   "fifa", "pro clubs", "esports", "esport", "e-sport", "gaming", "videojuego",
-  "playstation", "xbox", "pc gaming", "torneo", "tournament",
+  "playstation", "xbox", "pc gaming", "torneo", "tournament", "rush mode",
+  "evolutions", "icon", "hero", "tots", "toty", "potm", "sbc",
   // Teams
   "barcelona", "real madrid", "boca", "river", "arsenal", "liverpool",
   "man city", "manchester", "bayern", "inter", "milan", "juventus", "psg",
@@ -78,7 +86,7 @@ const RELEVANCE_KEYWORDS = [
 ];
 
 // Sources whose feeds are already topic-specific (no filtering needed)
-const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "BBC Sport"]);
+const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "BBC Sport", "Olé"]);
 
 function isRelevantNews(item: NewsItem): boolean {
   // Skip filter for topic-specific feeds
@@ -176,6 +184,74 @@ async function fetchFeed(config: FeedConfig): Promise<NewsItem[]> {
   }
 }
 
+// --- Translation (Google Translate free API, 3s timeout, fail = keep original) ---
+async function translateText(text: string): Promise<string> {
+  if (!text) return text;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) return text;
+    const data = await res.json();
+    // Response format: [[["translated text","original text",...],...],...]
+    const translated = data?.[0]?.map((s: [string]) => s[0]).join("") || text;
+    return translated;
+  } catch {
+    return text; // timeout or error → keep original
+  }
+}
+
+async function translateItems(items: NewsItem[]): Promise<NewsItem[]> {
+  const englishItems = items.filter((i) => i.language === "en");
+  if (englishItems.length === 0) return items;
+
+  // Translate in parallel with individual timeouts
+  const translations = await Promise.allSettled(
+    englishItems.map((item) => translateText(item.title))
+  );
+
+  let idx = 0;
+  return items.map((item) => {
+    if (item.language !== "en") return item;
+    const result = translations[idx++];
+    const translatedTitle =
+      result.status === "fulfilled" ? result.value : item.title;
+    return { ...item, title: translatedTitle };
+  });
+}
+
+// --- Deduplication (by normalized title similarity) ---
+function normalizeForDedup(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-záéíóúñü0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isDuplicate(a: string, b: string): boolean {
+  if (a === b) return true;
+  // Check if one contains 80%+ of the other's words
+  const wordsA = a.split(" ");
+  const wordsB = b.split(" ");
+  if (wordsA.length < 3 || wordsB.length < 3) return a === b;
+  const setB = new Set(wordsB);
+  const overlap = wordsA.filter((w) => setB.has(w)).length;
+  return overlap / Math.max(wordsA.length, wordsB.length) > 0.7;
+}
+
+function deduplicateNews(items: NewsItem[]): NewsItem[] {
+  const seen: string[] = [];
+  return items.filter((item) => {
+    const norm = normalizeForDedup(item.title);
+    if (seen.some((s) => isDuplicate(norm, s))) return false;
+    seen.push(norm);
+    return true;
+  });
+}
+
 export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   const results = await Promise.allSettled(FEEDS.map(fetchFeed));
 
@@ -192,6 +268,14 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   // Sort by date, newest first
   allItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
 
+  // Deduplicate similar titles
+  allItems = deduplicateNews(allItems);
+
   // Take top items
-  return allItems.slice(0, limit);
+  allItems = allItems.slice(0, limit);
+
+  // Translate English titles to Spanish (with timeout)
+  allItems = await translateItems(allItems);
+
+  return allItems;
 }
