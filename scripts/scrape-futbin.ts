@@ -331,6 +331,19 @@ function inferPromo(cardImageId: string): {
   if (id.includes("hero")) return PROMO_MAP.hero;
   if (id.includes("gold") && id.includes("rare")) return PROMO_MAP.gold_rare;
 
+  // Fallback: auto-generate promo name from cardImageId
+  // e.g., "21_prime_heroes" → "Prime Heroes"
+  // e.g., "135_summer_stars" → "Summer Stars"
+  const autoName = cardImageId
+    .replace(/^\d+_/, "")          // strip leading number prefix
+    .replace(/_/g, " ")            // underscores → spaces
+    .replace(/\b\w/g, (c) => c.toUpperCase()); // Title Case
+
+  if (autoName && autoName.length > 2) {
+    console.log(`  ℹ️  Promo auto-detectada desde cardImageId: "${autoName}" (${cardImageId})`);
+    return { cardType: "special", promo: autoName, order: 15 };
+  }
+
   return { cardType: "special", promo: "Especial", order: 15 };
 }
 
