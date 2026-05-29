@@ -15,16 +15,19 @@ interface TickerMatch {
   type: "real" | "fc26";
 }
 
-// Fallback when no API key / no data
-const FALLBACK_MATCHES: TickerMatch[] = [
-  { id: "f1", league: "Liga Argentina", leagueFlag: "🇦🇷", homeTeam: "Boca", awayTeam: "River", homeScore: 1, awayScore: 2, status: "finished", minute: null, type: "real" },
-  { id: "f2", league: "La Liga", leagueFlag: "🇪🇸", homeTeam: "Barcelona", awayTeam: "Real Madrid", homeScore: 3, awayScore: 1, status: "finished", minute: null, type: "real" },
-  { id: "f3", league: "Premier League", leagueFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", homeTeam: "Arsenal", awayTeam: "Man City", homeScore: 2, awayScore: 0, status: "finished", minute: null, type: "real" },
-  { id: "f4", league: "Champions League", leagueFlag: "🏆", homeTeam: "Liverpool", awayTeam: "Bayern", homeScore: 1, awayScore: 0, status: "finished", minute: null, type: "real" },
-  { id: "f5", league: "Libertadores", leagueFlag: "🏆", homeTeam: "Flamengo", awayTeam: "Racing", homeScore: 2, awayScore: 1, status: "finished", minute: null, type: "real" },
-  { id: "f6", league: "Serie A", leagueFlag: "🇮🇹", homeTeam: "Inter", awayTeam: "Milan", homeScore: 2, awayScore: 2, status: "finished", minute: null, type: "real" },
-  { id: "f7", league: "Mundial 2026", leagueFlag: "🌍", homeTeam: "Argentina", awayTeam: "Francia", homeScore: null, awayScore: null, status: "upcoming", minute: null, type: "real" },
-];
+// No real match placeholder
+const NO_REAL_MATCHES_PLACEHOLDER: TickerMatch = {
+  id: "no-real",
+  league: "",
+  leagueFlag: "😴",
+  homeTeam: "Sin partidos de fútbol",
+  awayTeam: "nadie importante está jugando",
+  homeScore: null,
+  awayScore: null,
+  status: "finished",
+  minute: null,
+  type: "real",
+};
 
 function StatusBadge({ match }: { match: TickerMatch }) {
   if (match.status === "live") {
@@ -42,18 +45,28 @@ function StatusBadge({ match }: { match: TickerMatch }) {
 }
 
 export function LiveTicker() {
-  const [matches, setMatches] = useState<TickerMatch[]>(FALLBACK_MATCHES);
+  const [matches, setMatches] = useState<TickerMatch[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const fetchTicker = useCallback(async () => {
     try {
       const res = await fetch("/api/ticker", { cache: "no-store" });
       if (!res.ok) return;
       const data: TickerMatch[] = await res.json();
-      if (data.length > 0) {
-        setMatches(data);
-      }
+      const realMatches = data.filter((m) => m.type === "real");
+      const fc26Matches = data.filter((m) => m.type === "fc26");
+
+      // If no real football matches, add placeholder
+      const finalMatches =
+        realMatches.length > 0
+          ? [...realMatches, ...fc26Matches]
+          : [NO_REAL_MATCHES_PLACEHOLDER, ...fc26Matches];
+
+      setMatches(finalMatches);
     } catch {
-      // Keep fallback
+      setMatches([NO_REAL_MATCHES_PLACEHOLDER]);
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
@@ -62,6 +75,17 @@ export function LiveTicker() {
     const interval = setInterval(fetchTicker, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchTicker]);
+
+  // Don't render until data loads
+  if (!loaded) {
+    return (
+      <div className="border-y border-surface-light bg-surface/50 py-2">
+        <div className="flex items-center justify-center">
+          <span className="text-xs text-foreground/30 animate-pulse">Cargando resultados...</span>
+        </div>
+      </div>
+    );
+  }
 
   // Duplicate for seamless loop
   const tickerItems = [...matches, ...matches];
@@ -82,29 +106,49 @@ export function LiveTicker() {
           "--ticker-duration": `${duration}s`,
         } as React.CSSProperties}
       >
-        {tickerItems.map((match, i) => (
-          <div
-            key={`${match.id}-${i}`}
-            className={`mx-2 inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs ${
-              match.type === "fc26"
-                ? "border border-accent/20 bg-accent/5"
-                : "border border-surface-light bg-surface"
-            }`}
-          >
-            <span className="text-[11px]">{match.leagueFlag}</span>
-            <span className="font-medium text-foreground/40">{match.league}</span>
-            <span className="font-bold text-foreground/80">{match.homeTeam}</span>
-            {match.homeScore !== null ? (
-              <span className={`font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
-                {match.homeScore} - {match.awayScore}
-              </span>
-            ) : (
-              <span className="text-foreground/30">vs</span>
-            )}
-            <span className="font-bold text-foreground/80">{match.awayTeam}</span>
-            <StatusBadge match={match} />
-          </div>
-        ))}
+        {tickerItems.map((match, i) => {
+          // Placeholder message (no score, special render)
+          const isPlaceholder = match.id === "no-real";
+
+          return (
+            <div
+              key={`${match.id}-${i}`}
+              className={`mx-2 inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs ${
+                isPlaceholder
+                  ? "border border-surface-light/50 bg-surface/50"
+                  : match.type === "fc26"
+                    ? "border border-accent/20 bg-accent/5"
+                    : "border border-surface-light bg-surface"
+              }`}
+            >
+              {isPlaceholder ? (
+                <>
+                  <span className="text-[11px]">😴</span>
+                  <span className="font-medium text-foreground/40">
+                    Sin partidos de fútbol — nadie importante está jugando
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[11px]">{match.leagueFlag}</span>
+                  {match.league && (
+                    <span className="font-medium text-foreground/40">{match.league}</span>
+                  )}
+                  <span className="font-bold text-foreground/80">{match.homeTeam}</span>
+                  {match.homeScore !== null ? (
+                    <span className={`font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
+                      {match.homeScore} - {match.awayScore}
+                    </span>
+                  ) : (
+                    <span className="text-foreground/30">vs</span>
+                  )}
+                  <span className="font-bold text-foreground/80">{match.awayTeam}</span>
+                  <StatusBadge match={match} />
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
