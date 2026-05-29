@@ -9,8 +9,8 @@ import { InfluencerFilters } from "@/components/influencers/InfluencerFilters";
 import { CommentSection } from "@/components/influencers/CommentSection";
 
 export const metadata: Metadata = {
-  title: "Influencers",
-  description: "Los mejores creadores de contenido de EA FC en español. Videos, streams y comunidad.",
+  title: "Streamers",
+  description: "Directorio de creadores y streamers de EA FC en español. Videos, streams y comunidad.",
 };
 
 interface PageProps {
@@ -28,9 +28,9 @@ export default async function InfluencersPage({ searchParams }: PageProps) {
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Hub Influencers</h1>
+          <h1 className="text-3xl font-bold">Streamers</h1>
           <p className="mt-1 text-foreground/60">
-            Los mejores creadores de contenido de EA FC en español
+            Directorio y contenido de creadores de la comunidad
           </p>
         </div>
 

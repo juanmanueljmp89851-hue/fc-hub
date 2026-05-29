@@ -1,0 +1,37 @@
+name: Scrape FUTBIN Daily
+
+on:
+  schedule:
+    # 18:15 UTC = 15:15 Argentina (UTC-3)
+    - cron: "15 18 * * *"
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run FUTBIN scraper
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: npx tsx scripts/scrape-futbin.ts --version=all_specials,end_of_era,sbc_set --pages 20

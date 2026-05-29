@@ -7,8 +7,8 @@ import { RankingFilters } from "@/components/ranking/RankingFilters";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Ranking",
-  description: "Ranking de jugadores de EA FC Argentina. Subí posiciones ganando partidas.",
+  title: "Clasificación",
+  description: "Clasificación de jugadores de EA FC Argentina. Subí posiciones ganando duelos.",
 };
 
 function getMedalClass(pos: number) {
@@ -30,19 +30,11 @@ export default async function RankingPage({ searchParams }: PageProps) {
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Ranking General</h1>
-            <p className="mt-1 text-foreground/60">
-              Tabla de posiciones de partidos casuales
-            </p>
-          </div>
-          <Link
-            href="/casual"
-            className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
-          >
-            Jugar casual
-          </Link>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Clasificación</h1>
+          <p className="mt-1 text-foreground/60">
+            Tabla de posiciones basada en resultados de Duelos
+          </p>
         </div>
 
         {/* Top 3 Cards */}
@@ -95,7 +87,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
         {/* Table */}
         {ranking.length === 0 ? (
           <Card className="mt-4 p-8 text-center">
-            <p className="text-foreground/50">No hay jugadores en el ranking todavía.</p>
+            <p className="text-foreground/50">No hay jugadores en la clasificación todavía.</p>
             <Link
               href="/casual"
               className="mt-3 inline-block text-sm font-medium text-accent hover:underline"

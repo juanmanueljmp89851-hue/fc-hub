@@ -6,8 +6,8 @@ import { LobbyChat } from "@/components/jugar/LobbyChat";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Jugar",
-  description: "Desafiá rivales de EA FC, subí en el ranking y demostrá quién manda.",
+  title: "Duelos",
+  description: "Desafiá rivales de EA FC en duelos directos y demostrá quién manda.",
 };
 
 function getMedalEmoji(pos: number) {
@@ -37,11 +37,19 @@ export default async function JugarPage() {
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Jugar</h1>
-          <p className="mt-1 text-foreground/60">
-            Chateá, desafiá rivales y subí en el ranking
-          </p>
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Duelos</h1>
+            <p className="mt-1 text-foreground/60">
+              Desafiá en el chat a rivales y demostrá quién manda
+            </p>
+          </div>
+          <Link
+            href="/casual"
+            className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
+          >
+            Jugar duelo
+          </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -50,7 +58,7 @@ export default async function JugarPage() {
             {/* Compact Ranking */}
             <Card>
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-bold">🏆 Ranking</h3>
+                <h3 className="font-bold">🏆 Clasificación</h3>
                 <Link
                   href="/ranking"
                   className="text-xs font-medium text-accent hover:underline"

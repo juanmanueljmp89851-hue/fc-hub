@@ -3,36 +3,73 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { NewsFeed } from "@/components/home/NewsFeed";
 import { LiveTicker } from "@/components/home/LiveTicker";
+import { LatestCards } from "@/components/home/LatestCards";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { prisma } from "@/lib/db";
+import type { FutPlayer } from "@/types/player";
 
 const quickLinks = [
   {
-    href: "/jugar",
-    title: "Jugar",
-    description: "Desafiá rivales y subí en el ranking",
-    icon: "🎮",
+    href: "/actualidad",
+    title: "Actualidad",
+    description: "Noticias y novedades de FC 26",
+    icon: "📰",
+  },
+  {
+    href: "/jugadores",
+    title: "Cartas FC26",
+    description: "Base de datos de jugadores y cartas",
+    icon: "🃏",
   },
   {
     href: "/torneos",
-    title: "Torneos",
-    description: "Creá o unite a torneos de EA FC",
+    title: "Arena",
+    description: "Torneos y copas de la comunidad",
     icon: "🏆",
   },
   {
-    href: "/prode",
-    title: "Prode Mundial",
-    description: "Predecí los resultados del Mundial 2026",
-    icon: "⚽",
-  },
-  {
-    href: "/influencers",
-    title: "Influencers",
-    description: "Videos de los mejores creadores",
-    icon: "🎬",
+    href: "/jugar",
+    title: "Duelos",
+    description: "Desafiá rivales y demostrá quién manda",
+    icon: "🎮",
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch newest 15 cards by release order
+  const latestRaw = await prisma.futCard.findMany({
+    orderBy: { promoOrder: "desc" },
+    take: 15,
+  });
+
+  const lastUpdated = latestRaw[0]?.updatedAt?.toISOString() ?? null;
+
+  const latestCards: FutPlayer[] = latestRaw.map((c) => ({
+    id: c.id,
+    eaId: c.eaId,
+    name: c.name,
+    commonName: c.commonName ?? undefined,
+    position: c.position,
+    alternatePositions: c.altPositions,
+    overall: c.overall,
+    pace: c.pace,
+    shooting: c.shooting,
+    passing: c.passing,
+    dribbling: c.dribbling,
+    defending: c.defending,
+    physical: c.physical,
+    club: c.club,
+    league: c.league,
+    nation: c.nation,
+    cardType: c.cardType as FutPlayer["cardType"],
+    promo: c.promo ?? undefined,
+    promoOrder: c.promoOrder,
+    imageUrl: c.imageUrl ?? undefined,
+    cardImageId: c.cardImageId ?? undefined,
+    skillMoves: c.skillMoves ?? undefined,
+    weakFoot: c.weakFoot ?? undefined,
+  }));
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -86,6 +123,9 @@ export default function HomePage() {
         <div className="mb-8 flex justify-center">
           <AdSlot slot="banner" />
         </div>
+
+        {/* Latest Cards Strip */}
+        <LatestCards cards={latestCards} lastUpdated={lastUpdated} />
 
         {/* News Feed */}
         <section className="mb-8">

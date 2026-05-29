@@ -6,8 +6,8 @@ import { listTournaments } from "@/lib/actions/tournament";
 import { TournamentFilters } from "@/components/tournaments/TournamentFilters";
 
 export const metadata: Metadata = {
-  title: "Torneos",
-  description: "Creá o unite a torneos de EA FC. Competí contra jugadores de toda Argentina.",
+  title: "Arena",
+  description: "Torneos, copas y eventos de EA FC organizados por la comunidad Modo Fosa.",
 };
 
 function getStatusLabel(status: string) {
@@ -88,9 +88,9 @@ export default async function TorneosPage({ searchParams }: PageProps) {
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Torneos</h1>
+            <h1 className="text-3xl font-bold">Arena</h1>
             <p className="mt-1 text-foreground/60">
-              Competí en torneos organizados por la comunidad
+              Torneos, copas y eventos de la comunidad
             </p>
           </div>
           <Link

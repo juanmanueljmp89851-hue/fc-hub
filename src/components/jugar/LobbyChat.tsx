@@ -32,6 +32,12 @@ function timeAgo(date: Date): string {
   return new Date(date).toLocaleDateString("es-AR", { day: "numeric", month: "short" });
 }
 
+interface OnlineUser {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+}
+
 export function LobbyChat() {
   const [messages, setMessages] = useState<LobbyMsg[]>([]);
   const [text, setText] = useState("");
@@ -42,19 +48,52 @@ export function LobbyChat() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [challengeStatus, setChallengeStatus] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check auth + get current user id
     const supabase = createClient();
+    let presenceChannel: ReturnType<typeof supabase.channel> | null = null;
+
     supabase.auth.getUser().then(({ data }) => {
       setIsLoggedIn(!!data.user);
       if (data.user) {
-        // Fetch DB user id
+        // Fetch DB user id + join presence
         fetch("/api/me")
           .then((r) => r.json())
-          .then((d) => setCurrentUserId(d.id ?? null))
+          .then((d) => {
+            setCurrentUserId(d.id ?? null);
+            if (d.id && d.username) {
+              // Join presence channel
+              presenceChannel = supabase.channel("lobby-presence");
+              presenceChannel
+                .on("presence", { event: "sync" }, () => {
+                  const state = presenceChannel!.presenceState<OnlineUser>();
+                  const users: OnlineUser[] = [];
+                  const seen = new Set<string>();
+                  for (const key of Object.keys(state)) {
+                    for (const presence of state[key]) {
+                      if (!seen.has(presence.id)) {
+                        seen.add(presence.id);
+                        users.push({ id: presence.id, username: presence.username, avatarUrl: presence.avatarUrl });
+                      }
+                    }
+                  }
+                  setOnlineUsers(users);
+                })
+                .subscribe(async (status) => {
+                  if (status === "SUBSCRIBED") {
+                    await presenceChannel!.track({
+                      id: d.id,
+                      username: d.username,
+                      avatarUrl: d.avatarUrl ?? null,
+                    });
+                  }
+                });
+            }
+          })
           .catch(() => {});
       }
     });
@@ -78,6 +117,7 @@ export function LobbyChat() {
 
     return () => {
       supabase.removeChannel(channel);
+      if (presenceChannel) supabase.removeChannel(presenceChannel);
     };
   }, []);
 
@@ -153,7 +193,9 @@ export function LobbyChat() {
   }
 
   return (
-    <div className="flex flex-col rounded-xl border border-surface-light bg-surface">
+    <div className="flex rounded-xl border border-surface-light bg-surface">
+      {/* Chat column */}
+      <div className="flex flex-1 flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-surface-light px-4 py-3">
         <div className="flex items-center gap-2">
@@ -303,6 +345,62 @@ export function LobbyChat() {
             </div>
           </div>
         )}
+      </div>
+      </div>{/* end chat column */}
+
+      {/* Online users sidebar */}
+      <div className="hidden w-44 shrink-0 border-l border-surface-light md:block">
+        <div className="border-b border-surface-light px-3 py-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-accent" />
+            <span className="text-xs font-bold text-foreground/70">
+              Conectados{onlineUsers.length > 0 ? ` (${onlineUsers.length})` : ""}
+            </span>
+          </div>
+        </div>
+        <div className="overflow-y-auto p-2" style={{ maxHeight: "420px" }}>
+          {onlineUsers.length === 0 ? (
+            <p className="px-1 py-2 text-[10px] text-foreground/30">
+              {isLoggedIn ? "Esperando usuarios..." : "Iniciá sesión para ver conectados"}
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {onlineUsers.map((user) => {
+                const isMe = user.id === currentUserId;
+                const challengeSt = challengeStatus[user.id];
+                return (
+                  <div
+                    key={user.id}
+                    className="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-light/50"
+                  >
+                    <div className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full bg-surface-light">
+                      {user.avatarUrl ? (
+                        <Image src={user.avatarUrl} alt="" fill className="object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[8px] text-foreground/30">👤</div>
+                      )}
+                    </div>
+                    <span className={`flex-1 truncate text-[11px] font-medium ${isMe ? "text-accent" : "text-foreground/70"}`}>
+                      {user.username}{isMe ? " (vos)" : ""}
+                    </span>
+                    {!isMe && currentUserId && !challengeSt && (
+                      <button
+                        onClick={() => handleChallenge(user.id, user.username)}
+                        className="hidden text-[9px] font-bold text-accent group-hover:inline-block"
+                        title={`Desafiar a ${user.username}`}
+                      >
+                        ⚔️
+                      </button>
+                    )}
+                    {challengeSt && (
+                      <span className="text-[9px] text-foreground/40">{challengeSt === "sending" ? "⏳" : "✓"}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

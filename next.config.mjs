@@ -13,6 +13,10 @@ const nextConfig = {
       { protocol: "https", hostname: "img.youtube.com" },
       // User avatars (Supabase storage)
       { protocol: "https", hostname: "**.supabase.co" },
+      // Google auth avatars
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      // FUTBIN player images
+      { protocol: "https", hostname: "cdn.futbin.com" },
     ],
   },
 };

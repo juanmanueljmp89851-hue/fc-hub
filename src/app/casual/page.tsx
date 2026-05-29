@@ -52,7 +52,7 @@ export default async function CasualPage() {
                 className="block rounded-lg border border-surface-light bg-background p-4 text-center transition-colors hover:border-accent"
               >
                 <span className="text-sm font-medium text-foreground/70">Ver </span>
-                <span className="font-bold text-accent">Ranking General</span>
+                <span className="font-bold text-accent">Clasificación</span>
               </Link>
             </div>
           </div>

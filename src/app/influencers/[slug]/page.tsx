@@ -32,7 +32,7 @@ export default async function InfluencerDetailPage({ params }: PageProps) {
           href="/influencers"
           className="mb-6 inline-flex items-center text-sm text-foreground/50 hover:text-accent"
         >
-          ← Volver a Influencers
+          ← Volver a Streamers
         </Link>
 
         {/* Banner + Avatar */}

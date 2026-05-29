@@ -42,7 +42,7 @@ export default async function ExternalLeagueDetailPage({ params }: PageProps) {
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <Link href="/escena" className="mb-4 inline-flex items-center text-sm text-foreground/50 hover:text-accent">
-          ← Volver a Escena Competitiva
+          ← Volver a Competitivo
         </Link>
 
         {/* Header */}

@@ -10,12 +10,14 @@ import type { User as DbUser } from "@/types";
 
 const navLinks = [
   { href: "/", label: "Inicio" },
-  { href: "/torneos", label: "Torneos" },
-  { href: "/jugar", label: "Jugar" },
+  { href: "/actualidad", label: "Actualidad" },
+  { href: "/jugadores", label: "Cartas FC26" },
+  { href: "/torneos", label: "Arena" },
+  { href: "/jugar", label: "Duelos" },
+  { href: "/ranking", label: "Clasificación" },
   { href: "/prode", label: "Prode" },
-  { href: "/ranking", label: "Ranking" },
-  { href: "/escena", label: "Escena" },
-  { href: "/influencers", label: "Influencers" },
+  { href: "/escena", label: "Competitivo" },
+  { href: "/influencers", label: "Streamers" },
 ];
 
 function UserMenu({ user }: { user: DbUser }) {

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     description: "Stats, mercado y fútbol. Donde vive el meta.",
     images: ["/logo.svg"],
   },
-  metadataBase: new URL("https://fc-hub-five.vercel.app"),
+  metadataBase: new URL("https://www.modofosa.com.ar"),
   manifest: "/manifest.json",
   icons: {
     icon: "/logo.svg",

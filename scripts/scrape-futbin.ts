@@ -1,0 +1,516 @@
+/**
+ * FUTBIN Scraper — Extrae cartas especiales de FC 26
+ *
+ * Uso:
+ *   npx tsx scripts/scrape-futbin.ts                  # Scrape homepage (latest)
+ *   npx tsx scripts/scrape-futbin.ts --promo tots     # Scrape TOTS specifically
+ *   npx tsx scripts/scrape-futbin.ts --pages 5        # Scrape 5 pages of specials
+ *
+ * Fallback: si FUTBIN banea, cambiar SOURCE a "futgg" o "futwiz"
+ */
+
+import { chromium } from "playwright-extra";
+import type { Page } from "playwright";
+import stealth from "puppeteer-extra-plugin-stealth";
+import { PrismaClient } from "@prisma/client";
+
+chromium.use(stealth());
+
+const prisma = new PrismaClient();
+
+// ─── CONFIG ──────────────────────────────────────────────────
+
+const SOURCE = process.env.SCRAPE_SOURCE ?? "futbin";
+
+const FUTBIN_BASE = "https://www.futbin.com";
+// Supports comma-separated versions: --version=all_specials,end_of_era,sbc_set
+const FUTBIN_VERSIONS = (process.argv.find((a) => a.startsWith("--version="))?.split("=")[1] ?? "all_specials").split(",");
+function futbinPlayersUrl(version: string, page: number): string {
+  return `${FUTBIN_BASE}/26/players?page=${page}&version=${version}&sort=date_added&order=desc`;
+}
+
+// Map FUTBIN version filter slugs to our promo names
+const PROMO_MAP: Record<string, { cardType: string; promo: string; order: number }> = {
+  // Newest promos first (higher order = newer)
+  tots: { cardType: "tots", promo: "TOTS", order: 100 },
+  tots_champions: { cardType: "tots", promo: "TOTS Champions", order: 99 },
+  tots_honourable: { cardType: "tots", promo: "TOTS Menciones Honoríficas", order: 98 },
+  fut_birthday: { cardType: "special", promo: "FUT Birthday", order: 90 },
+  future_stars: { cardType: "special", promo: "Estrellas del Futuro", order: 85 },
+  thunderstruck: { cardType: "special", promo: "Thunderstruck", order: 80 },
+  toty: { cardType: "toty", promo: "TOTY", order: 75 },
+  toty_honourable: { cardType: "toty", promo: "TOTY Mención Honorífica", order: 74 },
+  winter_wildcards: { cardType: "special", promo: "Winter Wildcards", order: 70 },
+  fc_pro_live: { cardType: "special", promo: "FC Pro Live", order: 65 },
+  ucl_rttf: { cardType: "special", promo: "UCL Camino a la Final", order: 60 },
+  uel_rttf: { cardType: "special", promo: "UEL Camino a la Final", order: 59 },
+  uecl_rttf: { cardType: "special", promo: "UECL Camino a la Final", order: 58 },
+  uwcl_rttf: { cardType: "special", promo: "UWCL Camino a la Final", order: 57 },
+  totw: { cardType: "special", promo: "Equipo de la Semana", order: 50 },
+  potm: { cardType: "special", promo: "Jugador del Mes", order: 45 },
+  sbc: { cardType: "special", promo: "SBC", order: 42 },
+  showdown: { cardType: "special", promo: "Showdown", order: 40 },
+  fantasy_fc: { cardType: "special", promo: "Fantasy FC", order: 35 },
+  cornerstones: { cardType: "special", promo: "Cornerstones", order: 30 },
+  knockout_royalty: { cardType: "special", promo: "Knockout Royalty", order: 25 },
+  end_of_era: { cardType: "special", promo: "Fin de una Era", order: 22 },
+  premium_world_tour: { cardType: "special", promo: "Premium World Tour", order: 21 },
+  fof: { cardType: "special", promo: "Festival de Fútbol", order: 20 },
+  icon: { cardType: "icon", promo: "Ícono", order: 10 },
+  hero: { cardType: "hero", promo: "Héroe", order: 9 },
+  gold_rare: { cardType: "gold_rare", promo: "Oro Raro", order: 1 },
+};
+
+// ─── SCRAPER ─────────────────────────────────────────────────
+
+interface ScrapedCard {
+  futbinId: number;
+  eaId: number;
+  name: string;
+  commonName?: string;
+  overall: number;
+  position: string;
+  altPositions: string[];
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
+  club: string;
+  league: string;
+  nation: string;
+  cardType: string;
+  promo: string;
+  promoOrder: number;
+  skillMoves?: number;
+  weakFoot?: number;
+  foot?: string;
+  height?: number;
+  futbinRating?: number;
+  pricePs?: string;
+  pricePc?: string;
+  cardImageId?: string;
+  imageUrl?: string;
+  sourceUrl: string;
+}
+
+async function scrapeFutbinPlayerList(page: Page, url: string): Promise<ScrapedCard[]> {
+  console.log(`  → Navegando a: ${url}`);
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+
+  // Wait for table to render
+  await page.waitForTimeout(5000);
+
+  // Close cookie consent — FUTBIN uses Cookiebot
+  try {
+    const consentBtn = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll");
+    if (await consentBtn.count() > 0) {
+      await consentBtn.first().click();
+      console.log("  ✓ Cookie consent cerrado");
+      await page.waitForTimeout(1000);
+    }
+  } catch {
+    // No consent popup — fine
+  }
+
+  // Wait for player rows
+  await page.waitForSelector("tr.player-row", { timeout: 15000 }).catch(() => {
+    console.log("  ⚠ No se encontraron filas de jugadores");
+  });
+
+  // Extract data from FUTBIN player table
+  // DOM structure (verified 2026-05-28):
+  //   tr.player-row > td.table-name        — link + images
+  //                  > td.table-rating      — overall in div.rating-square
+  //                  > td.table-pos         — position + alt
+  //                  > td.table-price (x2)  — PS / PC prices
+  //                  > td (futbin rating)   — span.futbin-rating-tag
+  //                  > td.table-foot        — img foot-left/right.svg
+  //                  > td.table-skills      — SM
+  //                  > td.table-weak-foot   — WF
+  //                  > td.table-pace/shooting/passing/dribbling/defending/physicality
+  //   Player face img: class="playercard-26-special-img" src contains players/p{eaId}.png
+  //   Card bg img: class="playercard-s-26-bg" src contains cards/tiny/{cardImageId}.png
+  const cards = await page.evaluate(() => {
+    const rows = document.querySelectorAll("tr.player-row");
+    const results: Array<Record<string, unknown>> = [];
+
+    for (const row of rows) {
+      try {
+        // --- Link & FUTBIN ID ---
+        const link = row.querySelector("a.player-row-playercard") as HTMLAnchorElement;
+        if (!link) continue;
+        const href = link.getAttribute("href") ?? "";
+        const futbinIdMatch = href.match(/\/26\/player\/(\d+)/);
+        if (!futbinIdMatch) continue;
+        const futbinId = parseInt(futbinIdMatch[1]);
+
+        // --- Player name ---
+        const nameEl = row.querySelector(".table-player-name") as HTMLElement;
+        const name = nameEl?.textContent?.trim() ?? "";
+        if (!name) continue;
+
+        // --- EA ID from player face image ---
+        // FC26 format: players/p{eaId}.png (note "p" prefix)
+        const faceImg = row.querySelector("img.playercard-26-special-img, img[src*='players/p']") as HTMLImageElement;
+        const faceSrc = faceImg?.getAttribute("src") ?? "";
+        const eaIdMatch = faceSrc.match(/players\/p?(\d+)\.png/);
+        const eaId = eaIdMatch ? parseInt(eaIdMatch[1]) : 0;
+
+        // --- Overall rating ---
+        const ratingEl = row.querySelector("td.table-rating .rating-square") as HTMLElement;
+        const overall = parseInt(ratingEl?.textContent?.trim() ?? "0");
+
+        // --- Position (main + alt) ---
+        const posTd = row.querySelector("td.table-pos") as HTMLElement;
+        const mainPos = posTd?.querySelector(".table-pos-main span:first-child")?.textContent?.trim() ?? "";
+        const altPosText = posTd?.querySelector(".xs-font")?.textContent?.trim() ?? "";
+        const altPositions = altPosText ? altPosText.split(",").map((s: string) => s.trim()).filter(Boolean) : [];
+
+        // --- Stats (PAC SHO PAS DRI DEF PHY) ---
+        const pace = parseInt(row.querySelector("td.table-pace .table-key-stats")?.textContent?.trim() ?? "0");
+        const shooting = parseInt(row.querySelector("td.table-shooting .table-key-stats")?.textContent?.trim() ?? "0");
+        const passing = parseInt(row.querySelector("td.table-passing .table-key-stats")?.textContent?.trim() ?? "0");
+        const dribbling = parseInt(row.querySelector("td.table-dribbling .table-key-stats")?.textContent?.trim() ?? "0");
+        const defending = parseInt(row.querySelector("td.table-defending .table-key-stats")?.textContent?.trim() ?? "0");
+        const physical = parseInt(row.querySelector("td.table-physicality .table-key-stats")?.textContent?.trim() ?? "0");
+
+        // --- Card background image ID ---
+        const cardBgImg = row.querySelector("img.playercard-s-26-bg, img[src*='cards/tiny/']") as HTMLImageElement;
+        const cardSrc = cardBgImg?.getAttribute("src") ?? "";
+        const cardMatch = cardSrc.match(/cards\/tiny\/(.+?)\.png/);
+        const cardImageId = cardMatch?.[1] ?? "";
+
+        // --- Prices ---
+        const psPriceTd = row.querySelector("td.platform-ps-only .price") as HTMLElement;
+        const pcPriceTd = row.querySelector("td.platform-pc-only .price") as HTMLElement;
+        const pricePs = psPriceTd?.textContent?.trim().replace(/[^\d.KMk]/g, "") ?? "";
+        const pricePc = pcPriceTd?.textContent?.trim().replace(/[^\d.KMk]/g, "") ?? "";
+
+        // --- FUTBIN rating ---
+        const fbRatingEl = row.querySelector("span.futbin-rating-tag") as HTMLElement;
+        const futbinRating = fbRatingEl ? parseFloat(fbRatingEl.textContent?.trim() ?? "0") : undefined;
+
+        // --- Skill Moves & Weak Foot ---
+        const smTd = row.querySelector("td.table-skills") as HTMLElement;
+        const wfTd = row.querySelector("td.table-weak-foot") as HTMLElement;
+        const skillMoves = smTd ? parseInt(smTd.textContent?.trim() ?? "0") : undefined;
+        const weakFoot = wfTd ? parseInt(wfTd.textContent?.trim() ?? "0") : undefined;
+
+        // --- Foot ---
+        const footImg = row.querySelector("td.table-foot img") as HTMLImageElement;
+        const footSrc = footImg?.getAttribute("src") ?? "";
+        const foot = footSrc.includes("foot-left") ? "Izquierdo" : footSrc.includes("foot-right") ? "Derecho" : undefined;
+
+        // --- Height ---
+        const heightTd = row.querySelector("td.table-height .text-center") as HTMLElement;
+        const heightText = heightTd?.textContent?.trim() ?? "";
+        const heightMatch = heightText.match(/(\d+)cm/);
+        const height = heightMatch ? parseInt(heightMatch[1]) : undefined;
+
+        results.push({
+          futbinId,
+          eaId,
+          name,
+          overall,
+          position: mainPos,
+          altPositions,
+          pace,
+          shooting,
+          passing,
+          dribbling,
+          defending,
+          physical,
+          pricePs,
+          pricePc,
+          futbinRating,
+          skillMoves,
+          weakFoot,
+          foot,
+          height,
+          cardImageId,
+          sourceUrl: `https://www.futbin.com${href}`,
+        });
+      } catch {
+        // Skip malformed rows
+      }
+    }
+
+    return results;
+  });
+
+  console.log(`  ✓ ${cards.length} cartas extraídas`);
+
+  // Map to ScrapedCard with promo info from card image ID
+  return cards.map((c) => {
+    const promoInfo = inferPromo(c.cardImageId as string);
+    return {
+      futbinId: c.futbinId as number,
+      eaId: c.eaId as number,
+      name: c.name as string,
+      overall: c.overall as number,
+      position: c.position as string,
+      altPositions: (c.altPositions as string[]) ?? [],
+      pace: c.pace as number,
+      shooting: c.shooting as number,
+      passing: c.passing as number,
+      dribbling: c.dribbling as number,
+      defending: c.defending as number,
+      physical: c.physical as number,
+      club: "",
+      league: "",
+      nation: "",
+      cardType: promoInfo.cardType,
+      promo: promoInfo.promo,
+      promoOrder: promoInfo.order,
+      skillMoves: c.skillMoves as number | undefined,
+      weakFoot: c.weakFoot as number | undefined,
+      foot: c.foot as string | undefined,
+      height: c.height as number | undefined,
+      futbinRating: c.futbinRating as number | undefined,
+      pricePs: c.pricePs as string | undefined,
+      pricePc: c.pricePc as string | undefined,
+      cardImageId: c.cardImageId as string,
+      imageUrl:
+        (c.eaId as number) > 0
+          ? `https://cdn.futbin.com/content/fifa26/img/players/p${c.eaId as number}.png`
+          : undefined,
+      sourceUrl: c.sourceUrl as string,
+    };
+  });
+}
+
+function inferPromo(cardImageId: string): {
+  cardType: string;
+  promo: string;
+  order: number;
+} {
+  if (!cardImageId) return { cardType: "special", promo: "Especial", order: 15 };
+
+  const id = cardImageId.toLowerCase();
+
+  if (id.includes("honourable_mention") || id.includes("honorable_mention")) return PROMO_MAP.tots_honourable;
+  if (id.includes("tots") || id.includes("team_of_the_season")) return PROMO_MAP.tots;
+  if (id.includes("toty") && id.includes("hon")) return PROMO_MAP.toty_honourable;
+  if (id.includes("toty")) return PROMO_MAP.toty;
+  if (id.includes("uwcl")) return PROMO_MAP.uwcl_rttf;
+  if (id.includes("birthday")) return PROMO_MAP.fut_birthday;
+  if (id.includes("future")) return PROMO_MAP.future_stars;
+  if (id.includes("thunder")) return PROMO_MAP.thunderstruck;
+  if (id.includes("winter")) return PROMO_MAP.winter_wildcards;
+  if (id.includes("fc_pro")) return PROMO_MAP.fc_pro_live;
+  if (id.includes("ucl_rttf")) return PROMO_MAP.ucl_rttf;
+  if (id.includes("uel_rttf")) return PROMO_MAP.uel_rttf;
+  if (id.includes("uecl_rttf")) return PROMO_MAP.uecl_rttf;
+  if (id.includes("totw")) return PROMO_MAP.totw;
+  if (id.includes("potm")) return PROMO_MAP.potm;
+  if (id.includes("sbc")) return PROMO_MAP.sbc;
+  if (id.includes("showdown")) return PROMO_MAP.showdown;
+  if (id.includes("fantasy")) return PROMO_MAP.fantasy_fc;
+  if (id.includes("corner")) return PROMO_MAP.cornerstones;
+  if (id.includes("knockout")) return PROMO_MAP.knockout_royalty;
+  if (id.includes("end_of_era")) return PROMO_MAP.end_of_era;
+  if (id.includes("premium_world_tour") || id.includes("world_tour")) return PROMO_MAP.premium_world_tour;
+  if (id.includes("fof") || id.includes("answer")) return PROMO_MAP.fof;
+  if (id.includes("icon")) return PROMO_MAP.icon;
+  if (id.includes("hero")) return PROMO_MAP.hero;
+  if (id.includes("gold") && id.includes("rare")) return PROMO_MAP.gold_rare;
+
+  return { cardType: "special", promo: "Especial", order: 15 };
+}
+
+// ─── DATABASE ────────────────────────────────────────────────
+
+/** Parse FUTBIN price string (e.g. "3.1M", "450K", "1,200") to integer */
+function parsePrice(price: string): number | undefined {
+  if (!price) return undefined;
+  const clean = price.replace(/[,\s]/g, "").toUpperCase();
+  if (clean.endsWith("M")) return Math.round(parseFloat(clean) * 1_000_000);
+  if (clean.endsWith("K")) return Math.round(parseFloat(clean) * 1_000);
+  const num = parseInt(clean);
+  return isNaN(num) ? undefined : num;
+}
+
+async function upsertCards(cards: ScrapedCard[]): Promise<number> {
+  let upserted = 0;
+
+  for (const card of cards) {
+    if (!card.eaId || card.eaId === 0) {
+      console.log(`  ⚠ Saltando ${card.name} — sin EA ID`);
+      continue;
+    }
+
+    const pricePs = parsePrice(card.pricePs ?? "");
+    const pricePc = parsePrice(card.pricePc ?? "");
+
+    try {
+      await prisma.futCard.upsert({
+        where: {
+          eaId_cardType: {
+            eaId: card.eaId,
+            cardType: card.cardType,
+          },
+        },
+        update: {
+          overall: card.overall,
+          pace: card.pace,
+          shooting: card.shooting,
+          passing: card.passing,
+          dribbling: card.dribbling,
+          defending: card.defending,
+          physical: card.physical,
+          pricePs,
+          pricePc,
+          futbinRating: card.futbinRating,
+          imageUrl: card.imageUrl,
+          cardImageId: card.cardImageId,
+          promo: card.promo,
+          promoOrder: card.promoOrder,
+          cardType: card.cardType,
+          skillMoves: card.skillMoves,
+          weakFoot: card.weakFoot,
+          foot: card.foot,
+          height: card.height,
+        },
+        create: {
+          eaId: card.eaId,
+          futbinId: card.futbinId,
+          name: card.name,
+          commonName: card.commonName,
+          overall: card.overall,
+          position: card.position,
+          altPositions: card.altPositions,
+          pace: card.pace,
+          shooting: card.shooting,
+          passing: card.passing,
+          dribbling: card.dribbling,
+          defending: card.defending,
+          physical: card.physical,
+          club: card.club,
+          league: card.league,
+          nation: card.nation,
+          cardType: card.cardType,
+          promo: card.promo,
+          promoOrder: card.promoOrder,
+          cardImageId: card.cardImageId,
+          imageUrl: card.imageUrl,
+          skillMoves: card.skillMoves,
+          weakFoot: card.weakFoot,
+          foot: card.foot,
+          height: card.height,
+          futbinRating: card.futbinRating,
+          pricePs,
+          pricePc,
+          source: "futbin",
+          sourceUrl: card.sourceUrl,
+          releaseDate: new Date(),
+        },
+      });
+      upserted++;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.log(`  ✗ Error guardando ${card.name}: ${msg}`);
+    }
+  }
+
+  return upserted;
+}
+
+// ─── MAIN ────────────────────────────────────────────────────
+
+async function main() {
+  const args = process.argv.slice(2);
+  const pagesArg = args.find((a) => a.startsWith("--pages"));
+  const maxPages = pagesArg ? parseInt(args[args.indexOf(pagesArg) + 1] ?? "3") : 3;
+
+  console.log(`\n🔍 Scraper FUTBIN FC 26 — ${new Date().toLocaleString("es-AR")}`);
+  console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
+  console.log(`   Páginas por versión: ${maxPages}`);
+  console.log(`   Fuente: ${SOURCE}\n`);
+
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  const context = await browser.newContext({
+    userAgent:
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    viewport: { width: 1920, height: 1080 },
+    locale: "en-US",
+  });
+
+  const page = await context.newPage();
+
+  // Block heavy resources for speed — but allow CDN images (need src for EA IDs)
+  await page.route("**/*.{jpg,jpeg,gif,woff,woff2}", (route) => route.abort());
+  await page.route("**/ads/**", (route) => route.abort());
+  await page.route("**/analytics/**", (route) => route.abort());
+  await page.route("**/googlesyndication**", (route) => route.abort());
+  await page.route("**/doubleclick**", (route) => route.abort());
+
+  // Track seen cards across versions to deduplicate
+  const seen = new Set<string>();
+  let allCards: ScrapedCard[] = [];
+
+  try {
+    for (const version of FUTBIN_VERSIONS) {
+      console.log(`\n🏷️  Versión: ${version}`);
+
+      for (let p = 1; p <= maxPages; p++) {
+        const url = futbinPlayersUrl(version, p);
+        console.log(`\n📄 [${version}] Página ${p}/${maxPages}`);
+
+        const cards = await scrapeFutbinPlayerList(page, url);
+
+        // Deduplicate: keep first occurrence (primary version has priority)
+        let added = 0;
+        for (const card of cards) {
+          const key = `${card.eaId}:${card.cardType}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            allCards.push(card);
+            added++;
+          }
+        }
+        console.log(`  ✓ ${added} nuevas (${cards.length - added} duplicadas)`);
+
+        // Stop early if page empty or all cards already seen
+        if (cards.length === 0 || (added === 0 && cards.length > 0)) {
+          console.log(`  ⏭️  ${cards.length === 0 ? "Página vacía" : "Sin cartas nuevas"}, saltando resto de ${version}`);
+          break;
+        }
+
+        // Rate limiting
+        const isLastPage = p === maxPages && version === FUTBIN_VERSIONS[FUTBIN_VERSIONS.length - 1];
+        if (!isLastPage) {
+          const delay = 3000 + Math.random() * 2000;
+          console.log(`  ⏱ Esperando ${(delay / 1000).toFixed(1)}s...`);
+          await page.waitForTimeout(delay);
+        }
+      }
+    }
+
+    console.log(`\n📊 Total cartas únicas: ${allCards.length}`);
+
+    // Assign release order based on FUTBIN's date_added desc position
+    // Page 1 row 1 = newest card in game = highest promoOrder
+    allCards.forEach((card, i) => {
+      card.promoOrder = 1_000_000 - i;
+    });
+    console.log(`  📅 Orden de aparición asignado (${1_000_000} a ${1_000_000 - allCards.length + 1})`);
+
+    // Save to DB
+    console.log(`\n💾 Guardando en Supabase...`);
+    const saved = await upsertCards(allCards);
+    console.log(`✅ ${saved} cartas guardadas/actualizadas\n`);
+  } catch (error) {
+    console.error("❌ Error en scraper:", error);
+  } finally {
+    await browser.close();
+    await prisma.$disconnect();
+  }
+}
+
+main();

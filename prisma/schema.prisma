@@ -754,3 +754,79 @@ model InfluencerComment {
   @@index([influencerId, createdAt])
   @@map("influencer_comments")
 }
+
+// ─── CARTAS FUT (JUGADORES) ─────────────────────────────────
+
+model FutCard {
+  id             String   @id @default(uuid())
+  eaId           Int      @map("ea_id")
+  futbinId       Int?     @map("futbin_id")
+  name           String
+  commonName     String?  @map("common_name")
+  overall        Int
+  position       String
+  altPositions   String[] @map("alt_positions")
+
+  // Stats (outfield)
+  pace           Int      @default(0)
+  shooting       Int      @default(0)
+  passing        Int      @default(0)
+  dribbling      Int      @default(0)
+  defending      Int      @default(0)
+  physical       Int      @default(0)
+
+  // Stats (GK)
+  gkDiving       Int?     @map("gk_diving")
+  gkHandling     Int?     @map("gk_handling")
+  gkKicking      Int?     @map("gk_kicking")
+  gkReflexes     Int?     @map("gk_reflexes")
+  gkSpeed        Int?     @map("gk_speed")
+  gkPositioning  Int?     @map("gk_positioning")
+
+  // Metadata
+  club           String
+  league         String
+  nation         String
+  nationCode     String?  @map("nation_code")
+
+  // Card info
+  cardType       String   @map("card_type")     // "gold_rare", "tots", "toty", "totw", etc.
+  promo          String?                         // "TOTS Premier League", "TOTY", "FUT Birthday"
+  promoOrder     Int      @default(0) @map("promo_order") // For sorting: higher = newer promo
+  releaseDate    DateTime? @map("release_date")
+
+  // Visual
+  cardImageId    String?  @map("card_image_id") // FUTBIN card bg id (e.g. "124_ucl_rttf")
+  imageUrl       String?  @map("image_url")     // Player face CDN URL
+
+  // Meta
+  skillMoves     Int?     @map("skill_moves")
+  weakFoot       Int?     @map("weak_foot")
+  foot           String?
+  height         Int?
+  weight         Int?
+  workRateAtk    String?  @map("work_rate_atk")
+  workRateDef    String?  @map("work_rate_def")
+
+  // Prices
+  pricePs        Int?     @map("price_ps")
+  priceXbox      Int?     @map("price_xbox")
+  pricePc        Int?     @map("price_pc")
+
+  // FUTBIN rating
+  futbinRating   Float?   @map("futbin_rating")
+
+  // Source tracking
+  source         String   @default("futbin")    // "futbin", "futgg", "futwiz"
+  sourceUrl      String?  @map("source_url")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([eaId, cardType])
+  @@index([promo, promoOrder])
+  @@index([overall])
+  @@index([cardType])
+  @@index([releaseDate])
+  @@map("fut_cards")
+}
