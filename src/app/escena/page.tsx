@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/Card";
 import { getExternalLeagues } from "@/lib/actions/external-leagues";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Competitivo",
   description: "Escena competitiva de FC 26: IESA, EFA, eLiga Profesional, VPG y más.",

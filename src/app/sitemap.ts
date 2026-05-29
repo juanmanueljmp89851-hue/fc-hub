@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 
 const BASE = "https://www.modofosa.com.ar";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
@@ -22,23 +24,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/legal/privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  // ── Dynamic pages ─────────────────────────────────────
-  const [tournaments, leagues, influencers, prodes] = await Promise.all([
-    prisma.tournament.findMany({
-      select: { id: true, createdAt: true },
-      where: { status: { not: "DRAFT" } },
-    }),
-    prisma.externalLeague.findMany({
-      select: { slug: true, createdAt: true },
-    }),
-    prisma.influencer.findMany({
-      select: { slug: true, createdAt: true },
-      where: { active: true },
-    }),
-    prisma.prode.findMany({
-      select: { id: true, createdAt: true },
-    }),
-  ]);
+  // ── Dynamic pages (fail gracefully if DB unavailable) ──
+  let tournaments: { id: string; createdAt: Date }[] = [];
+  let leagues: { slug: string; createdAt: Date }[] = [];
+  let influencers: { slug: string; createdAt: Date }[] = [];
+  let prodes: { id: string; createdAt: Date }[] = [];
+
+  try {
+    [tournaments, leagues, influencers, prodes] = await Promise.all([
+      prisma.tournament.findMany({
+        select: { id: true, createdAt: true },
+        where: { status: { not: "DRAFT" } },
+      }),
+      prisma.externalLeague.findMany({
+        select: { slug: true, createdAt: true },
+      }),
+      prisma.influencer.findMany({
+        select: { slug: true, createdAt: true },
+        where: { active: true },
+      }),
+      prisma.prode.findMany({
+        select: { id: true, createdAt: true },
+      }),
+    ]);
+  } catch (e) {
+    console.warn("Sitemap: DB unavailable, returning static pages only", e);
+  }
 
   const tournamentPages: MetadataRoute.Sitemap = tournaments.map((t) => ({
     url: `${BASE}/torneos/${t.id}`,
