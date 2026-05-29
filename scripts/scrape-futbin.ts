@@ -25,13 +25,25 @@ const SOURCE = process.env.SCRAPE_SOURCE ?? "futbin";
 const FUTBIN_BASE = "https://www.futbin.com";
 // Supports comma-separated versions: --version=all_specials,end_of_era,sbc_set
 const FUTBIN_VERSIONS = (process.argv.find((a) => a.startsWith("--version="))?.split("=")[1] ?? "all_specials").split(",");
+// Supports squad-based filters (new FUTBIN format): --squad=PrimeHeroes
+const FUTBIN_SQUADS = (process.argv.find((a) => a.startsWith("--squad="))?.split("=")[1] ?? "").split(",").filter(Boolean);
+
 function futbinPlayersUrl(version: string, page: number): string {
   return `${FUTBIN_BASE}/26/players?page=${page}&version=${version}&sort=date_added&order=desc`;
 }
+function futbinSquadUrl(squad: string, page: number): string {
+  return `${FUTBIN_BASE}/26/players?page=${page}&p_squad=${squad}&sort=Player_Rating&order=desc`;
+}
+
+// Map FUTBIN p_squad slugs → forced promo (overrides inferPromo)
+const SQUAD_MAP: Record<string, { cardType: string; promo: string; order: number }> = {
+  PrimeHeroes: { cardType: "hero", promo: "Prime Heroes", order: 105 },
+};
 
 // Map FUTBIN version filter slugs to our promo names
 const PROMO_MAP: Record<string, { cardType: string; promo: string; order: number }> = {
   // Newest promos first (higher order = newer)
+  prime_heroes: { cardType: "hero", promo: "Prime Heroes", order: 105 },
   tots: { cardType: "tots", promo: "TOTS", order: 100 },
   tots_champions: { cardType: "tots", promo: "TOTS Champions", order: 99 },
   tots_honourable: { cardType: "tots", promo: "TOTS Menciones Honoríficas", order: 98 },
@@ -290,6 +302,8 @@ function inferPromo(cardImageId: string): {
 
   const id = cardImageId.toLowerCase();
 
+  // Prime Heroes — check before generic hero
+  if (id.includes("prime_hero")) return PROMO_MAP.prime_heroes;
   if (id.includes("honourable_mention") || id.includes("honorable_mention")) return PROMO_MAP.tots_honourable;
   if (id.includes("tots") || id.includes("team_of_the_season")) return PROMO_MAP.tots;
   if (id.includes("toty") && id.includes("hon")) return PROMO_MAP.toty_honourable;
@@ -424,8 +438,11 @@ async function main() {
   const pagesArg = args.find((a) => a.startsWith("--pages"));
   const maxPages = pagesArg ? parseInt(args[args.indexOf(pagesArg) + 1] ?? "3") : 3;
 
+  const hasSquads = FUTBIN_SQUADS.length > 0;
+
   console.log(`\n🔍 Scraper FUTBIN FC 26 — ${new Date().toLocaleString("es-AR")}`);
-  console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
+  if (hasSquads) console.log(`   Squads: ${FUTBIN_SQUADS.join(", ")}`);
+  if (!hasSquads) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
   console.log(`   Páginas por versión: ${maxPages}`);
   console.log(`   Fuente: ${SOURCE}\n`);
 
@@ -455,14 +472,48 @@ async function main() {
   let allCards: ScrapedCard[] = [];
 
   try {
-    for (const version of FUTBIN_VERSIONS) {
-      console.log(`\n🏷️  Versión: ${version}`);
+    // Determine scrape targets: either squads (p_squad=) or versions (version=)
+    const targets: Array<{ label: string; urlFn: (p: number) => string; forcePromo?: { cardType: string; promo: string; order: number } }> = [];
+
+    if (hasSquads) {
+      for (const squad of FUTBIN_SQUADS) {
+        const squadInfo = SQUAD_MAP[squad];
+        if (!squadInfo) {
+          console.log(`⚠ Squad "${squad}" no encontrado en SQUAD_MAP. Squads disponibles: ${Object.keys(SQUAD_MAP).join(", ")}`);
+          continue;
+        }
+        targets.push({
+          label: `Squad: ${squad}`,
+          urlFn: (p) => futbinSquadUrl(squad, p),
+          forcePromo: squadInfo,
+        });
+      }
+    } else {
+      for (const version of FUTBIN_VERSIONS) {
+        targets.push({
+          label: `Version: ${version}`,
+          urlFn: (p) => futbinPlayersUrl(version, p),
+        });
+      }
+    }
+
+    for (const target of targets) {
+      console.log(`\n🏷️  ${target.label}`);
 
       for (let p = 1; p <= maxPages; p++) {
-        const url = futbinPlayersUrl(version, p);
-        console.log(`\n📄 [${version}] Página ${p}/${maxPages}`);
+        const url = target.urlFn(p);
+        console.log(`\n📄 [${target.label}] Página ${p}/${maxPages}`);
 
         const cards = await scrapeFutbinPlayerList(page, url);
+
+        // Force promo override when using squad-based scraping
+        if (target.forcePromo) {
+          for (const card of cards) {
+            card.cardType = target.forcePromo.cardType;
+            card.promo = target.forcePromo.promo;
+            card.promoOrder = target.forcePromo.order;
+          }
+        }
 
         // Deduplicate: keep first occurrence (primary version has priority)
         let added = 0;
@@ -478,13 +529,13 @@ async function main() {
 
         // Stop early if page empty or all cards already seen
         if (cards.length === 0 || (added === 0 && cards.length > 0)) {
-          console.log(`  ⏭️  ${cards.length === 0 ? "Página vacía" : "Sin cartas nuevas"}, saltando resto de ${version}`);
+          console.log(`  ⏭️  ${cards.length === 0 ? "Página vacía" : "Sin cartas nuevas"}, saltando resto de ${target.label}`);
           break;
         }
 
         // Rate limiting
-        const isLastPage = p === maxPages && version === FUTBIN_VERSIONS[FUTBIN_VERSIONS.length - 1];
-        if (!isLastPage) {
+        const isLast = p === maxPages && target === targets[targets.length - 1];
+        if (!isLast) {
           const delay = 3000 + Math.random() * 2000;
           console.log(`  ⏱ Esperando ${(delay / 1000).toFixed(1)}s...`);
           await page.waitForTimeout(delay);
