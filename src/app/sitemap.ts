@@ -35,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, createdAt: true },
       where: { active: true },
     }),
-    prisma.prodeGroup.findMany({
+    prisma.prode.findMany({
       select: { id: true, createdAt: true },
     }),
   ]);
