@@ -17,7 +17,7 @@ export type PositionCategory = "ATK" | "MID" | "DEF" | "GK";
 
 export interface FutPlayer {
   id: string;
-  eaId: number;
+  eaId?: number;
   name: string;
   commonName?: string;
   position: string;
