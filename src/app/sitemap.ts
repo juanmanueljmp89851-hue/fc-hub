@@ -25,45 +25,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── Dynamic pages ─────────────────────────────────────
   const [tournaments, leagues, influencers, prodes] = await Promise.all([
     prisma.tournament.findMany({
-      select: { id: true, updatedAt: true },
+      select: { id: true, createdAt: true },
       where: { status: { not: "DRAFT" } },
     }),
     prisma.externalLeague.findMany({
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, createdAt: true },
     }),
     prisma.influencer.findMany({
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, createdAt: true },
       where: { active: true },
     }),
     prisma.prodeGroup.findMany({
-      select: { id: true, updatedAt: true },
+      select: { id: true, createdAt: true },
     }),
   ]);
 
   const tournamentPages: MetadataRoute.Sitemap = tournaments.map((t) => ({
     url: `${BASE}/torneos/${t.id}`,
-    lastModified: t.updatedAt,
+    lastModified: t.createdAt,
     changeFrequency: "daily" as const,
     priority: 0.6,
   }));
 
   const leaguePages: MetadataRoute.Sitemap = leagues.map((l) => ({
     url: `${BASE}/escena/${l.slug}`,
-    lastModified: l.updatedAt,
+    lastModified: l.createdAt,
     changeFrequency: "weekly" as const,
     priority: 0.6,
   }));
 
   const influencerPages: MetadataRoute.Sitemap = influencers.map((i) => ({
     url: `${BASE}/influencers/${i.slug}`,
-    lastModified: i.updatedAt,
+    lastModified: i.createdAt,
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
 
   const prodePages: MetadataRoute.Sitemap = prodes.map((p) => ({
     url: `${BASE}/prode/${p.id}`,
-    lastModified: p.updatedAt,
+    lastModified: p.createdAt,
     changeFrequency: "daily" as const,
     priority: 0.6,
   }));
