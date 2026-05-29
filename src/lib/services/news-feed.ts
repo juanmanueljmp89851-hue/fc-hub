@@ -224,18 +224,27 @@ async function translateItems(items: NewsItem[]): Promise<NewsItem[]> {
   const englishItems = items.filter((i) => i.language === "en");
   if (englishItems.length === 0) return items;
 
-  // Translate in parallel with individual timeouts
-  const translations = await Promise.allSettled(
+  // Translate title + description in parallel with individual timeouts
+  const titleTranslations = await Promise.allSettled(
     englishItems.map((item) => translateText(item.title))
+  );
+  const descTranslations = await Promise.allSettled(
+    englishItems.map((item) => translateText(item.description))
   );
 
   let idx = 0;
   return items.map((item) => {
     if (item.language !== "en") return item;
-    const result = translations[idx++];
+    const titleResult = titleTranslations[idx];
+    const descResult = descTranslations[idx];
+    idx++;
     const translatedTitle =
-      result.status === "fulfilled" ? result.value : item.title;
-    return { ...item, title: translatedTitle };
+      titleResult.status === "fulfilled" ? titleResult.value : item.title;
+    const translatedDesc =
+      descResult.status === "fulfilled" ? descResult.value : item.description;
+    // Wrap link with Google Translate so user reads full article in Spanish
+    const translatedLink = `https://translate.google.com/translate?sl=en&tl=es&u=${encodeURIComponent(item.link)}`;
+    return { ...item, title: translatedTitle, description: translatedDesc, link: translatedLink, language: "es" as const };
   });
 }
 
