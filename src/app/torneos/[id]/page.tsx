@@ -97,6 +97,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
           )}
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-foreground/60">
             <span>Formato: <span className="text-foreground">{getFormatLabel(tournament.format)}</span></span>
+            {tournament.gameMode && <span>Modo: <span className="text-foreground">{tournament.gameMode}</span></span>}
             <span>Jugadores: <span className="text-foreground">{confirmedCount}/{tournament.maxPlayers}</span></span>
             <span>Organizador: <span className="text-accent">{tournament.createdBy.username}</span></span>
             {tournament.prize && <span>Premio: <span className="text-gold">{tournament.prize}</span></span>}

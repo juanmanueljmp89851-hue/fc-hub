@@ -54,6 +54,7 @@ export default function CrearTorneoPage() {
   const [matchTime, setMatchTime] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [controls, setControls] = useState("");
+  const [gameMode, setGameMode] = useState("");
   const [stadium, setStadium] = useState("");
   const [groupCount, setGroupCount] = useState(4);
   const [qualifyPerGroup, setQualifyPerGroup] = useState(2);
@@ -106,6 +107,7 @@ export default function CrearTorneoPage() {
       matchTime: matchTime || undefined,
       difficulty: difficulty || undefined,
       controls: controls || undefined,
+      gameMode: gameMode || undefined,
       stadium: stadium || undefined,
       groupCount: isGroupKnockout ? groupCount : undefined,
       qualifyPerGroup: isGroupKnockout ? qualifyPerGroup : undefined,
@@ -669,6 +671,24 @@ export default function CrearTorneoPage() {
                   <option value="Clásico">Clásico</option>
                   <option value="Alternativo">Alternativo</option>
                   <option value="Competitivo">Competitivo</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground/70">
+                  Modo de juego
+                </label>
+                <select
+                  value={gameMode}
+                  onChange={(e) => setGameMode(e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Sin especificar</option>
+                  <option value="1vs1">1vs1</option>
+                  <option value="2vs2">2vs2</option>
+                  <option value="3vs3">3vs3</option>
+                  <option value="4vs4">4vs4</option>
+                  <option value="Clubes Pro">Clubes Pro</option>
+                  <option value="Rush">Rush</option>
                 </select>
               </div>
               <div>

@@ -90,6 +90,7 @@ model Tournament {
   matchTime              String?             @map("match_time")
   difficulty             String?
   controls               String?
+  gameMode               String?             @map("game_mode")
   stadium                String?
   groupCount             Int?                @map("group_count")
   qualifyPerGroup        Int?                @map("qualify_per_group")

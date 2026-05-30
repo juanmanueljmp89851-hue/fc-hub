@@ -124,7 +124,14 @@ export default async function TorneosPage({ searchParams }: PageProps) {
             <div className="grid gap-4 md:grid-cols-2">
               {tournaments.map((torneo) => (
                 <Link key={torneo.id} href={`/torneos/${torneo.id}`}>
-                  <Card className="transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
+                  <Card className="overflow-hidden p-0 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
+                    {/* Banner */}
+                    {torneo.bannerUrl && (
+                      <div className="h-28 w-full overflow-hidden">
+                        <img src={torneo.bannerUrl} alt="" className="h-full w-full object-cover" />
+                      </div>
+                    )}
+                    <div className={torneo.bannerUrl ? "p-4" : "p-5"}>
                     <div className="mb-3 flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <span
@@ -148,13 +155,18 @@ export default async function TorneosPage({ searchParams }: PageProps) {
 
                     <div className="flex items-center gap-3">
                       {torneo.logoUrl && (
-                        <img src={torneo.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                        <img src={torneo.logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
                       )}
-                      <h3 className="mb-1 text-lg font-bold">{torneo.name}</h3>
+                      <h3 className="text-lg font-bold">{torneo.name}</h3>
                     </div>
-                    <p className="mb-3 text-sm text-foreground/60">
-                      {getFormatLabel(torneo.format)}
-                    </p>
+                    <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-foreground/60">
+                      <span>{getFormatLabel(torneo.format)}</span>
+                      {torneo.gameMode && (
+                        <span className="rounded bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-accent">
+                          {torneo.gameMode}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-foreground/60">
@@ -186,6 +198,7 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                         por {torneo.createdBy.username}
                       </p>
                     </div>
+                    </div>{/* end padding wrapper */}
                   </Card>
                 </Link>
               ))}

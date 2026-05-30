@@ -27,6 +27,7 @@ interface CreateTournamentInput {
   matchTime?: string;
   difficulty?: string;
   controls?: string;
+  gameMode?: string;
   stadium?: string;
   groupCount?: number;
   qualifyPerGroup?: number;
@@ -101,6 +102,7 @@ export async function createTournament(input: CreateTournamentInput) {
         matchTime: input.matchTime || null,
         difficulty: input.difficulty || null,
         controls: input.controls || null,
+        gameMode: input.gameMode || null,
         stadium: input.stadium?.trim() || null,
         groupCount: input.format === "GROUP_KNOCKOUT" ? input.groupCount : null,
         qualifyPerGroup: input.format === "GROUP_KNOCKOUT" ? input.qualifyPerGroup : null,
@@ -202,6 +204,7 @@ export async function listTournaments(input: ListTournamentsInput = {}) {
       verificationLevel: t.verificationLevel,
       logoUrl: t.logoUrl,
       bannerUrl: t.bannerUrl,
+      gameMode: t.gameMode,
       startDate: t.startDate,
       registrationDeadline: t.registrationDeadline,
       prize: t.prize,
