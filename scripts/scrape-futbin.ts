@@ -27,6 +27,9 @@ const FUTBIN_BASE = "https://www.futbin.com";
 const FUTBIN_VERSIONS = (process.argv.find((a) => a.startsWith("--version="))?.split("=")[1] ?? "all_specials").split(",");
 // Supports squad-based filters (new FUTBIN format): --squad=PrimeHeroes
 const FUTBIN_SQUADS = (process.argv.find((a) => a.startsWith("--squad="))?.split("=")[1] ?? "").split(",").filter(Boolean);
+// --daily: also scrape /home-tab/new-players (today's new cards)
+const SCRAPE_DAILY = process.argv.includes("--daily");
+const FUTBIN_NEW_PLAYERS_URL = `${FUTBIN_BASE}/home-tab/new-players`;
 
 function futbinPlayersUrl(version: string, page: number): string {
   return `${FUTBIN_BASE}/26/players?page=${page}&version=${version}&sort=date_added&order=desc`;
@@ -347,6 +350,122 @@ function inferPromo(cardImageId: string): {
   return { cardType: "special", promo: "Especial", order: 15 };
 }
 
+// ─── SCRAPE DAILY NEW PLAYERS TAB ───────────────────────────
+
+async function scrapeFutbinNewPlayers(page: Page): Promise<ScrapedCard[]> {
+  console.log(`  → Navegando a: ${FUTBIN_NEW_PLAYERS_URL}`);
+  await page.goto(FUTBIN_NEW_PLAYERS_URL, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(5000);
+
+  // Close cookie consent
+  try {
+    const consentBtn = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll");
+    if (await consentBtn.count() > 0) {
+      await consentBtn.first().click();
+      await page.waitForTimeout(1000);
+    }
+  } catch {}
+
+  // The new-players tab may use same player-row table or a card grid.
+  // Try player-row first (FUTBIN standard table)
+  const hasTable = await page.locator("tr.player-row").count();
+  if (hasTable > 0) {
+    console.log(`  ✓ Formato tabla detectado (${hasTable} filas)`);
+    return scrapeFutbinPlayerList(page, FUTBIN_NEW_PLAYERS_URL);
+  }
+
+  // Alternative: card-style layout (grid of player cards with links)
+  // FUTBIN /home-tab pages use .home-new-player-card or similar
+  const cards = await page.evaluate(() => {
+    // Try multiple selectors for FUTBIN's new-players widget
+    const playerLinks = document.querySelectorAll("a[href*='/26/player/']");
+    const results: Array<Record<string, unknown>> = [];
+
+    for (const link of playerLinks) {
+      try {
+        const href = link.getAttribute("href") ?? "";
+        const futbinIdMatch = href.match(/\/26\/player\/(\d+)/);
+        if (!futbinIdMatch) continue;
+        const futbinId = parseInt(futbinIdMatch[1]);
+
+        // Try to find player info within or near the link
+        const container = link.closest("[class*='player']") ?? link;
+
+        // Name
+        const nameEl = container.querySelector("[class*='name'], .player-name, .pName") as HTMLElement;
+        const name = nameEl?.textContent?.trim() ?? link.textContent?.trim() ?? "";
+        if (!name || name.length > 50) continue; // skip garbage
+
+        // Rating
+        const ratingEl = container.querySelector("[class*='rating'], .rating") as HTMLElement;
+        const overall = parseInt(ratingEl?.textContent?.trim() ?? "0");
+
+        // Card image ID from card background
+        const cardImg = container.querySelector("img[src*='cards/']") as HTMLImageElement;
+        const cardSrc = cardImg?.getAttribute("src") ?? "";
+        const cardMatch = cardSrc.match(/cards\/(?:tiny|small|s_|)\/?\/?(.+?)\.png/);
+        const cardImageId = cardMatch?.[1] ?? "";
+
+        // EA ID from player face
+        const faceImg = container.querySelector("img[src*='players/']") as HTMLImageElement;
+        const faceSrc = faceImg?.getAttribute("src") ?? "";
+        const eaMatch = faceSrc.match(/players\/p?(\d+)\.png/);
+        const eaId = eaMatch ? parseInt(eaMatch[1]) : 0;
+
+        // Position
+        const posEl = container.querySelector("[class*='pos'], .position") as HTMLElement;
+        const position = posEl?.textContent?.trim() ?? "";
+
+        results.push({
+          futbinId,
+          eaId,
+          name,
+          overall,
+          position,
+          cardImageId,
+          altPositions: [],
+          pace: 0, shooting: 0, passing: 0, dribbling: 0, defending: 0, physical: 0,
+          sourceUrl: `https://www.futbin.com${href}`,
+        });
+      } catch {}
+    }
+
+    return results;
+  });
+
+  console.log(`  ✓ ${cards.length} cartas del formato card-grid`);
+
+  return cards.map((c) => {
+    const promoInfo = inferPromo(c.cardImageId as string);
+    return {
+      futbinId: c.futbinId as number,
+      eaId: c.eaId as number,
+      name: c.name as string,
+      overall: c.overall as number,
+      position: (c.position as string) || "?",
+      altPositions: [],
+      pace: c.pace as number,
+      shooting: c.shooting as number,
+      passing: c.passing as number,
+      dribbling: c.dribbling as number,
+      defending: c.defending as number,
+      physical: c.physical as number,
+      club: "",
+      league: "",
+      nation: "",
+      cardType: promoInfo.cardType,
+      promo: promoInfo.promo,
+      promoOrder: promoInfo.order,
+      cardImageId: c.cardImageId as string,
+      imageUrl:
+        (c.eaId as number) > 0
+          ? `https://cdn.futbin.com/content/fifa26/img/players/p${c.eaId as number}.png`
+          : undefined,
+      sourceUrl: c.sourceUrl as string,
+    };
+  });
+}
+
 // ─── DATABASE ────────────────────────────────────────────────
 
 /** Parse FUTBIN price string (e.g. "3.1M", "450K", "1,200") to integer */
@@ -454,8 +573,9 @@ async function main() {
   const hasSquads = FUTBIN_SQUADS.length > 0;
 
   console.log(`\n🔍 Scraper FUTBIN FC 26 — ${new Date().toLocaleString("es-AR")}`);
+  if (SCRAPE_DAILY) console.log(`   📅 Daily: /home-tab/new-players`);
   if (hasSquads) console.log(`   Squads: ${FUTBIN_SQUADS.join(", ")}`);
-  if (!hasSquads) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
+  if (!hasSquads && !SCRAPE_DAILY) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
   console.log(`   Páginas por versión: ${maxPages}`);
   console.log(`   Fuente: ${SOURCE}\n`);
 
@@ -485,6 +605,25 @@ async function main() {
   let allCards: ScrapedCard[] = [];
 
   try {
+    // ─── DAILY: Scrape today's new players first ─────────────
+    if (SCRAPE_DAILY) {
+      console.log(`\n📅 Scraping cartas nuevas del día...`);
+      const dailyCards = await scrapeFutbinNewPlayers(page);
+      for (const card of dailyCards) {
+        const key = `${card.eaId}:${card.cardType}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          allCards.push(card);
+        }
+      }
+      console.log(`  ✅ ${dailyCards.length} cartas del día procesadas`);
+
+      if (dailyCards.length > 0) {
+        const delay = 3000 + Math.random() * 2000;
+        await page.waitForTimeout(delay);
+      }
+    }
+
     // Determine scrape targets: either squads (p_squad=) or versions (version=)
     const targets: Array<{ label: string; urlFn: (p: number) => string; forcePromo?: { cardType: string; promo: string; order: number } }> = [];
 
