@@ -58,19 +58,23 @@ function NewsImage({ src, alt, className, fallbackSize = "text-4xl" }: {
   );
 }
 
-export function NewsFeed() {
+interface NewsFeedProps {
+  limit?: number;
+}
+
+export function NewsFeed({ limit = 16 }: NewsFeedProps) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/news?limit=16")
+    fetch(`/api/news?limit=${limit}`)
       .then((res) => res.json())
       .then((data: NewsItem[]) => {
         if (data.length > 0) setNews(data);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [limit]);
 
   if (loading) {
     return (
@@ -132,7 +136,7 @@ export function NewsFeed() {
 
       {/* Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {rest.slice(0, 12).map((item, i) => (
+        {rest.map((item, i) => (
           <a
             key={i}
             href={item.link}

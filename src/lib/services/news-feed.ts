@@ -45,6 +45,20 @@ const FEEDS: FeedConfig[] = [
     category: "Fútbol",
   },
   {
+    url: "https://as.com/rss/tags/ultimas_noticias.xml",
+    source: "AS",
+    sourceIcon: "🟡",
+    language: "es",
+    category: "Fútbol",
+  },
+  {
+    url: "https://www.mundodeportivo.com/feed/rss/futbol",
+    source: "Mundo Deportivo",
+    sourceIcon: "🔵",
+    language: "es",
+    category: "Fútbol",
+  },
+  {
     url: "https://www.dexerto.com/ea-sports-fc/feed/",
     source: "Dexerto",
     sourceIcon: "⚡",
@@ -86,7 +100,7 @@ const RELEVANCE_KEYWORDS = [
 ];
 
 // Sources whose feeds are already topic-specific (no filtering needed)
-const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "BBC Sport", "Olé"]);
+const TRUSTED_SOURCES = new Set(["Marca", "Marca Gaming", "BBC Sport", "Olé", "AS", "Mundo Deportivo"]);
 
 // Negative keywords — filter out non-sport content that sneaks through
 const NEGATIVE_KEYWORDS = [
@@ -302,8 +316,8 @@ async function fetchAllNews(): Promise<NewsItem[]> {
   // Deduplicate similar titles
   allItems = deduplicateNews(allItems);
 
-  // Take top 30 (cache more than needed so limit param still works)
-  allItems = allItems.slice(0, 30);
+  // Take top 50 (cache more than needed so limit param still works)
+  allItems = allItems.slice(0, 50);
 
   // Translate English titles to Spanish (with timeout)
   allItems = await translateItems(allItems);

@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { FutCard } from "@/components/jugadores/FutCard";
+import { PlayerDetailModal } from "@/components/jugadores/PlayerDetailModal";
 import type { FutPlayer } from "@/types/player";
 
 function timeAgo(iso: string): string {
@@ -21,6 +23,8 @@ interface LatestCardsProps {
 }
 
 export function LatestCards({ cards, lastUpdated }: LatestCardsProps) {
+  const [selectedPlayer, setSelectedPlayer] = useState<FutPlayer | null>(null);
+
   if (!cards.length) return null;
 
   return (
@@ -54,7 +58,7 @@ export function LatestCards({ cards, lastUpdated }: LatestCardsProps) {
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-surface-light">
           {cards.map((card) => (
             <div key={card.id} className="flex-shrink-0">
-              <FutCard player={card} size="sm" />
+              <FutCard player={card} size="sm" onClick={() => setSelectedPlayer(card)} />
             </div>
           ))}
         </div>
@@ -62,6 +66,13 @@ export function LatestCards({ cards, lastUpdated }: LatestCardsProps) {
         {/* Fade edges */}
         <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent" />
       </div>
+
+      {selectedPlayer && (
+        <PlayerDetailModal
+          player={selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+        />
+      )}
     </section>
   );
 }

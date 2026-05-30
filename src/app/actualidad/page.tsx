@@ -21,7 +21,7 @@ export default function ActualidadPage() {
           </p>
         </div>
 
-        <NewsFeed />
+        <NewsFeed limit={30} />
 
         <div className="mt-8 flex justify-center">
           <AdSlot slot="inFeed" />
