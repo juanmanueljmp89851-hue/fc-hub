@@ -499,13 +499,14 @@ async function upsertCards(cards: ScrapedCard[]): Promise<number> {
           },
         },
         update: {
-          overall: card.overall,
-          pace: card.pace,
-          shooting: card.shooting,
-          passing: card.passing,
-          dribbling: card.dribbling,
-          defending: card.defending,
-          physical: card.physical,
+          overall: card.overall || undefined,
+          // Only update stats if non-zero (daily scraper returns 0s)
+          ...(card.pace > 0 && { pace: card.pace }),
+          ...(card.shooting > 0 && { shooting: card.shooting }),
+          ...(card.passing > 0 && { passing: card.passing }),
+          ...(card.dribbling > 0 && { dribbling: card.dribbling }),
+          ...(card.defending > 0 && { defending: card.defending }),
+          ...(card.physical > 0 && { physical: card.physical }),
           pricePs,
           pricePc,
           futbinRating: card.futbinRating,
@@ -603,20 +604,23 @@ async function main() {
   // Track seen cards across versions to deduplicate
   const seen = new Set<string>();
   let allCards: ScrapedCard[] = [];
+  let dailyDiscovery: ScrapedCard[] = []; // daily cards appended at end (discovery only)
 
   try {
-    // ─── DAILY: Scrape today's new players first ─────────────
+    // ─── DAILY: Scrape today's new players (discovery only) ─────────────
+    // Daily cards go at END — they're for discovering new cards not yet in version pages.
+    // Version scrape (sorted by date_added desc) defines the real promoOrder.
     if (SCRAPE_DAILY) {
-      console.log(`\n📅 Scraping cartas nuevas del día...`);
+      console.log(`\n📅 Scraping cartas nuevas del día (discovery)...`);
       const dailyCards = await scrapeFutbinNewPlayers(page);
+      let dailyAdded = 0;
       for (const card of dailyCards) {
-        const key = `${card.eaId}:${card.cardType}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          allCards.push(card);
+        if (card.eaId > 0) {
+          dailyDiscovery.push(card);
+          dailyAdded++;
         }
       }
-      console.log(`  ✅ ${dailyCards.length} cartas del día procesadas`);
+      console.log(`  ✅ ${dailyAdded} cartas descubiertas (${dailyCards.length - dailyAdded} sin EA ID)`);
 
       if (dailyCards.length > 0) {
         const delay = 3000 + Math.random() * 2000;
@@ -641,7 +645,18 @@ async function main() {
         });
       }
     } else {
+      // Put specific promos BEFORE all_specials so they get highest promoOrder
+      // all_specials is a catch-all; specific promos represent today's newest releases
+      const specific: string[] = [];
+      const catchAll: string[] = [];
       for (const version of FUTBIN_VERSIONS) {
+        if (version === "all_specials") {
+          catchAll.push(version);
+        } else {
+          specific.push(version);
+        }
+      }
+      for (const version of [...specific, ...catchAll]) {
         targets.push({
           label: `Version: ${version}`,
           urlFn: (p) => futbinPlayersUrl(version, p),
@@ -695,10 +710,39 @@ async function main() {
       }
     }
 
-    console.log(`\n📊 Total cartas únicas: ${allCards.length}`);
+    // Append daily discovery cards at the end (for cards not found in version scrape)
+    if (dailyDiscovery.length > 0) {
+      allCards.push(...dailyDiscovery);
+      console.log(`  📅 +${dailyDiscovery.length} cartas de discovery daily agregadas al final`);
+    }
 
-    // Assign release order based on FUTBIN's date_added desc position
-    // Page 1 row 1 = newest card in game = highest promoOrder
+    console.log(`\n📊 Total cartas (con duplicados): ${allCards.length}`);
+
+    // Deduplicate: keep first occurrence (version scrape = correct date order)
+    // If duplicate has better stats, use those but keep position
+    const dedupMap = new Map<string, { card: ScrapedCard; firstIndex: number }>();
+    allCards.forEach((card, i) => {
+      const key = `${card.eaId}:${card.cardType}`;
+      const existing = dedupMap.get(key);
+      if (!existing) {
+        dedupMap.set(key, { card, firstIndex: i });
+      } else {
+        // Keep earliest position but take version with real stats
+        const hasStats = card.pace > 0 || card.shooting > 0;
+        const existingHasStats = existing.card.pace > 0 || existing.card.shooting > 0;
+        if (hasStats && !existingHasStats) {
+          dedupMap.set(key, { card, firstIndex: existing.firstIndex });
+        }
+      }
+    });
+
+    // Sort by first appearance order and rebuild allCards
+    const sorted = [...dedupMap.values()].sort((a, b) => a.firstIndex - b.firstIndex);
+    allCards = sorted.map((s) => s.card);
+    console.log(`  🔄 Deduplicado: ${allCards.length} cartas únicas`);
+
+    // Assign release order based on appearance position
+    // First card = newest = highest promoOrder
     allCards.forEach((card, i) => {
       card.promoOrder = 1_000_000 - i;
     });

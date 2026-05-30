@@ -34,4 +34,4 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: npx tsx scripts/scrape-futbin.ts --daily --version=all_specials,prime_heroes,end_of_era,sbc_set --pages 20
+        run: npx tsx scripts/scrape-futbin.ts --daily --version=uecl_rttf,end_of_era,prime_heroes,sbc_set,all_specials --pages 20
