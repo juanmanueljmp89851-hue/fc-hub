@@ -123,17 +123,19 @@ export function LobbyChat() {
   }, []);
 
   useEffect(() => {
-    // Skip auto-scroll on initial message load (prevents page jumping to chat bottom)
+    // Skip auto-scroll on initial load (prevents page jumping to bottom)
     if (initialLoadRef.current) {
-      initialLoadRef.current = false;
+      if (messages.length > 0) {
+        initialLoadRef.current = false;
+      }
       return;
     }
-    // Auto-scroll to bottom only on NEW messages (not initial load)
-    if (bottomRef.current && chatRef.current) {
+    // Auto-scroll ONLY within chat container (not page) on new messages
+    if (chatRef.current) {
       const chat = chatRef.current;
       const isNearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 150;
       if (isNearBottom) {
-        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+        chat.scrollTop = chat.scrollHeight;
       }
     }
   }, [messages]);
