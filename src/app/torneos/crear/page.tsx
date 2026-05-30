@@ -24,6 +24,7 @@ const PLATFORMS: { value: Platform; label: string }[] = [
 const TEAM_TYPES: { value: TeamType; label: string; description: string }[] = [
   { value: "ULTIMATE_TEAM", label: "Ultimate Team", description: "Equipos armados en UT" },
   { value: "REAL_TEAMS", label: "Equipos reales", description: "Selecciones o clubes del juego" },
+  { value: "FUT_CHAMPIONS", label: "Alineación FUT Champions", description: "Alineación tipo FUT Champions" },
 ];
 
 const VISIBILITY_OPTIONS: { value: TournamentVisibility; label: string; description: string }[] = [
@@ -60,6 +61,8 @@ export default function CrearTorneoPage() {
   const [randomDrawUntil, setRandomDrawUntil] = useState<DrawUntilStage>("FINAL");
   const [hasLosersBracket, setHasLosersBracket] = useState(false);
 
+  const [logoUrl, setLogoUrl] = useState("");
+  const [logoUploading, setLogoUploading] = useState(false);
   const [bannerUrl, setBannerUrl] = useState("");
   const [bannerUploading, setBannerUploading] = useState(false);
 
@@ -88,6 +91,7 @@ export default function CrearTorneoPage() {
       description,
       rules,
       prize,
+      logoUrl: logoUrl || undefined,
       bannerUrl: bannerUrl || undefined,
       format,
       leagueLegs: isLeague ? leagueLegs : undefined,
@@ -197,49 +201,92 @@ export default function CrearTorneoPage() {
                   className={inputClass}
                 />
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground/70">
-                  Imagen del torneo
-                </label>
-                <div className="flex items-center gap-4">
-                  {bannerUrl && (
-                    <div className="relative h-20 w-32 overflow-hidden rounded-lg border border-surface-light">
-                      <img src={bannerUrl} alt="Banner" className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setBannerUrl("")}
-                        className="absolute right-1 top-1 rounded-full bg-background/80 px-1.5 py-0.5 text-xs text-red-400 hover:bg-background"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                  <label className="cursor-pointer rounded-lg border border-dashed border-surface-light px-4 py-3 text-sm text-foreground/50 transition-colors hover:border-accent hover:text-accent">
-                    {bannerUploading ? "Subiendo..." : bannerUrl ? "Cambiar imagen" : "📷 Subir imagen"}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      className="hidden"
-                      disabled={bannerUploading}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setBannerUploading(true);
-                        const fd = new FormData();
-                        fd.append("file", file);
-                        const result = await uploadTournamentBanner(fd);
-                        if (result.url) {
-                          setBannerUrl(result.url);
-                        } else {
-                          setError(result.error ?? "Error al subir imagen");
-                        }
-                        setBannerUploading(false);
-                        e.target.value = "";
-                      }}
-                    />
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Logo (cuadrado) */}
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground/70">
+                    Logo del torneo
                   </label>
+                  <div className="flex items-center gap-3">
+                    {logoUrl && (
+                      <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-surface-light">
+                        <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setLogoUrl("")}
+                          className="absolute right-0.5 top-0.5 rounded-full bg-background/80 px-1 text-[10px] text-red-400 hover:bg-background"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                    <label className="cursor-pointer rounded-lg border border-dashed border-surface-light px-3 py-2 text-sm text-foreground/50 transition-colors hover:border-accent hover:text-accent">
+                      {logoUploading ? "Subiendo..." : logoUrl ? "Cambiar" : "🏆 Subir logo"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        disabled={logoUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setLogoUploading(true);
+                          const fd = new FormData();
+                          fd.append("file", file);
+                          const result = await uploadTournamentBanner(fd);
+                          if (result.url) setLogoUrl(result.url);
+                          else setError(result.error ?? "Error al subir logo");
+                          setLogoUploading(false);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-1 text-xs text-foreground/40">Cuadrado. JPG/PNG/WebP. Max 5MB.</p>
                 </div>
-                <p className="mt-1 text-xs text-foreground/40">JPG, PNG o WebP. Máximo 5MB.</p>
+
+                {/* Banner (panorámico) */}
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground/70">
+                    Banner del torneo
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {bannerUrl && (
+                      <div className="relative h-16 w-28 overflow-hidden rounded-lg border border-surface-light">
+                        <img src={bannerUrl} alt="Banner" className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setBannerUrl("")}
+                          className="absolute right-0.5 top-0.5 rounded-full bg-background/80 px-1 text-[10px] text-red-400 hover:bg-background"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                    <label className="cursor-pointer rounded-lg border border-dashed border-surface-light px-3 py-2 text-sm text-foreground/50 transition-colors hover:border-accent hover:text-accent">
+                      {bannerUploading ? "Subiendo..." : bannerUrl ? "Cambiar" : "🖼️ Subir banner"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        disabled={bannerUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setBannerUploading(true);
+                          const fd = new FormData();
+                          fd.append("file", file);
+                          const result = await uploadTournamentBanner(fd);
+                          if (result.url) setBannerUrl(result.url);
+                          else setError(result.error ?? "Error al subir banner");
+                          setBannerUploading(false);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-1 text-xs text-foreground/40">Panorámico (ej. 1200×400). Max 5MB.</p>
+                </div>
               </div>
             </div>
           </Card>
@@ -621,6 +668,7 @@ export default function CrearTorneoPage() {
                   <option value="">Cualquiera</option>
                   <option value="Clásico">Clásico</option>
                   <option value="Alternativo">Alternativo</option>
+                  <option value="Competitivo">Competitivo</option>
                 </select>
               </div>
               <div>

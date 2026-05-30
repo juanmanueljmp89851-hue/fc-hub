@@ -20,6 +20,7 @@ interface CreateTournamentInput {
   registrationOpen?: string;
   registrationDeadline?: string;
   prize?: string;
+  logoUrl?: string;
   bannerUrl?: string;
   visibility: TournamentVisibility;
   requiresVerification: boolean;
@@ -93,6 +94,7 @@ export async function createTournament(input: CreateTournamentInput) {
         registrationOpen: input.registrationOpen ? new Date(input.registrationOpen) : null,
         registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,
         prize: input.prize?.trim() || null,
+        logoUrl: input.logoUrl || null,
         bannerUrl: input.bannerUrl || null,
         visibility: input.visibility,
         requiresVerification: input.requiresVerification,
@@ -198,6 +200,7 @@ export async function listTournaments(input: ListTournamentsInput = {}) {
       maxPlayers: t.maxPlayers,
       currentPlayers: t._count.participants,
       verificationLevel: t.verificationLevel,
+      logoUrl: t.logoUrl,
       bannerUrl: t.bannerUrl,
       startDate: t.startDate,
       registrationDeadline: t.registrationDeadline,

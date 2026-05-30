@@ -70,7 +70,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
         <div className="mb-8">
           {tournament.bannerUrl && (
             <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
-              <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" />
+              <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" unoptimized />
             </div>
           )}
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -84,7 +84,14 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </span>
             ))}
           </div>
-          <h1 className="text-3xl font-bold">{tournament.name}</h1>
+          <div className="flex items-center gap-4">
+            {tournament.logoUrl && (
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-surface-light">
+                <Image src={tournament.logoUrl} alt="" fill className="object-cover" unoptimized />
+              </div>
+            )}
+            <h1 className="text-3xl font-bold">{tournament.name}</h1>
+          </div>
           {tournament.description && (
             <p className="mt-2 text-foreground/60">{tournament.description}</p>
           )}
@@ -177,7 +184,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                 {tournament.difficulty && <p>Dificultad: <span className="text-foreground">{tournament.difficulty}</span></p>}
                 {tournament.controls && <p>Controles: <span className="text-foreground">{tournament.controls}</span></p>}
                 {tournament.stadium && <p>Estadio: <span className="text-foreground">{tournament.stadium}</span></p>}
-                <p>Equipos: <span className="text-foreground">{tournament.teamType === "ULTIMATE_TEAM" ? "Ultimate Team" : "Equipos reales"}</span></p>
+                <p>Equipos: <span className="text-foreground">{tournament.teamType === "ULTIMATE_TEAM" ? "Ultimate Team" : tournament.teamType === "FUT_CHAMPIONS" ? "Alineación FUT Champions" : "Equipos reales"}</span></p>
               </div>
             </Card>
           )}

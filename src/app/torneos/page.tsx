@@ -146,7 +146,12 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                       </div>
                     </div>
 
-                    <h3 className="mb-1 text-lg font-bold">{torneo.name}</h3>
+                    <div className="flex items-center gap-3">
+                      {torneo.logoUrl && (
+                        <img src={torneo.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                      )}
+                      <h3 className="mb-1 text-lg font-bold">{torneo.name}</h3>
+                    </div>
                     <p className="mb-3 text-sm text-foreground/60">
                       {getFormatLabel(torneo.format)}
                     </p>

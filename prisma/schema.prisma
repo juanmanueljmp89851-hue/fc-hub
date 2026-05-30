@@ -84,6 +84,7 @@ model Tournament {
   prize                  String?
   visibility             TournamentVisibility @default(PUBLIC)
   verificationLevel      VerificationLevel   @default(NONE) @map("verification_level")
+  logoUrl                String?             @map("logo_url")
   bannerUrl              String?             @map("banner_url")
   requiresVerification   Boolean             @default(false) @map("requires_verification")
   matchTime              String?             @map("match_time")
@@ -147,6 +148,7 @@ enum Platform {
 enum TeamType {
   ULTIMATE_TEAM
   REAL_TEAMS
+  FUT_CHAMPIONS
 }
 
 enum TournamentVisibility {
