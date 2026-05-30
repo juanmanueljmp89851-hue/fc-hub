@@ -51,6 +51,7 @@ export function LobbyChat() {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
+  const initialLoadRef = useRef(true);
 
   useEffect(() => {
     // Check auth + get current user id
@@ -122,7 +123,12 @@ export function LobbyChat() {
   }, []);
 
   useEffect(() => {
-    // Auto-scroll to bottom on new messages
+    // Skip auto-scroll on initial message load (prevents page jumping to chat bottom)
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    // Auto-scroll to bottom only on NEW messages (not initial load)
     if (bottomRef.current && chatRef.current) {
       const chat = chatRef.current;
       const isNearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 150;

@@ -14,8 +14,12 @@ export async function GET() {
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: authUser.id },
-    select: { id: true },
+    select: { id: true, username: true, avatarUrl: true },
   });
 
-  return NextResponse.json({ id: dbUser?.id ?? null });
+  return NextResponse.json({
+    id: dbUser?.id ?? null,
+    username: dbUser?.username ?? null,
+    avatarUrl: dbUser?.avatarUrl ?? null,
+  });
 }

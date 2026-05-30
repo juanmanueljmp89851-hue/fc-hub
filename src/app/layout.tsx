@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Footer } from "@/components/layout/Footer";
 import { AdScripts } from "@/components/ads/AdScripts";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -64,8 +65,10 @@ export default function RootLayout({
         className={`${inter.variable} font-sans bg-background text-foreground antialiased flex min-h-screen flex-col`}
       >
         <AdScripts />
-        <div className="flex-1">{children}</div>
-        <Footer />
+        <AuthProvider>
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </AuthProvider>
         <Analytics />
         <SpeedInsights />
       </body>

@@ -20,6 +20,7 @@ interface CreateTournamentInput {
   registrationOpen?: string;
   registrationDeadline?: string;
   prize?: string;
+  bannerUrl?: string;
   visibility: TournamentVisibility;
   requiresVerification: boolean;
   matchTime?: string;
@@ -92,6 +93,7 @@ export async function createTournament(input: CreateTournamentInput) {
         registrationOpen: input.registrationOpen ? new Date(input.registrationOpen) : null,
         registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,
         prize: input.prize?.trim() || null,
+        bannerUrl: input.bannerUrl || null,
         visibility: input.visibility,
         requiresVerification: input.requiresVerification,
         matchTime: input.matchTime || null,

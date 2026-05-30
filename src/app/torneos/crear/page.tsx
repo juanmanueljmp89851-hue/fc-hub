@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { createTournament } from "@/lib/actions/tournament";
+import { uploadTournamentBanner } from "@/lib/actions/upload";
 import type { TournamentFormat, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage } from "@prisma/client";
 
 const FORMATS: { value: TournamentFormat; label: string; description: string }[] = [
@@ -59,6 +60,9 @@ export default function CrearTorneoPage() {
   const [randomDrawUntil, setRandomDrawUntil] = useState<DrawUntilStage>("FINAL");
   const [hasLosersBracket, setHasLosersBracket] = useState(false);
 
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [bannerUploading, setBannerUploading] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -84,6 +88,7 @@ export default function CrearTorneoPage() {
       description,
       rules,
       prize,
+      bannerUrl: bannerUrl || undefined,
       format,
       leagueLegs: isLeague ? leagueLegs : undefined,
       maxPlayers,
@@ -191,6 +196,50 @@ export default function CrearTorneoPage() {
                   placeholder="Ej: $10.000 ARS + Badge exclusivo"
                   className={inputClass}
                 />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground/70">
+                  Imagen del torneo
+                </label>
+                <div className="flex items-center gap-4">
+                  {bannerUrl && (
+                    <div className="relative h-20 w-32 overflow-hidden rounded-lg border border-surface-light">
+                      <img src={bannerUrl} alt="Banner" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setBannerUrl("")}
+                        className="absolute right-1 top-1 rounded-full bg-background/80 px-1.5 py-0.5 text-xs text-red-400 hover:bg-background"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                  <label className="cursor-pointer rounded-lg border border-dashed border-surface-light px-4 py-3 text-sm text-foreground/50 transition-colors hover:border-accent hover:text-accent">
+                    {bannerUploading ? "Subiendo..." : bannerUrl ? "Cambiar imagen" : "📷 Subir imagen"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={bannerUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setBannerUploading(true);
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const result = await uploadTournamentBanner(fd);
+                        if (result.url) {
+                          setBannerUrl(result.url);
+                        } else {
+                          setError(result.error ?? "Error al subir imagen");
+                        }
+                        setBannerUploading(false);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+                <p className="mt-1 text-xs text-foreground/40">JPG, PNG o WebP. Máximo 5MB.</p>
               </div>
             </div>
           </Card>
