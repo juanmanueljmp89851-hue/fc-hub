@@ -307,20 +307,21 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
         }}
       />
 
-      {/* Hover stats tooltip */}
+      {/* Hover stats overlay — renders INSIDE card bounds to avoid overflow clipping */}
       <div
-        className="pointer-events-none absolute left-1/2 bottom-full z-50 mb-2 w-48 -translate-x-1/2 rounded-xl border border-surface-light bg-surface p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center rounded-xl bg-black/85 backdrop-blur-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        style={{ borderRadius: 12 * s }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-1.5 text-center text-xs font-bold text-foreground">
+        <div className="mb-1 text-center text-xs font-bold text-white">
           {displayName} <span className="text-accent">{player.overall}</span>
         </div>
-        <div className="space-y-1">
+        <div className="w-full space-y-0.5 px-3">
           {stats.map((st) => (
-            <div key={st.l} className="flex items-center gap-1.5">
-              <span className="w-7 text-[9px] font-bold uppercase text-foreground/40">{st.l}</span>
-              <span className="w-6 text-right text-[10px] font-black tabular-nums text-foreground">{st.v}</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-light">
+            <div key={st.l} className="flex items-center gap-1">
+              <span className="w-6 text-[8px] font-bold uppercase text-white/50">{st.l}</span>
+              <span className="w-5 text-right text-[9px] font-black tabular-nums text-white">{st.v}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
                 <div
                   className="h-full rounded-full"
                   style={{
@@ -332,10 +333,6 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
               </div>
             </div>
           ))}
-        </div>
-        {/* Arrow */}
-        <div className="absolute left-1/2 top-full -translate-x-1/2">
-          <div className="h-0 w-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-surface-light" />
         </div>
       </div>
     </button>
