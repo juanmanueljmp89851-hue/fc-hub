@@ -306,6 +306,38 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
             : fallbackColors.gradient,
         }}
       />
+
+      {/* Hover stats tooltip */}
+      <div
+        className="pointer-events-none absolute left-1/2 bottom-full z-50 mb-2 w-48 -translate-x-1/2 rounded-xl border border-surface-light bg-surface p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-1.5 text-center text-xs font-bold text-foreground">
+          {displayName} <span className="text-accent">{player.overall}</span>
+        </div>
+        <div className="space-y-1">
+          {stats.map((st) => (
+            <div key={st.l} className="flex items-center gap-1.5">
+              <span className="w-7 text-[9px] font-bold uppercase text-foreground/40">{st.l}</span>
+              <span className="w-6 text-right text-[10px] font-black tabular-nums text-foreground">{st.v}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-light">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${st.v}%`,
+                    background:
+                      st.v >= 90 ? "#22c55e" : st.v >= 80 ? "#a3e635" : st.v >= 70 ? "#fbbf24" : st.v >= 60 ? "#fb923c" : "#ef4444",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Arrow */}
+        <div className="absolute left-1/2 top-full -translate-x-1/2">
+          <div className="h-0 w-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-surface-light" />
+        </div>
+      </div>
     </button>
   );
 }

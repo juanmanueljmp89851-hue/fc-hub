@@ -316,8 +316,8 @@ async function fetchAllNews(): Promise<NewsItem[]> {
   // Deduplicate similar titles
   allItems = deduplicateNews(allItems);
 
-  // Take top 50 (cache more than needed so limit param still works)
-  allItems = allItems.slice(0, 50);
+  // Take top 100 (cache more than needed so limit param still works)
+  allItems = allItems.slice(0, 100);
 
   // Translate English titles to Spanish (with timeout)
   allItems = await translateItems(allItems);
