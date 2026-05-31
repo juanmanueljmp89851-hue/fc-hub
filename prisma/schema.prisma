@@ -100,6 +100,8 @@ model Tournament {
   knockoutSeeding        KnockoutSeeding     @default(RANDOM) @map("knockout_seeding")
   randomDrawUntil        DrawUntilStage      @default(FINAL) @map("random_draw_until")
   hasLosersBracket       Boolean             @default(false) @map("has_losers_bracket")
+  thirdPlaceMatch        Boolean             @default(false) @map("third_place_match")
+  playoffRule            PlayoffRule         @default(PENALTIES) @map("playoff_rule")
   createdById            String              @map("created_by")
   cancelledAt            DateTime?           @map("cancelled_at")
   cancelReason           String?             @map("cancel_reason")
@@ -128,6 +130,12 @@ enum TournamentFormat {
 enum KnockoutSeeding {
   RANDOM
   TRADITIONAL
+}
+
+enum PlayoffRule {
+  PENALTIES
+  GOLDEN_GOAL
+  EXTRA_TIME
 }
 
 enum DrawUntilStage {
@@ -224,10 +232,13 @@ model TournamentMatch {
   leg          Int?
   matchday     Int?
   groupName    String?      @map("group_name")
-  status       MatchStatus  @default(SCHEDULED)
-  deadline     DateTime?
-  confirmedAt  DateTime?    @map("confirmed_at")
-  createdAt    DateTime     @default(now()) @map("created_at")
+  status        MatchStatus  @default(SCHEDULED)
+  deadline      DateTime?
+  confirmedAt   DateTime?    @map("confirmed_at")
+  proofImageUrl String?      @map("proof_image_url")
+  disputeCountP1 Int         @default(0) @map("dispute_count_p1")
+  disputeCountP2 Int         @default(0) @map("dispute_count_p2")
+  createdAt     DateTime     @default(now()) @map("created_at")
 
   tournament Tournament          @relation(fields: [tournamentId], references: [id])
   player1    User?               @relation("MatchPlayer1", fields: [player1Id], references: [id])
@@ -247,6 +258,9 @@ enum BracketType {
 
 enum MatchStatus {
   SCHEDULED
+  READY_P1
+  READY_P2
+  IN_PROGRESS
   PENDING_CONFIRMATION
   DISPUTED
   FINISHED
@@ -711,6 +725,7 @@ model Notification {
   message   String
   read      Boolean          @default(false)
   relatedId String?          @map("related_id")
+  linkUrl   String?          @map("link_url")
   createdAt DateTime         @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id])

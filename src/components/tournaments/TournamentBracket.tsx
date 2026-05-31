@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface MatchData {
   id: string;
   round: string | null;
@@ -17,6 +19,7 @@ interface TournamentBracketProps {
 
 function getRoundDisplayName(round: string, totalWinnersRounds: number): string {
   if (round === "GF-1") return "Gran Final";
+  if (round === "3RD-PLACE") return "3er Puesto";
   const parts = round.split("-");
   if (parts.length >= 3) {
     const bracket = parts[0];
@@ -62,25 +65,41 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
             {getRoundDisplayName(roundName, winnersRounds)}
           </h4>
           <div className="flex flex-1 flex-col justify-around gap-4">
-            {roundMatches.map((match) => (
-              <div
-                key={match.id}
-                className="rounded-lg border border-surface-light bg-background p-2"
-              >
-                <PlayerRow
-                  username={match.player1?.username ?? "BYE"}
-                  score={match.resultP1}
-                  isWinner={match.winner?.id === match.player1?.id}
-                  isBye={!match.player1}
-                />
-                <PlayerRow
-                  username={match.player2?.username ?? "BYE"}
-                  score={match.resultP2}
-                  isWinner={match.winner?.id === match.player2?.id}
-                  isBye={!match.player2}
-                />
-              </div>
-            ))}
+            {roundMatches.map((match) => {
+              const hasPlayers = match.player1 || match.player2;
+              const content = (
+                <>
+                  <PlayerRow
+                    username={match.player1?.username ?? "BYE"}
+                    score={match.resultP1}
+                    isWinner={match.winner?.id === match.player1?.id}
+                    isBye={!match.player1}
+                  />
+                  <PlayerRow
+                    username={match.player2?.username ?? "BYE"}
+                    score={match.resultP2}
+                    isWinner={match.winner?.id === match.player2?.id}
+                    isBye={!match.player2}
+                  />
+                </>
+              );
+              return hasPlayers ? (
+                <Link
+                  key={match.id}
+                  href={`/arena/${match.id}`}
+                  className="block rounded-lg border border-surface-light bg-background p-2 transition-colors hover:border-accent/50"
+                >
+                  {content}
+                </Link>
+              ) : (
+                <div
+                  key={match.id}
+                  className="rounded-lg border border-surface-light bg-background p-2"
+                >
+                  {content}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}

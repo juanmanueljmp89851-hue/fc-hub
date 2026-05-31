@@ -268,7 +268,21 @@ export async function getModerationData() {
     }),
   ]);
 
-  return { tournaments, deletedTournaments, prodes, deletedProdes, recentMessages };
+  // Fetch recent casual matches (duels)
+  const duels = await prisma.casualMatch.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 30,
+    include: {
+      challenger: { select: { id: true, username: true, avatarUrl: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
+      challenged: { select: { id: true, username: true, avatarUrl: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { id: true, username: true } } },
+      },
+    },
+  });
+
+  return { tournaments, deletedTournaments, prodes, deletedProdes, recentMessages, duels };
 }
 
 export async function deleteTournament(tournamentId: string) {
@@ -310,6 +324,21 @@ export async function deleteLobbyMessage(messageId: string) {
   await requireAdmin();
 
   await prisma.lobbyMessage.delete({ where: { id: messageId } });
+
+  revalidatePath("/admin/moderacion");
+  return { success: true };
+}
+
+export async function adminSendMatchMessage(casualMatchId: string, text: string) {
+  const admin = await requireAdmin();
+
+  await prisma.matchMessage.create({
+    data: {
+      casualMatchId,
+      userId: admin.id,
+      message: text,
+    },
+  });
 
   revalidatePath("/admin/moderacion");
   return { success: true };

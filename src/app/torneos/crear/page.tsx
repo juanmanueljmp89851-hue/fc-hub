@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { createTournament } from "@/lib/actions/tournament";
 import { uploadTournamentBanner } from "@/lib/actions/upload";
-import type { TournamentFormat, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage } from "@prisma/client";
+import type { TournamentFormat, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule } from "@prisma/client";
 
 const FORMATS: { value: TournamentFormat; label: string; description: string }[] = [
   { value: "SINGLE_ELIMINATION", label: "Eliminación Simple", description: "El perdedor queda eliminado. Bracket tipo árbol." },
@@ -61,6 +61,8 @@ export default function CrearTorneoPage() {
   const [knockoutSeeding, setKnockoutSeeding] = useState<KnockoutSeeding>("RANDOM");
   const [randomDrawUntil, setRandomDrawUntil] = useState<DrawUntilStage>("FINAL");
   const [hasLosersBracket, setHasLosersBracket] = useState(false);
+  const [thirdPlaceMatch, setThirdPlaceMatch] = useState(false);
+  const [playoffRule, setPlayoffRule] = useState<PlayoffRule>("PENALTIES");
 
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -114,6 +116,8 @@ export default function CrearTorneoPage() {
       knockoutSeeding: hasElimination ? knockoutSeeding : undefined,
       randomDrawUntil: hasElimination && knockoutSeeding === "RANDOM" ? randomDrawUntil : undefined,
       hasLosersBracket: hasElimination ? hasLosersBracket : undefined,
+      thirdPlaceMatch: hasElimination ? thirdPlaceMatch : undefined,
+      playoffRule: hasElimination ? playoffRule : undefined,
     });
 
     if (result.error) {
@@ -467,6 +471,48 @@ export default function CrearTorneoPage() {
                       </div>
                     </label>
                   )}
+
+                  <label className="flex items-center gap-3 rounded-lg border border-surface-light p-3">
+                    <input
+                      type="checkbox"
+                      checked={thirdPlaceMatch}
+                      onChange={(e) => setThirdPlaceMatch(e.target.checked)}
+                      className="h-4 w-4 accent-accent"
+                    />
+                    <div>
+                      <p className="text-sm font-medium">Partido por el tercer puesto</p>
+                      <p className="text-xs text-foreground/50">
+                        Los perdedores de semifinales juegan por el 3er lugar.
+                      </p>
+                    </div>
+                  </label>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-foreground/70">
+                      Regla de desempate en playoff
+                    </label>
+                    <div className="space-y-2">
+                      {[
+                        { value: "PENALTIES" as PlayoffRule, label: "Penales directo", desc: "Si hay empate, se van directo a penales." },
+                        { value: "GOLDEN_GOAL" as PlayoffRule, label: "Gol de oro", desc: "Prórroga con gol de oro (primer gol gana)." },
+                        { value: "EXTRA_TIME" as PlayoffRule, label: "Tiempo extra completo 120'", desc: "Prórroga completa de 30 min. Si sigue empatado, penales." },
+                      ].map((opt) => (
+                        <label key={opt.value} className="flex items-center gap-3 rounded-lg border border-surface-light p-3">
+                          <input
+                            type="radio"
+                            name="playoffRule"
+                            checked={playoffRule === opt.value}
+                            onChange={() => setPlayoffRule(opt.value)}
+                            className="h-4 w-4 accent-accent"
+                          />
+                          <div>
+                            <p className="text-sm font-medium">{opt.label}</p>
+                            <p className="text-xs text-foreground/50">{opt.desc}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

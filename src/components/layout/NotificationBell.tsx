@@ -52,7 +52,9 @@ function timeAgo(date: Date) {
   return new Date(date).toLocaleDateString("es-AR", { day: "numeric", month: "short" });
 }
 
-function getNotifLink(notif: Notification): string | null {
+function getNotifLink(notif: Notification & { linkUrl?: string | null }): string | null {
+  // Admin notifications with custom link
+  if (notif.linkUrl) return notif.linkUrl;
   if (!notif.relatedId) return null;
   switch (notif.type) {
     case "CASUAL_CHALLENGE":
@@ -197,7 +199,11 @@ export function NotificationBell() {
                     const link = getNotifLink(notif);
                     if (link) {
                       setOpen(false);
-                      router.push(link);
+                      if (link.startsWith("http")) {
+                        window.open(link, "_blank", "noopener,noreferrer");
+                      } else {
+                        router.push(link);
+                      }
                     }
                   }}
                   className={`flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-light ${

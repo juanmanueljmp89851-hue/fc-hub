@@ -2,8 +2,10 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
-import { getCasualMatch } from "@/lib/actions/casual";
+import { getCasualMatch, getMatchMessages } from "@/lib/actions/casual";
 import { CasualMatchActions } from "@/components/casual/CasualMatchActions";
+import { CasualMatchChat } from "@/components/casual/CasualMatchChat";
+import { getCurrentUser } from "@/lib/actions/user";
 
 function getStatusLabel(status: string) {
   const map: Record<string, { label: string; color: string }> = {
@@ -22,7 +24,11 @@ interface PageProps {
 }
 
 export default async function CasualMatchPage({ params }: PageProps) {
-  const match = await getCasualMatch(params.id);
+  const [match, messages, currentUser] = await Promise.all([
+    getCasualMatch(params.id),
+    getMatchMessages(params.id),
+    getCurrentUser(),
+  ]);
 
   if (!match) {
     notFound();
@@ -136,6 +142,17 @@ export default async function CasualMatchPage({ params }: PageProps) {
               <> · Finalizado: {new Date(match.confirmedAt).toLocaleDateString("es-AR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</>
             )}
           </div>
+
+          {/* Chat */}
+          {currentUser && (
+            <div className="mt-6 border-t border-surface-light pt-6">
+              <CasualMatchChat
+                matchId={match.id}
+                messages={messages}
+                currentUserId={currentUser.id}
+              />
+            </div>
+          )}
         </Card>
       </main>
     </div>

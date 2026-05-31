@@ -407,6 +407,87 @@ export async function getChallengeDetail(matchId: string) {
   return match;
 }
 
+// ─── Chat del duelo ────────────────────────────────────────
+
+export async function getMatchMessages(matchId: string) {
+  return prisma.matchMessage.findMany({
+    where: { casualMatchId: matchId },
+    orderBy: { createdAt: "asc" },
+    include: {
+      user: { select: { id: true, username: true, avatarUrl: true, role: true } },
+    },
+  });
+}
+
+export async function sendMatchMessage(matchId: string, text: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado" };
+
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.length > 500) return { error: "Mensaje inválido" };
+
+  const match = await prisma.casualMatch.findUnique({ where: { id: matchId } });
+  if (!match) return { error: "Partido no encontrado" };
+
+  // Participants + admins can chat
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  const isParticipant = match.challengerId === userId || match.challengedId === userId;
+  const isAdmin = user?.role === "ADMIN";
+  if (!isParticipant && !isAdmin) return { error: "No participás en este partido" };
+
+  await prisma.matchMessage.create({
+    data: {
+      casualMatchId: matchId,
+      userId,
+      message: trimmed,
+    },
+  });
+
+  revalidatePath(`/casual/${matchId}`);
+  return { success: true };
+}
+
+export async function invokeAdmin(matchId: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado" };
+
+  const match = await prisma.casualMatch.findUnique({
+    where: { id: matchId },
+    include: {
+      challenger: { select: { username: true } },
+      challenged: { select: { username: true } },
+    },
+  });
+  if (!match) return { error: "Partido no encontrado" };
+
+  const isParticipant = match.challengerId === userId || match.challengedId === userId;
+  if (!isParticipant) return { error: "No participás en este partido" };
+
+  // Send notification to all admins
+  const admins = await prisma.user.findMany({
+    where: { role: "ADMIN" },
+    select: { id: true },
+  });
+
+  if (admins.length === 0) return { error: "No hay admins disponibles" };
+
+  const requester = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+
+  await prisma.notification.createMany({
+    data: admins.map((admin) => ({
+      userId: admin.id,
+      type: "ADMIN_MESSAGE" as const,
+      title: "⚠️ Solicitud de intervención",
+      message: `${requester?.username ?? "Un jugador"} solicita admin en duelo: ${match.challenger.username} vs ${match.challenged.username}`,
+      relatedId: matchId,
+      linkUrl: `/casual/${matchId}`,
+    })),
+  });
+
+  revalidatePath(`/casual/${matchId}`);
+  return { success: true, message: "Admin notificado. Pronto se sumará al chat." };
+}
+
 export async function searchPlayers(query: string) {
   if (!query || query.length < 2) return [];
 

@@ -86,11 +86,13 @@ export async function sendAdminNotification({
   title,
   message,
   broadcast,
+  linkUrl,
 }: {
   targetUserId?: string;
   title: string;
   message: string;
   broadcast?: boolean;
+  linkUrl?: string;
 }) {
   const supabase = await createClient();
   const {
@@ -115,6 +117,7 @@ export async function sendAdminNotification({
         type: "ADMIN_MESSAGE" as NotificationType,
         title,
         message,
+        linkUrl: linkUrl || null,
       })),
     });
     return { sent: allUsers.length };
@@ -130,6 +133,7 @@ export async function sendAdminNotification({
       type: "ADMIN_MESSAGE" as NotificationType,
       title,
       message,
+      linkUrl: linkUrl || null,
     },
   });
   return { sent: 1 };

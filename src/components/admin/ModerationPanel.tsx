@@ -7,6 +7,7 @@ import {
   deleteLobbyMessage,
   deleteLobbyMessagesBulk,
   searchUsersForNotification,
+  adminSendMatchMessage,
 } from "@/lib/actions/admin";
 import { sendAdminNotification } from "@/lib/actions/notification";
 import { restoreTournament } from "@/lib/actions/tournament";
@@ -61,17 +62,45 @@ interface UserOption {
   avatarUrl: string | null;
 }
 
+interface DuelPlayer {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+  psnUsername: string | null;
+  xboxUsername: string | null;
+  pcUsername: string | null;
+}
+
+interface DuelMessage {
+  id: string;
+  message: string;
+  createdAt: Date;
+  user: { id: string; username: string };
+}
+
+interface Duel {
+  id: string;
+  status: string;
+  createdAt: Date;
+  resultChallenger: number | null;
+  resultChallenged: number | null;
+  challenger: DuelPlayer;
+  challenged: DuelPlayer;
+  messages: DuelMessage[];
+}
+
 interface Props {
   tournaments: Tournament[];
   deletedTournaments: DeletedTournament[];
   prodes: Prode[];
   deletedProdes: DeletedProde[];
   messages: Message[];
+  duels: Duel[];
 }
 
-type Tab = "torneos" | "prodes" | "chat" | "notificar";
+type Tab = "torneos" | "prodes" | "chat" | "duelos" | "notificar";
 
-export function ModerationPanel({ tournaments, deletedTournaments, prodes, deletedProdes, messages }: Props) {
+export function ModerationPanel({ tournaments, deletedTournaments, prodes, deletedProdes, messages, duels }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("torneos");
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
@@ -86,11 +115,18 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
   const [userResults, setUserResults] = useState<UserOption[]>([]);
   const [searchingUsers, setSearchingUsers] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
+  const [notifLinkUrl, setNotifLinkUrl] = useState("");
+
+  // Duelos state
+  const [expandedDuel, setExpandedDuel] = useState<string | null>(null);
+  const [duelMsgText, setDuelMsgText] = useState("");
+  const [sendingDuelMsg, setSendingDuelMsg] = useState(false);
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: "torneos", label: "Torneos", count: deletedTournaments.length },
     { key: "prodes", label: "Prodes", count: deletedProdes.length },
     { key: "chat", label: "Chat Lobby" },
+    { key: "duelos", label: "Duelos", count: duels.length },
     { key: "notificar", label: "Notificar" },
   ];
 
@@ -198,6 +234,41 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
     setUserResults([]);
   }
 
+  async function handleSendDuelMessage(duelId: string) {
+    if (!duelMsgText.trim()) return;
+    setSendingDuelMsg(true);
+    try {
+      await adminSendMatchMessage(duelId, duelMsgText.trim());
+      setDuelMsgText("");
+      window.location.reload();
+    } catch {
+      alert("Error al enviar mensaje");
+    }
+    setSendingDuelMsg(false);
+  }
+
+  function duelStatusLabel(status: string) {
+    switch (status) {
+      case "PENDING": return "⏳ Pendiente";
+      case "IN_PROGRESS": return "🎮 En juego";
+      case "FINISHED": return "✅ Finalizado";
+      case "REJECTED": return "❌ Rechazado";
+      case "CANCELLED": return "🚫 Cancelado";
+      default: return status;
+    }
+  }
+
+  function duelStatusColor(status: string) {
+    switch (status) {
+      case "PENDING": return "text-yellow-400";
+      case "IN_PROGRESS": return "text-blue-400";
+      case "FINISHED": return "text-green-400";
+      case "REJECTED": return "text-red-400";
+      case "CANCELLED": return "text-foreground/40";
+      default: return "text-foreground/60";
+    }
+  }
+
   async function handleSendNotification(e: React.FormEvent) {
     e.preventDefault();
     if (!notifTitle.trim() || !notifMessage.trim()) return;
@@ -207,16 +278,14 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
     }
     setLoading("notif");
     try {
+      const linkVal = notifLinkUrl.trim() || undefined;
       if (notifMode === "self") {
-        // Send to self — broadcast false, need own userId
-        // Use broadcast with single target: we pass no targetUserId and broadcast=false → error
-        // Instead just use the search to find self, or use broadcast to all (includes self)
-        // Simplest: send as broadcast to all (includes self)
         await sendAdminNotification({
           title: notifTitle,
           message: notifMessage,
           broadcast: false,
-          targetUserId: "SELF", // Special marker handled below
+          targetUserId: "SELF",
+          linkUrl: linkVal,
         });
       } else {
         await sendAdminNotification({
@@ -224,11 +293,13 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
           message: notifMessage,
           broadcast: notifMode === "broadcast",
           targetUserId: notifMode === "specific" ? notifTargetId : undefined,
+          linkUrl: linkVal,
         });
       }
       setNotifSent(true);
       setNotifTitle("");
       setNotifMessage("");
+      setNotifLinkUrl("");
       setTimeout(() => setNotifSent(false), 3000);
     } catch {
       alert("Error al enviar notificación");
@@ -446,6 +517,144 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
         </div>
       )}
 
+      {/* Duelos */}
+      {activeTab === "duelos" && (
+        <div className="space-y-3">
+          <p className="mb-3 text-sm text-foreground/50">
+            Últimos {duels.length} desafíos entre usuarios
+          </p>
+
+          {duels.length === 0 ? (
+            <p className="py-8 text-center text-sm text-foreground/40">No hay duelos registrados</p>
+          ) : (
+            duels.map((d) => {
+              const isExpanded = expandedDuel === d.id;
+              return (
+                <div
+                  key={d.id}
+                  className="overflow-hidden rounded-lg border border-surface-light"
+                >
+                  {/* Duel header */}
+                  <button
+                    onClick={() => setExpandedDuel(isExpanded ? null : d.id)}
+                    className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-surface-light/50"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-accent">{d.challenger.username}</span>
+                        <span className="text-xs text-foreground/40">vs</span>
+                        <span className="font-semibold text-accent">{d.challenged.username}</span>
+                        {d.resultChallenger != null && d.resultChallenged != null && (
+                          <span className="ml-1 rounded bg-surface-light px-2 py-0.5 text-xs font-bold">
+                            {d.resultChallenger} - {d.resultChallenged}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-foreground/40">
+                        <span className={duelStatusColor(d.status)}>{duelStatusLabel(d.status)}</span>
+                        <span>{new Date(d.createdAt).toLocaleString("es-AR")}</span>
+                        {d.messages.length > 0 && (
+                          <span>💬 {d.messages.length} msgs</span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-foreground/30">{isExpanded ? "▲" : "▼"}</span>
+                  </button>
+
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div className="border-t border-surface-light bg-surface/50 p-4">
+                      {/* Player cards */}
+                      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {[d.challenger, d.challenged].map((player, idx) => (
+                          <div key={player.id} className="rounded-lg border border-surface-light bg-background p-3">
+                            <div className="mb-2 flex items-center gap-2">
+                              {player.avatarUrl ? (
+                                <img src={player.avatarUrl} alt="" className="h-8 w-8 rounded-full" />
+                              ) : (
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">
+                                  {player.username[0]?.toUpperCase()}
+                                </div>
+                              )}
+                              <div>
+                                <span className="text-sm font-bold">{player.username}</span>
+                                <span className="ml-1 text-xs text-foreground/40">
+                                  ({idx === 0 ? "Retador" : "Retado"})
+                                </span>
+                              </div>
+                            </div>
+                            <div className="space-y-0.5 text-xs text-foreground/50">
+                              {player.psnUsername && (
+                                <p>🎮 PSN: <span className="font-medium text-foreground/70">{player.psnUsername}</span></p>
+                              )}
+                              {player.xboxUsername && (
+                                <p>🟢 Xbox: <span className="font-medium text-foreground/70">{player.xboxUsername}</span></p>
+                              )}
+                              {player.pcUsername && (
+                                <p>💻 PC: <span className="font-medium text-foreground/70">{player.pcUsername}</span></p>
+                              )}
+                              {!player.psnUsername && !player.xboxUsername && !player.pcUsername && (
+                                <p className="italic text-foreground/30">Sin gamertags</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Chat messages */}
+                      <div className="mb-3">
+                        <p className="mb-2 text-xs font-bold text-foreground/50">
+                          Chat del duelo ({d.messages.length})
+                        </p>
+                        {d.messages.length === 0 ? (
+                          <p className="py-3 text-center text-xs text-foreground/30">Sin mensajes</p>
+                        ) : (
+                          <div className="max-h-60 space-y-1.5 overflow-y-auto rounded-lg border border-surface-light bg-background p-2">
+                            {d.messages.map((msg) => (
+                              <div key={msg.id} className="rounded px-2 py-1.5 text-sm">
+                                <span className="font-bold text-accent">{msg.user.username}</span>
+                                <span className="ml-2 text-xs text-foreground/30">
+                                  {new Date(msg.createdAt).toLocaleString("es-AR")}
+                                </span>
+                                <p className="mt-0.5 text-foreground/70">{msg.message}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Admin message input */}
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Escribir como admin..."
+                          value={expandedDuel === d.id ? duelMsgText : ""}
+                          onChange={(e) => setDuelMsgText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendDuelMessage(d.id);
+                            }
+                          }}
+                          className="flex-1 rounded-lg border border-surface-light bg-background px-3 py-2 text-sm"
+                        />
+                        <button
+                          onClick={() => handleSendDuelMessage(d.id)}
+                          disabled={sendingDuelMsg || !duelMsgText.trim()}
+                          className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+                        >
+                          {sendingDuelMsg ? "..." : "Enviar"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
       {/* Notificar */}
       {activeTab === "notificar" && (
         <form onSubmit={handleSendNotification} className="max-w-lg space-y-4">
@@ -534,6 +743,14 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
             className="w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm"
             rows={3}
             required
+          />
+
+          <input
+            type="url"
+            placeholder="Link (opcional) — https://..."
+            value={notifLinkUrl}
+            onChange={(e) => setNotifLinkUrl(e.target.value)}
+            className="w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm"
           />
 
           <button

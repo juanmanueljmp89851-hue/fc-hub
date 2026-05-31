@@ -13,6 +13,7 @@ export default async function ModeracionPage() {
         prodes={data.prodes}
         deletedProdes={data.deletedProdes}
         messages={data.recentMessages}
+        duels={data.duels}
       />
     </div>
   );
