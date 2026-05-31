@@ -21,7 +21,7 @@ const NO_REAL_MATCHES_PLACEHOLDER: TickerMatch = {
   league: "",
   leagueFlag: "😴",
   homeTeam: "Sin partidos de fútbol",
-  awayTeam: "nadie importante está jugando",
+  awayTeam: "jugate un fifita, tranqui",
   homeScore: null,
   awayScore: null,
   status: "finished",
@@ -102,13 +102,15 @@ export function LiveTicker() {
 
   return (
     <div className="relative overflow-hidden border-y border-surface-light bg-surface/50">
-      {/* Fixed "Resultados en vivo" label — always visible on the left */}
-      <div className="absolute left-0 top-0 z-20 flex h-full items-center bg-gradient-to-r from-background via-background to-transparent pl-3 pr-8">
+      {/* Fixed "Resultados en vivo" label — solid bg, no overlap */}
+      <div className="absolute left-0 top-0 z-20 flex h-full items-center pl-3 pr-2" style={{ background: "var(--background, #0a0a0a)" }}>
         <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wide text-red-500">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
           Resultados en vivo
         </span>
       </div>
+      {/* Fade between label and scrolling content */}
+      <div className="pointer-events-none absolute left-[170px] top-0 z-10 h-full w-6 bg-gradient-to-r from-[var(--background,#0a0a0a)] to-transparent" />
 
       {/* Right fade edge */}
       <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-12 bg-gradient-to-l from-background to-transparent" />
@@ -117,7 +119,7 @@ export function LiveTicker() {
         className="flex whitespace-nowrap py-2 animate-[ticker_var(--ticker-duration)_linear_infinite]"
         style={{
           "--ticker-duration": `${duration}s`,
-          paddingLeft: "200px", // offset for fixed label
+          paddingLeft: "195px", // offset for fixed label
         } as React.CSSProperties}
       >
         {tickerItems.map((match, i) => {
@@ -129,7 +131,7 @@ export function LiveTicker() {
             <>
               <span className="text-[11px]">😴</span>
               <span className="font-medium text-foreground/40">
-                Sin partidos de fútbol — nadie importante está jugando
+                Sin partidos de fútbol — jugate un fifita, tranqui
               </span>
             </>
           ) : (
