@@ -70,7 +70,7 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="group relative block flex-shrink-0 overflow-hidden transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.03] focus:outline-none"
+      className="group relative block flex-shrink-0 transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.03] focus:outline-none"
       style={{ width: w, height: h, borderRadius: 12 * s }}
     >
       {/* ─── CARD BACKGROUND ─── */}
