@@ -79,14 +79,25 @@ export async function acceptChallenge(matchId: string) {
     data: { status: "IN_PROGRESS" },
   });
 
-  // Notify challenger
-  const challenged = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+  // Get challenged user info with gamertags
+  const challenged = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { username: true, psnUsername: true, xboxUsername: true, pcUsername: true },
+  });
+
+  // Build gamertag info for notification
+  const tags: string[] = [];
+  if (challenged?.psnUsername) tags.push(`PSN: ${challenged.psnUsername}`);
+  if (challenged?.xboxUsername) tags.push(`Xbox: ${challenged.xboxUsername}`);
+  if (challenged?.pcUsername) tags.push(`PC: ${challenged.pcUsername}`);
+  const tagInfo = tags.length > 0 ? ` | ${tags.join(" · ")}` : "";
+
   await prisma.notification.create({
     data: {
       userId: match.challengerId,
       type: "CASUAL_CHALLENGE",
-      title: "Desafío aceptado",
-      message: `${challenged?.username ?? "Tu rival"} aceptó el desafío. ¡A jugar!`,
+      title: "Desafío aceptado ✅",
+      message: `${challenged?.username ?? "Tu rival"} aceptó el desafío. ¡A jugar!${tagInfo}`,
       relatedId: matchId,
     },
   });
@@ -108,6 +119,21 @@ export async function rejectChallenge(matchId: string) {
   await prisma.casualMatch.update({
     where: { id: matchId },
     data: { status: "REJECTED" },
+  });
+
+  // Notify challenger about rejection
+  const challenged = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { username: true },
+  });
+  await prisma.notification.create({
+    data: {
+      userId: match.challengerId,
+      type: "CASUAL_CHALLENGE",
+      title: "Desafío rechazado ❌",
+      message: `${challenged?.username ?? "Tu rival"} rechazó el desafío.`,
+      relatedId: matchId,
+    },
   });
 
   revalidatePath("/casual");
@@ -341,6 +367,44 @@ export async function getCasualMatch(id: string) {
       winner: { select: { id: true, username: true } },
     },
   });
+}
+
+export async function getChallengeDetail(matchId: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return null;
+
+  const match = await prisma.casualMatch.findUnique({
+    where: { id: matchId },
+    include: {
+      challenger: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          rankingPoints: true,
+          psnUsername: true,
+          xboxUsername: true,
+          pcUsername: true,
+        },
+      },
+      challenged: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          rankingPoints: true,
+          psnUsername: true,
+          xboxUsername: true,
+          pcUsername: true,
+        },
+      },
+    },
+  });
+
+  if (!match) return null;
+  if (match.challengerId !== userId && match.challengedId !== userId) return null;
+
+  return match;
 }
 
 export async function searchPlayers(query: string) {

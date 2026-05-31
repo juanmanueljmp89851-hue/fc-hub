@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   getMyNotifications,
   getUnreadCount,
@@ -51,12 +52,32 @@ function timeAgo(date: Date) {
   return new Date(date).toLocaleDateString("es-AR", { day: "numeric", month: "short" });
 }
 
+function getNotifLink(notif: Notification): string | null {
+  if (!notif.relatedId) return null;
+  switch (notif.type) {
+    case "CASUAL_CHALLENGE":
+      return `/duelo/${notif.relatedId}`;
+    case "CASUAL_RESULT":
+      return `/casual/${notif.relatedId}`;
+    case "TOURNAMENT_INSCRIPTION":
+    case "TOURNAMENT_STARTING":
+    case "MATCH_ASSIGNED":
+    case "ADVANCED_ROUND":
+    case "ELIMINATED":
+    case "TOURNAMENT_FINISHED":
+      return `/torneos/${notif.relatedId}`;
+    default:
+      return null;
+  }
+}
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Close on outside click
   useEffect(() => {
@@ -171,10 +192,17 @@ export function NotificationBell() {
               notifications.map((notif) => (
                 <button
                   key={notif.id}
-                  onClick={() => !notif.read && handleMarkRead(notif.id)}
+                  onClick={() => {
+                    if (!notif.read) handleMarkRead(notif.id);
+                    const link = getNotifLink(notif);
+                    if (link) {
+                      setOpen(false);
+                      router.push(link);
+                    }
+                  }}
                   className={`flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-light ${
                     !notif.read ? "bg-accent/5" : ""
-                  }`}
+                  } ${getNotifLink(notif) ? "cursor-pointer" : ""}`}
                 >
                   <span className="mt-0.5 text-base">{getNotifIcon(notif.type)}</span>
                   <div className="min-w-0 flex-1">
