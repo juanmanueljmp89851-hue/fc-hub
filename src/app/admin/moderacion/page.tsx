@@ -1,0 +1,17 @@
+import { getModerationData } from "@/lib/actions/admin";
+import { ModerationPanel } from "@/components/admin/ModerationPanel";
+
+export default async function ModeracionPage() {
+  const data = await getModerationData();
+
+  return (
+    <div>
+      <h1 className="mb-6 text-2xl font-bold">Moderación</h1>
+      <ModerationPanel
+        tournaments={data.tournaments}
+        prodes={data.prodes}
+        messages={data.recentMessages}
+      />
+    </div>
+  );
+}

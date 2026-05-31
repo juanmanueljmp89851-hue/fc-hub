@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getProde, getProdeLeaderboard, getProdeWeeks } from "@/lib/actions/prode";
+import { getCurrentUser } from "@/lib/actions/user";
 import Link from "next/link";
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
 
@@ -38,6 +39,9 @@ export default async function ProdeDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const currentUser = await getCurrentUser();
+  const canEdit = currentUser && (currentUser.id === prode.createdById || currentUser.role === "ADMIN");
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -48,7 +52,17 @@ export default async function ProdeDetailPage({ params }: PageProps) {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">{prode.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">{prode.name}</h1>
+            {canEdit && (
+              <Link
+                href={`/prode/${prode.id}/editar`}
+                className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+              >
+                Editar
+              </Link>
+            )}
+          </div>
           {prode.description && (
             <p className="mt-1 text-foreground/60">{prode.description}</p>
           )}

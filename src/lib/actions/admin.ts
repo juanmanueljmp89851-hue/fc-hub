@@ -52,6 +52,8 @@ export async function getUsers(search?: string) {
       role: true,
       avatarUrl: true,
       rankingPoints: true,
+      banned: true,
+      bannedReason: true,
       createdAt: true,
     },
   });
@@ -160,4 +162,138 @@ export async function toggleInfluencerFeatured(influencerId: string) {
 
   revalidatePath("/admin/influencers");
   return { success: true };
+}
+
+// ─── Ban / Unban ─────────────────────────────────────────────
+
+export async function banUser(userId: string, reason: string) {
+  await requireAdmin();
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      banned: true,
+      bannedReason: reason,
+      bannedAt: new Date(),
+    },
+  });
+
+  revalidatePath("/admin/usuarios");
+  return { success: true };
+}
+
+export async function unbanUser(userId: string) {
+  await requireAdmin();
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      banned: false,
+      bannedReason: null,
+      bannedAt: null,
+    },
+  });
+
+  revalidatePath("/admin/usuarios");
+  return { success: true };
+}
+
+// ─── Moderación ──────────────────────────────────────────────
+
+export async function getModerationData() {
+  await requireAdmin();
+
+  const [tournaments, prodes, recentMessages] = await Promise.all([
+    prisma.tournament.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        format: true,
+        createdAt: true,
+        createdBy: { select: { username: true } },
+        _count: { select: { participants: true } },
+      },
+    }),
+    prisma.prode.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        createdBy: { select: { username: true } },
+        _count: { select: { participants: true } },
+      },
+    }),
+    prisma.lobbyMessage.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        text: true,
+        createdAt: true,
+        user: { select: { username: true } },
+      },
+    }),
+  ]);
+
+  return { tournaments, prodes, recentMessages };
+}
+
+export async function deleteTournament(tournamentId: string) {
+  await requireAdmin();
+
+  // Delete related data in order (respecting FK constraints)
+  await prisma.matchMessage.deleteMany({
+    where: { tournamentMatch: { tournamentId } },
+  });
+  await prisma.tournamentDispute.deleteMany({ where: { tournamentId } });
+  await prisma.tournamentMatch.deleteMany({ where: { tournamentId } });
+  await prisma.leagueStanding.deleteMany({ where: { tournamentId } });
+  await prisma.tournamentWaitlist.deleteMany({ where: { tournamentId } });
+  await prisma.tournamentParticipant.deleteMany({ where: { tournamentId } });
+  await prisma.tournamentAuditLog.deleteMany({ where: { tournamentId } });
+  await prisma.tournament.delete({ where: { id: tournamentId } });
+
+  revalidatePath("/admin/moderacion");
+  revalidatePath("/torneos");
+  return { success: true };
+}
+
+export async function deleteProde(prodeId: string) {
+  await requireAdmin();
+
+  // Delete related data
+  await prisma.prodeGroupPrediction.deleteMany({ where: { prodeId } });
+  await prisma.prodeAdvancePrediction.deleteMany({ where: { prodeId } });
+  await prisma.prodePrediction.deleteMany({ where: { prodeId } });
+  await prisma.prodeParticipant.deleteMany({ where: { prodeId } });
+  await prisma.prode.delete({ where: { id: prodeId } });
+
+  revalidatePath("/admin/moderacion");
+  revalidatePath("/prode");
+  return { success: true };
+}
+
+export async function deleteLobbyMessage(messageId: string) {
+  await requireAdmin();
+
+  await prisma.lobbyMessage.delete({ where: { id: messageId } });
+
+  revalidatePath("/admin/moderacion");
+  return { success: true };
+}
+
+export async function deleteLobbyMessagesBulk(messageIds: string[]) {
+  await requireAdmin();
+
+  await prisma.lobbyMessage.deleteMany({
+    where: { id: { in: messageIds } },
+  });
+
+  revalidatePath("/admin/moderacion");
+  return { success: true, deleted: messageIds.length };
 }

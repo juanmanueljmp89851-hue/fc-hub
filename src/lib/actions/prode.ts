@@ -144,6 +144,80 @@ export async function getProde(id: string) {
   });
 }
 
+// ─── EDITAR PRODE ──────────────────────────────────────────
+
+export async function getProdeForEdit(prodeId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return null;
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return null;
+
+  const prode = await prisma.prode.findUnique({ where: { id: prodeId } });
+  if (!prode) return null;
+
+  if (prode.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return null;
+  }
+
+  return prode;
+}
+
+interface UpdateProdeInput {
+  prodeId: string;
+  name?: string;
+  description?: string;
+  prizeGeneral?: string;
+  prizePerWeek?: string;
+  prizeGroupOrder?: string;
+  prizeRounds?: string;
+}
+
+export async function updateProde(input: UpdateProdeInput) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const prode = await prisma.prode.findUnique({
+    where: { id: input.prodeId },
+    select: { createdById: true },
+  });
+  if (!prode) return { error: "Prode no encontrado" };
+
+  if (prode.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "No tenés permisos para editar este prode" };
+  }
+
+  const data: Record<string, unknown> = {};
+  if (input.name !== undefined) data.name = input.name.trim();
+  if (input.description !== undefined) data.description = input.description?.trim() || null;
+  if (input.prizeGeneral !== undefined) data.prizeGeneral = input.prizeGeneral?.trim() || null;
+  if (input.prizePerWeek !== undefined) data.prizePerWeek = input.prizePerWeek?.trim() || null;
+  if (input.prizeGroupOrder !== undefined) data.prizeGroupOrder = input.prizeGroupOrder?.trim() || null;
+  if (input.prizeRounds !== undefined) data.prizeRounds = input.prizeRounds?.trim() || null;
+
+  await prisma.prode.update({
+    where: { id: input.prodeId },
+    data,
+  });
+
+  return { success: true };
+}
+
 export async function getProdeByShareCode(code: string) {
   return prisma.prode.findUnique({
     where: { shareCode: code },

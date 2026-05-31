@@ -1,8 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getTournament } from "@/lib/actions/tournament";
+import { getCurrentUser } from "@/lib/actions/user";
 import { TournamentActions } from "@/components/tournaments/TournamentActions";
 import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
@@ -58,6 +60,9 @@ export default async function TorneoDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const currentUser = await getCurrentUser();
+  const canEdit = currentUser && (currentUser.id === tournament.createdById || currentUser.role === "ADMIN");
+
   const confirmedCount = tournament.participants.filter((p) => p.status === "CONFIRMED").length;
   const isLeague = tournament.format === "LEAGUE";
   const hasMatches = tournament.matches.length > 0;
@@ -91,6 +96,14 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </div>
             )}
             <h1 className="text-3xl font-bold">{tournament.name}</h1>
+            {canEdit && (
+              <Link
+                href={`/torneos/${tournament.id}/editar`}
+                className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+              >
+                Editar
+              </Link>
+            )}
           </div>
           {tournament.description && (
             <p className="mt-2 text-foreground/60">{tournament.description}</p>

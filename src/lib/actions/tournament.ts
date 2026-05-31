@@ -142,6 +142,133 @@ export async function createTournament(input: CreateTournamentInput) {
   }
 }
 
+// ─── EDITAR TORNEO ────────────────────────────────────────
+
+interface UpdateTournamentInput {
+  tournamentId: string;
+  name?: string;
+  description?: string;
+  rules?: string;
+  prize?: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  maxPlayers?: number;
+  platforms?: Platform[];
+  teamType?: TeamType;
+  visibility?: TournamentVisibility;
+  requiresVerification?: boolean;
+  registrationOpen?: string | null;
+  registrationDeadline?: string | null;
+  startDate?: string | null;
+  matchTime?: string;
+  difficulty?: string;
+  controls?: string;
+  gameMode?: string;
+  stadium?: string;
+  status?: TournamentStatus;
+}
+
+export async function updateTournament(input: UpdateTournamentInput) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    return { error: "No autenticado" };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+
+  if (!dbUser) {
+    return { error: "Usuario no encontrado" };
+  }
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: input.tournamentId },
+    select: { createdById: true },
+  });
+
+  if (!tournament) {
+    return { error: "Torneo no encontrado" };
+  }
+
+  // Check: must be creator or admin
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "No tenés permisos para editar este torneo" };
+  }
+
+  const data: Record<string, unknown> = {};
+  if (input.name !== undefined) data.name = input.name.trim();
+  if (input.description !== undefined) data.description = input.description?.trim() || null;
+  if (input.rules !== undefined) data.rules = input.rules?.trim() || null;
+  if (input.prize !== undefined) data.prize = input.prize?.trim() || null;
+  if (input.logoUrl !== undefined) data.logoUrl = input.logoUrl || null;
+  if (input.bannerUrl !== undefined) data.bannerUrl = input.bannerUrl || null;
+  if (input.maxPlayers !== undefined) data.maxPlayers = input.maxPlayers;
+  if (input.platforms !== undefined) data.platforms = input.platforms;
+  if (input.teamType !== undefined) data.teamType = input.teamType;
+  if (input.visibility !== undefined) data.visibility = input.visibility;
+  if (input.requiresVerification !== undefined) data.requiresVerification = input.requiresVerification;
+  if (input.registrationOpen !== undefined) data.registrationOpen = input.registrationOpen ? new Date(input.registrationOpen) : null;
+  if (input.registrationDeadline !== undefined) data.registrationDeadline = input.registrationDeadline ? new Date(input.registrationDeadline) : null;
+  if (input.startDate !== undefined) data.startDate = input.startDate ? new Date(input.startDate) : null;
+  if (input.matchTime !== undefined) data.matchTime = input.matchTime || null;
+  if (input.difficulty !== undefined) data.difficulty = input.difficulty || null;
+  if (input.controls !== undefined) data.controls = input.controls || null;
+  if (input.gameMode !== undefined) data.gameMode = input.gameMode || null;
+  if (input.stadium !== undefined) data.stadium = input.stadium?.trim() || null;
+  if (input.status !== undefined) data.status = input.status;
+
+  try {
+    await prisma.tournament.update({
+      where: { id: input.tournamentId },
+      data,
+    });
+
+    revalidatePath(`/torneos/${input.tournamentId}`);
+    revalidatePath("/torneos");
+    return { success: true };
+  } catch (err) {
+    console.error("Error actualizando torneo:", err);
+    return { error: "Error al actualizar el torneo" };
+  }
+}
+
+// ─── OBTENER TORNEO PARA EDICIÓN ─────────────────────────────
+
+export async function getTournamentForEdit(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) return null;
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+
+  if (!dbUser) return null;
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+  });
+
+  if (!tournament) return null;
+
+  // Check permissions
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return null;
+  }
+
+  return tournament;
+}
+
 // ─── LISTAR TORNEOS ────────────────────────────────────────
 
 interface ListTournamentsInput {

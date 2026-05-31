@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { syncUserWithDB } from "@/lib/actions/user";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import type { User as DbUser } from "@/types";
 
 const navLinks = [
@@ -134,6 +135,10 @@ export function Navbar() {
 
         if (authUser) {
           const dbUser = await syncUserWithDB();
+          if (dbUser?.banned) {
+            window.location.href = "/banned";
+            return;
+          }
           setUser(dbUser);
         }
       } catch {
@@ -176,7 +181,10 @@ export function Navbar() {
           {!authChecked ? (
             <div className="h-9 w-32 animate-pulse rounded-lg bg-surface" />
           ) : user ? (
-            <UserMenu user={user} />
+            <>
+              <NotificationBell />
+              <UserMenu user={user} />
+            </>
           ) : (
             <>
               <Link
@@ -233,6 +241,10 @@ export function Navbar() {
           <div className="mt-3 flex flex-col gap-2">
             {user ? (
               <>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-foreground/40">Notificaciones</span>
+                  <NotificationBell />
+                </div>
                 <Link
                   href="/perfil"
                   onClick={() => setMobileOpen(false)}

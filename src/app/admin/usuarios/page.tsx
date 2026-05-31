@@ -11,6 +11,8 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
   const serialized = users.map((u) => ({
     ...u,
     createdAt: u.createdAt.toISOString(),
+    banned: u.banned,
+    bannedReason: u.bannedReason,
   }));
 
   return (
