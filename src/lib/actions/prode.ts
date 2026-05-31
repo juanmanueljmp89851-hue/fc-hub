@@ -116,6 +116,7 @@ export async function getMyProdes() {
 
   return prisma.prode.findMany({
     where: {
+      deletedAt: null,
       OR: [
         { createdById: userId },
         { participants: { some: { userId } } },
@@ -635,5 +636,63 @@ export async function openProdeWeek(weekId: string) {
 export async function closeProdeWeek(weekId: string) {
   await prisma.prodeWeek.update({ where: { id: weekId }, data: { status: "CLOSED" } });
   revalidatePath("/prode");
+  return { success: true };
+}
+
+// ─── SOFT DELETE / RESTORE ─────────────────────────────────
+
+export async function softDeleteProde(prodeId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) throw new Error("No autenticado");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) throw new Error("No autenticado");
+
+  const prode = await prisma.prode.findUnique({
+    where: { id: prodeId },
+    select: { createdById: true, deletedAt: true },
+  });
+  if (!prode) throw new Error("Prode no encontrado");
+  if (prode.deletedAt) throw new Error("Ya está eliminado");
+  if (prode.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    throw new Error("No autorizado");
+  }
+
+  await prisma.prode.update({
+    where: { id: prodeId },
+    data: { deletedAt: new Date(), deletedById: dbUser.id },
+  });
+
+  revalidatePath("/prode");
+  revalidatePath(`/prode/${prodeId}`);
+  return { success: true };
+}
+
+export async function restoreProde(prodeId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) throw new Error("No autenticado");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser || dbUser.role !== "ADMIN") throw new Error("Solo admin puede restaurar");
+
+  await prisma.prode.update({
+    where: { id: prodeId },
+    data: { deletedAt: null, deletedById: null },
+  });
+
+  revalidatePath("/prode");
+  revalidatePath("/admin/moderacion");
   return { success: true };
 }

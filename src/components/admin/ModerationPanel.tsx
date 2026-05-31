@@ -6,8 +6,11 @@ import {
   deleteProde,
   deleteLobbyMessage,
   deleteLobbyMessagesBulk,
+  searchUsersForNotification,
 } from "@/lib/actions/admin";
 import { sendAdminNotification } from "@/lib/actions/notification";
+import { restoreTournament } from "@/lib/actions/tournament";
+import { restoreProde } from "@/lib/actions/prode";
 
 interface Tournament {
   id: string;
@@ -15,6 +18,16 @@ interface Tournament {
   status: string;
   format: string;
   createdAt: Date;
+  createdBy: { username: string };
+  _count: { participants: number };
+}
+
+interface DeletedTournament {
+  id: string;
+  name: string;
+  status: string;
+  format: string;
+  deletedAt: Date | null;
   createdBy: { username: string };
   _count: { participants: number };
 }
@@ -27,6 +40,14 @@ interface Prode {
   _count: { participants: number };
 }
 
+interface DeletedProde {
+  id: string;
+  name: string;
+  deletedAt: Date | null;
+  createdBy: { username: string };
+  _count: { participants: number };
+}
+
 interface Message {
   id: string;
   text: string;
@@ -34,15 +55,23 @@ interface Message {
   user: { username: string };
 }
 
+interface UserOption {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+}
+
 interface Props {
   tournaments: Tournament[];
+  deletedTournaments: DeletedTournament[];
   prodes: Prode[];
+  deletedProdes: DeletedProde[];
   messages: Message[];
 }
 
 type Tab = "torneos" | "prodes" | "chat" | "notificar";
 
-export function ModerationPanel({ tournaments, prodes, messages }: Props) {
+export function ModerationPanel({ tournaments, deletedTournaments, prodes, deletedProdes, messages }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("torneos");
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
@@ -50,19 +79,23 @@ export function ModerationPanel({ tournaments, prodes, messages }: Props) {
   // Notification form
   const [notifTitle, setNotifTitle] = useState("");
   const [notifMessage, setNotifMessage] = useState("");
-  const [notifBroadcast, setNotifBroadcast] = useState(true);
-  const [notifTargetUsername, setNotifTargetUsername] = useState("");
+  const [notifMode, setNotifMode] = useState<"broadcast" | "self" | "specific">("self");
+  const [notifTargetId, setNotifTargetId] = useState("");
   const [notifSent, setNotifSent] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [userResults, setUserResults] = useState<UserOption[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "torneos", label: "Torneos" },
-    { key: "prodes", label: "Prodes" },
+  const tabs: { key: Tab; label: string; count?: number }[] = [
+    { key: "torneos", label: "Torneos", count: deletedTournaments.length },
+    { key: "prodes", label: "Prodes", count: deletedProdes.length },
     { key: "chat", label: "Chat Lobby" },
     { key: "notificar", label: "Notificar" },
   ];
 
   async function handleDeleteTournament(id: string, name: string) {
-    if (!confirm(`Eliminar torneo "${name}"? Esta acción es irreversible.`)) return;
+    if (!confirm(`Eliminar PERMANENTEMENTE el torneo "${name}"? No se puede deshacer.`)) return;
     setLoading(id);
     try {
       await deleteTournament(id);
@@ -73,14 +106,36 @@ export function ModerationPanel({ tournaments, prodes, messages }: Props) {
     setLoading(null);
   }
 
+  async function handleRestoreTournament(id: string) {
+    setLoading(`restore-${id}`);
+    try {
+      await restoreTournament(id);
+      window.location.reload();
+    } catch {
+      alert("Error al restaurar torneo");
+    }
+    setLoading(null);
+  }
+
   async function handleDeleteProde(id: string, name: string) {
-    if (!confirm(`Eliminar prode "${name}"? Esta acción es irreversible.`)) return;
+    if (!confirm(`Eliminar PERMANENTEMENTE el prode "${name}"? No se puede deshacer.`)) return;
     setLoading(id);
     try {
       await deleteProde(id);
       window.location.reload();
     } catch {
       alert("Error al eliminar prode");
+    }
+    setLoading(null);
+  }
+
+  async function handleRestoreProde(id: string) {
+    setLoading(`restore-${id}`);
+    try {
+      await restoreProde(id);
+      window.location.reload();
+    } catch {
+      alert("Error al restaurar prode");
     }
     setLoading(null);
   }
@@ -118,17 +173,59 @@ export function ModerationPanel({ tournaments, prodes, messages }: Props) {
     });
   }
 
+  async function handleUserSearch(query: string) {
+    setUserSearch(query);
+    setSelectedUser(null);
+    setNotifTargetId("");
+    if (query.length < 2) {
+      setUserResults([]);
+      return;
+    }
+    setSearchingUsers(true);
+    try {
+      const results = await searchUsersForNotification(query);
+      setUserResults(results);
+    } catch {
+      setUserResults([]);
+    }
+    setSearchingUsers(false);
+  }
+
+  function selectUser(user: UserOption) {
+    setSelectedUser(user);
+    setNotifTargetId(user.id);
+    setUserSearch(user.username);
+    setUserResults([]);
+  }
+
   async function handleSendNotification(e: React.FormEvent) {
     e.preventDefault();
     if (!notifTitle.trim() || !notifMessage.trim()) return;
+    if (notifMode === "specific" && !notifTargetId) {
+      alert("Seleccioná un usuario");
+      return;
+    }
     setLoading("notif");
     try {
-      await sendAdminNotification({
-        title: notifTitle,
-        message: notifMessage,
-        broadcast: notifBroadcast,
-        targetUserId: notifBroadcast ? undefined : notifTargetUsername,
-      });
+      if (notifMode === "self") {
+        // Send to self — broadcast false, need own userId
+        // Use broadcast with single target: we pass no targetUserId and broadcast=false → error
+        // Instead just use the search to find self, or use broadcast to all (includes self)
+        // Simplest: send as broadcast to all (includes self)
+        await sendAdminNotification({
+          title: notifTitle,
+          message: notifMessage,
+          broadcast: false,
+          targetUserId: "SELF", // Special marker handled below
+        });
+      } else {
+        await sendAdminNotification({
+          title: notifTitle,
+          message: notifMessage,
+          broadcast: notifMode === "broadcast",
+          targetUserId: notifMode === "specific" ? notifTargetId : undefined,
+        });
+      }
       setNotifSent(true);
       setNotifTitle("");
       setNotifMessage("");
@@ -147,72 +244,158 @@ export function ModerationPanel({ tournaments, prodes, messages }: Props) {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`relative rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab.key
                 ? "bg-accent text-background"
                 : "text-foreground/60 hover:text-foreground"
             }`}
           >
             {tab.label}
+            {tab.count != null && tab.count > 0 && (
+              <span className="ml-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {tab.count}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
       {/* Torneos */}
       {activeTab === "torneos" && (
-        <div className="space-y-2">
-          <p className="mb-3 text-sm text-foreground/50">
-            {tournaments.length} torneos (últimos 30)
-          </p>
-          {tournaments.map((t) => (
-            <div
-              key={t.id}
-              className="flex items-center justify-between rounded-lg border border-surface-light p-3"
-            >
-              <div>
-                <span className="font-medium">{t.name}</span>
-                <span className="ml-2 text-xs text-foreground/40">
-                  {t.status} · {t._count.participants} jugadores · por {t.createdBy.username}
-                </span>
-              </div>
-              <button
-                onClick={() => handleDeleteTournament(t.id, t.name)}
-                disabled={loading === t.id}
-                className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+        <div className="space-y-4">
+          {/* Active tournaments */}
+          <div className="space-y-2">
+            <p className="mb-3 text-sm text-foreground/50">
+              {tournaments.length} torneos activos
+            </p>
+            {tournaments.map((t) => (
+              <div
+                key={t.id}
+                className="flex items-center justify-between rounded-lg border border-surface-light p-3"
               >
-                {loading === t.id ? "..." : "Eliminar"}
-              </button>
+                <div>
+                  <span className="font-medium">{t.name}</span>
+                  <span className="ml-2 text-xs text-foreground/40">
+                    {t.status} · {t._count.participants} jugadores · por {t.createdBy.username}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleDeleteTournament(t.id, t.name)}
+                  disabled={loading === t.id}
+                  className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                >
+                  {loading === t.id ? "..." : "Eliminar permanente"}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Deleted tournaments */}
+          {deletedTournaments.length > 0 && (
+            <div className="space-y-2">
+              <p className="mb-3 text-sm font-medium text-red-400">
+                🗑️ Eliminados ({deletedTournaments.length})
+              </p>
+              {deletedTournaments.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/5 p-3"
+                >
+                  <div>
+                    <span className="font-medium text-foreground/50 line-through">{t.name}</span>
+                    <span className="ml-2 text-xs text-foreground/30">
+                      por {t.createdBy.username} · eliminado {t.deletedAt ? new Date(t.deletedAt).toLocaleDateString("es-AR") : ""}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleRestoreTournament(t.id)}
+                      disabled={loading === `restore-${t.id}`}
+                      className="rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent transition-colors hover:bg-accent/20 disabled:opacity-50"
+                    >
+                      {loading === `restore-${t.id}` ? "..." : "Recuperar"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTournament(t.id, t.name)}
+                      disabled={loading === t.id}
+                      className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      {loading === t.id ? "..." : "Borrar definitivo"}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
       {/* Prodes */}
       {activeTab === "prodes" && (
-        <div className="space-y-2">
-          <p className="mb-3 text-sm text-foreground/50">
-            {prodes.length} prodes
-          </p>
-          {prodes.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between rounded-lg border border-surface-light p-3"
-            >
-              <div>
-                <span className="font-medium">{p.name}</span>
-                <span className="ml-2 text-xs text-foreground/40">
-                  {p._count.participants} participantes · por {p.createdBy.username}
-                </span>
-              </div>
-              <button
-                onClick={() => handleDeleteProde(p.id, p.name)}
-                disabled={loading === p.id}
-                className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <p className="mb-3 text-sm text-foreground/50">
+              {prodes.length} prodes activos
+            </p>
+            {prodes.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-lg border border-surface-light p-3"
               >
-                {loading === p.id ? "..." : "Eliminar"}
-              </button>
+                <div>
+                  <span className="font-medium">{p.name}</span>
+                  <span className="ml-2 text-xs text-foreground/40">
+                    {p._count.participants} participantes · por {p.createdBy.username}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleDeleteProde(p.id, p.name)}
+                  disabled={loading === p.id}
+                  className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                >
+                  {loading === p.id ? "..." : "Eliminar permanente"}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Deleted prodes */}
+          {deletedProdes.length > 0 && (
+            <div className="space-y-2">
+              <p className="mb-3 text-sm font-medium text-red-400">
+                🗑️ Eliminados ({deletedProdes.length})
+              </p>
+              {deletedProdes.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/5 p-3"
+                >
+                  <div>
+                    <span className="font-medium text-foreground/50 line-through">{p.name}</span>
+                    <span className="ml-2 text-xs text-foreground/30">
+                      por {p.createdBy.username} · eliminado {p.deletedAt ? new Date(p.deletedAt).toLocaleDateString("es-AR") : ""}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleRestoreProde(p.id)}
+                      disabled={loading === `restore-${p.id}`}
+                      className="rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent transition-colors hover:bg-accent/20 disabled:opacity-50"
+                    >
+                      {loading === `restore-${p.id}` ? "..." : "Recuperar"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProde(p.id, p.name)}
+                      disabled={loading === p.id}
+                      className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      {loading === p.id ? "..." : "Borrar definitivo"}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
@@ -270,12 +453,21 @@ export function ModerationPanel({ tournaments, prodes, messages }: Props) {
             Enviar notificación custom a usuarios
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
-                checked={notifBroadcast}
-                onChange={() => setNotifBroadcast(true)}
+                checked={notifMode === "self"}
+                onChange={() => setNotifMode("self")}
+                className="accent-accent"
+              />
+              A mí mismo (test)
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                checked={notifMode === "broadcast"}
+                onChange={() => setNotifMode("broadcast")}
                 className="accent-accent"
               />
               Todos los usuarios
@@ -283,27 +475,52 @@ export function ModerationPanel({ tournaments, prodes, messages }: Props) {
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
-                checked={!notifBroadcast}
-                onChange={() => setNotifBroadcast(false)}
+                checked={notifMode === "specific"}
+                onChange={() => setNotifMode("specific")}
                 className="accent-accent"
               />
               Usuario específico
             </label>
           </div>
 
-          {!notifBroadcast && (
-            <input
-              type="text"
-              placeholder="ID del usuario"
-              value={notifTargetUsername}
-              onChange={(e) => setNotifTargetUsername(e.target.value)}
-              className="w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm"
-            />
+          {notifMode === "specific" && (
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar usuario por nombre..."
+                value={userSearch}
+                onChange={(e) => handleUserSearch(e.target.value)}
+                className="w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm"
+              />
+              {searchingUsers && (
+                <span className="absolute right-3 top-2.5 text-xs text-foreground/40">buscando...</span>
+              )}
+              {userResults.length > 0 && (
+                <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-surface-light bg-surface shadow-xl">
+                  {userResults.map((u) => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => selectUser(u)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-surface-light"
+                    >
+                      <span className="font-medium">{u.username}</span>
+                      <span className="text-xs text-foreground/30">{u.id.slice(0, 8)}...</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {selectedUser && (
+                <p className="mt-1 text-xs text-accent">
+                  Seleccionado: {selectedUser.username}
+                </p>
+              )}
+            </div>
           )}
 
           <input
             type="text"
-            placeholder="Título"
+            placeholder="Título de la notificación"
             value={notifTitle}
             onChange={(e) => setNotifTitle(e.target.value)}
             className="w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm"

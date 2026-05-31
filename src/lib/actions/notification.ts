@@ -120,11 +120,13 @@ export async function sendAdminNotification({
     return { sent: allUsers.length };
   }
 
-  if (!targetUserId) throw new Error("Se requiere targetUserId o broadcast");
+  // "SELF" marker = send to admin's own account (for testing)
+  const resolvedTarget = targetUserId === "SELF" ? adminUser.id : targetUserId;
+  if (!resolvedTarget) throw new Error("Se requiere targetUserId o broadcast");
 
   await prisma.notification.create({
     data: {
-      userId: targetUserId,
+      userId: resolvedTarget,
       type: "ADMIN_MESSAGE" as NotificationType,
       title,
       message,

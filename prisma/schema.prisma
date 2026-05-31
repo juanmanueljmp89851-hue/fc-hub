@@ -103,6 +103,8 @@ model Tournament {
   createdById            String              @map("created_by")
   cancelledAt            DateTime?           @map("cancelled_at")
   cancelReason           String?             @map("cancel_reason")
+  deletedAt              DateTime?           @map("deleted_at")
+  deletedById            String?             @map("deleted_by")
   createdAt              DateTime            @default(now()) @map("created_at")
 
   createdBy     User                    @relation(fields: [createdById], references: [id])
@@ -417,6 +419,8 @@ model Prode {
   prizePerWeek    String?     @map("prize_per_week")
   prizeGroupOrder String?     @map("prize_group_order")
   prizeRounds     String?     @map("prize_rounds")
+  deletedAt       DateTime?   @map("deleted_at")
+  deletedById     String?     @map("deleted_by")
   createdAt       DateTime    @default(now()) @map("created_at")
 
   createdBy          User                    @relation("ProdeCreator", fields: [createdById], references: [id])

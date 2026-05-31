@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/actions/user";
 import { TournamentActions } from "@/components/tournaments/TournamentActions";
 import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
+import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
 
 function getStatusLabel(status: string) {
   const map: Record<string, string> = {
@@ -61,7 +62,13 @@ export default async function TorneoDetailPage({ params }: PageProps) {
   }
 
   const currentUser = await getCurrentUser();
-  const canEdit = currentUser && (currentUser.id === tournament.createdById || currentUser.role === "ADMIN");
+
+  // If soft-deleted and not admin, show not found
+  if (tournament.deletedAt && (!currentUser || currentUser.role !== "ADMIN")) {
+    notFound();
+  }
+
+  const canEdit = currentUser && (currentUser.id === tournament.createdById || currentUser.role === "ADMIN") && !tournament.deletedAt;
 
   const confirmedCount = tournament.participants.filter((p) => p.status === "CONFIRMED").length;
   const isLeague = tournament.format === "LEAGUE";
@@ -97,12 +104,15 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             )}
             <h1 className="text-3xl font-bold">{tournament.name}</h1>
             {canEdit && (
-              <Link
-                href={`/torneos/${tournament.id}/editar`}
-                className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
-              >
-                Editar
-              </Link>
+              <>
+                <Link
+                  href={`/torneos/${tournament.id}/editar`}
+                  className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+                >
+                  Editar
+                </Link>
+                <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
+              </>
             )}
           </div>
           {tournament.description && (

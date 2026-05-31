@@ -203,8 +203,9 @@ export async function unbanUser(userId: string) {
 export async function getModerationData() {
   await requireAdmin();
 
-  const [tournaments, prodes, recentMessages] = await Promise.all([
+  const [tournaments, deletedTournaments, prodes, deletedProdes, recentMessages] = await Promise.all([
     prisma.tournament.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 30,
       select: {
@@ -217,13 +218,40 @@ export async function getModerationData() {
         _count: { select: { participants: true } },
       },
     }),
+    prisma.tournament.findMany({
+      where: { deletedAt: { not: null } },
+      orderBy: { deletedAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        format: true,
+        deletedAt: true,
+        createdBy: { select: { username: true } },
+        _count: { select: { participants: true } },
+      },
+    }),
     prisma.prode.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 20,
       select: {
         id: true,
         name: true,
         createdAt: true,
+        createdBy: { select: { username: true } },
+        _count: { select: { participants: true } },
+      },
+    }),
+    prisma.prode.findMany({
+      where: { deletedAt: { not: null } },
+      orderBy: { deletedAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        deletedAt: true,
         createdBy: { select: { username: true } },
         _count: { select: { participants: true } },
       },
@@ -240,7 +268,7 @@ export async function getModerationData() {
     }),
   ]);
 
-  return { tournaments, prodes, recentMessages };
+  return { tournaments, deletedTournaments, prodes, deletedProdes, recentMessages };
 }
 
 export async function deleteTournament(tournamentId: string) {
@@ -285,6 +313,19 @@ export async function deleteLobbyMessage(messageId: string) {
 
   revalidatePath("/admin/moderacion");
   return { success: true };
+}
+
+export async function searchUsersForNotification(query: string) {
+  await requireAdmin();
+  if (!query || query.length < 2) return [];
+
+  return prisma.user.findMany({
+    where: {
+      username: { contains: query, mode: "insensitive" },
+    },
+    take: 10,
+    select: { id: true, username: true, avatarUrl: true },
+  });
 }
 
 export async function deleteLobbyMessagesBulk(messageIds: string[]) {

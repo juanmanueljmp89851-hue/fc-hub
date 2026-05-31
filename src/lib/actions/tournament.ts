@@ -282,7 +282,7 @@ interface ListTournamentsInput {
 export async function listTournaments(input: ListTournamentsInput = {}) {
   const { status, platform, search, page = 1, limit = 12 } = input;
 
-  const where: Record<string, unknown> = {};
+  const where: Record<string, unknown> = { deletedAt: null };
 
   if (status) {
     where.status = status;
@@ -1399,6 +1399,64 @@ async function checkGroupComplete(
       });
     }
   }
+}
+
+// ─── SOFT DELETE / RESTORE ─────────────────────────────────
+
+export async function softDeleteTournament(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) throw new Error("No autenticado");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) throw new Error("No autenticado");
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { createdById: true, deletedAt: true },
+  });
+  if (!tournament) throw new Error("Torneo no encontrado");
+  if (tournament.deletedAt) throw new Error("Ya está eliminado");
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    throw new Error("No autorizado");
+  }
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { deletedAt: new Date(), deletedById: dbUser.id },
+  });
+
+  revalidatePath("/torneos");
+  revalidatePath(`/torneos/${tournamentId}`);
+  return { success: true };
+}
+
+export async function restoreTournament(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) throw new Error("No autenticado");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser || dbUser.role !== "ADMIN") throw new Error("Solo admin puede restaurar");
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { deletedAt: null, deletedById: null },
+  });
+
+  revalidatePath("/torneos");
+  revalidatePath("/admin/moderacion");
+  return { success: true };
 }
 
 async function checkTournamentComplete(tournamentId: string) {

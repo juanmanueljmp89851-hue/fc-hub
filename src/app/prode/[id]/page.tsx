@@ -6,6 +6,7 @@ import { getProde, getProdeLeaderboard, getProdeWeeks } from "@/lib/actions/prod
 import { getCurrentUser } from "@/lib/actions/user";
 import Link from "next/link";
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
+import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
 
 function getMedalClass(pos: number) {
   if (pos === 1) return "bg-gold text-background";
@@ -55,12 +56,15 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{prode.name}</h1>
             {canEdit && (
-              <Link
-                href={`/prode/${prode.id}/editar`}
-                className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
-              >
-                Editar
-              </Link>
+              <>
+                <Link
+                  href={`/prode/${prode.id}/editar`}
+                  className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+                >
+                  Editar
+                </Link>
+                <DeleteProdeButton prodeId={prode.id} prodeName={prode.name} />
+              </>
             )}
           </div>
           {prode.description && (
