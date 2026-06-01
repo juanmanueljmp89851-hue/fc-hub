@@ -3,10 +3,9 @@ const API_BASE = "https://v3.football.api-sports.io";
 // --- League IDs (api-football) ---
 export const LEAGUE_IDS = {
   WORLD_CUP: 1,
-  FRIENDLIES: 10,
   CHAMPIONS_LEAGUE: 2,
   EUROPA_LEAGUE: 3,
-  FRIENDLIES_MEN: 10,
+  FRIENDLIES: 10,
   SUDAMERICANA: 11,
   LIBERTADORES: 13,
   PREMIER_LEAGUE: 39,
@@ -20,10 +19,9 @@ export const LEAGUE_IDS = {
 
 export const LEAGUE_META: Record<number, { name: string; flag: string }> = {
   [LEAGUE_IDS.WORLD_CUP]: { name: "Mundial 2026", flag: "🌍" },
-  [LEAGUE_IDS.FRIENDLIES]: { name: "Amistoso Internacional", flag: "🌐" },
   [LEAGUE_IDS.CHAMPIONS_LEAGUE]: { name: "Champions League", flag: "🏆" },
   [LEAGUE_IDS.EUROPA_LEAGUE]: { name: "Europa League", flag: "🏆" },
-  [LEAGUE_IDS.FRIENDLIES_MEN]: { name: "Amistoso Int.", flag: "🤝" },
+  [LEAGUE_IDS.FRIENDLIES]: { name: "Amistoso Int.", flag: "🤝" },
   [LEAGUE_IDS.SUDAMERICANA]: { name: "Sudamericana", flag: "🏆" },
   [LEAGUE_IDS.LIBERTADORES]: { name: "Libertadores", flag: "🏆" },
   [LEAGUE_IDS.PREMIER_LEAGUE]: { name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
