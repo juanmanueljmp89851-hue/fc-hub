@@ -329,6 +329,17 @@ export const samplePlayers: FutPlayer[] = [
     cardType: "gold_rare", height: 180, weight: 70, foot: "Left",
     weakFoot: 4, skillMoves: 5, workRateAtk: "High", workRateDef: "Low",
   },
+  // ─── END OF ERA ─────────────────────────────────────────
+  {
+    id: "36", name: "Dani Carvajal", commonName: "Carvajal",
+    position: "RB", alternatePositions: ["RWB"], overall: 96,
+    imageUrl: img(186942),
+    pace: 85, shooting: 78, passing: 88, dribbling: 86, defending: 94, physical: 85,
+    club: "Real Madrid", league: "LaLiga EA Sports", nation: "España", nationFlag: "🇪🇸",
+    cardType: "special", promo: "End of Era", cardImageId: "end_of_era",
+    height: 173, weight: 75, foot: "Right",
+    weakFoot: 3, skillMoves: 3, workRateAtk: "Medium", workRateDef: "High",
+  },
 ];
 
 // Unique values for filters
