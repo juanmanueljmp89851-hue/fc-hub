@@ -22,15 +22,16 @@ const SIZES = {
 };
 
 export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
-  const [faceErr, setFaceErr] = useState(false);
   const [bgErr, setBgErr] = useState(false);
+  const [faceEaErr, setFaceEaErr] = useState(false);
+  const [faceImgErr, setFaceImgErr] = useState(false);
 
   const { w, h } = SIZES[size];
   const s = w / 185; // scale factor (md = 1x)
 
   const hasCardBg = !!player.cardImageId && !bgErr;
   const style = getCardStyle(player.cardImageId);
-  const fallbackColors = CARD_COLORS[player.cardType];
+  const fallbackColors = CARD_COLORS[player.cardType] ?? CARD_COLORS["special"];
 
   const isGK = player.position === "GK";
   const stats = isGK
@@ -53,18 +54,10 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
 
   const displayName = player.commonName ?? player.name.split(" ").pop() ?? player.name;
 
-  const faceUrl = player.eaId
-    ? playerFaceUrl(player.eaId)
-    : player.imageUrl;
-
-  /* ── Proportions matched to FUTBIN card template zones ──
-     Card bg is 516×716. Our overlay zones (as % of card height):
-     - OVR + POS:  8%–25%  (top-left)
-     - Face:      10%–52%  (center, behind OVR)
-     - Name:      54%–62%
-     - Stats:     64%–84%
-     - Alt pos:   86%–95%
-  */
+  // Face URL: try eaId first, fall back to imageUrl if eaId URL fails
+  const eaFaceUrl = player.eaId ? playerFaceUrl(player.eaId) : null;
+  const faceUrl = !faceEaErr && eaFaceUrl ? eaFaceUrl : player.imageUrl;
+  const faceVisible = !!faceUrl && !faceImgErr;
 
   return (
     <button
@@ -100,8 +93,8 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
         )}
       </div>
 
-      {/* ─── PLAYER FACE (absolute, large, behind text) ─── */}
-      {faceUrl && !faceErr && (
+      {/* ─── PLAYER FACE ─── */}
+      {faceVisible && (
         <div
           className="absolute overflow-hidden"
           style={{
@@ -115,14 +108,21 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
           }}
         >
           <img
-            src={faceUrl}
+            src={faceUrl!}
             alt=""
             style={{
               maxHeight: "100%",
               objectFit: "contain",
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))",
             }}
-            onError={() => setFaceErr(true)}
+            onError={() => {
+              // If eaId URL failed and we still have imageUrl, try that
+              if (!faceEaErr && eaFaceUrl && player.imageUrl) {
+                setFaceEaErr(true);
+              } else {
+                setFaceImgErr(true);
+              }
+            }}
             draggable={false}
           />
         </div>
@@ -171,7 +171,7 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
           </span>
         </div>
 
-        {/* SPACER — push name below face area */}
+        {/* SPACER */}
         <div style={{ flex: `0 0 ${h * 0.65}px` }} />
 
         {/* NAME */}
@@ -307,7 +307,7 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
         }}
       />
 
-      {/* Hover stats overlay — renders INSIDE card bounds to avoid overflow clipping */}
+      {/* Hover stats overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center rounded-xl bg-black/85 backdrop-blur-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         style={{ borderRadius: 12 * s }}

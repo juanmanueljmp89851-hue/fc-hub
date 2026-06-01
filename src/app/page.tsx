@@ -38,9 +38,9 @@ const quickLinks = [
 ];
 
 export default async function HomePage() {
-  // Fetch newest 15 cards by release order
+  // Fetch newest 15 cards — most recently added to the DB first
   const latestRaw = await prisma.futCard.findMany({
-    orderBy: { promoOrder: "desc" },
+    orderBy: [{ createdAt: "desc" }, { promoOrder: "desc" }],
     take: 15,
   });
 
@@ -77,9 +77,8 @@ export default async function HomePage() {
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        {/* Hero Banner — estética Claude Design */}
+        {/* Hero Banner */}
         <section className="relative mb-8 overflow-hidden rounded-2xl border border-surface-light bg-gradient-to-br from-surface via-surface to-surface-light p-8 md:p-12">
-          {/* Glow decorativo */}
           <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
 
@@ -96,7 +95,7 @@ export default async function HomePage() {
           </p>
         </section>
 
-        {/* Live Ticker — resultados en vivo fútbol real + FC 26 */}
+        {/* Live Ticker */}
         <div className="-mx-4 mb-8">
           <LiveTicker />
         </div>

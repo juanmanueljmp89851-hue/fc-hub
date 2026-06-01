@@ -11,7 +11,8 @@ export type CardType =
   | "toty"
   | "icon"
   | "hero"
-  | "special";
+  | "special"
+  | "end_of_era";
 
 export type PositionCategory = "ATK" | "MID" | "DEF" | "GK";
 
@@ -131,9 +132,9 @@ export function getCardStyle(cardImageId?: string): CardStyle {
   if (id.includes("totw")) {
     return { textColor: "#fef3c7", statLabelColor: "#c4a636", nameColor: "#fef3c7", dividerColor: "#fef3c740" };
   }
-  // End of Era — black/gold prestige card
+  // End of Era — dark amber/gold prestige card
   if (id.includes("end_of_era")) {
-    return { textColor: "#f0d080", statLabelColor: "#c4a030", nameColor: "#f0d080", dividerColor: "#f0d08040" };
+    return { textColor: "#f0c060", statLabelColor: "#c4900a", nameColor: "#f0c060", dividerColor: "#f0c06040" };
   }
   // Default special — white text on dark
   return { textColor: "#ffffff", statLabelColor: "#cccccc", nameColor: "#ffffff", dividerColor: "#ffffff40" };
@@ -190,5 +191,9 @@ export const CARD_COLORS: Record<CardType, {
   special: {
     gradient: "linear-gradient(160deg, #1a0520 0%, #3a1050 20%, #6a2080 40%, #a040c0 55%, #6a2080 70%, #3a1050 90%, #1a0520 100%)",
     text: "#a040c0", accent: "#d080f0", statText: "#e0a0ff", nameBg: "rgba(26, 5, 32, 0.6)",
+  },
+  end_of_era: {
+    gradient: "linear-gradient(160deg, #0a0804 0%, #1e1208 15%, #3d2410 35%, #6b3c18 50%, #3d2410 65%, #1e1208 85%, #0a0804 100%)",
+    text: "#f0c060", accent: "#e8a030", statText: "#f0c060", nameBg: "rgba(10, 8, 4, 0.7)",
   },
 };

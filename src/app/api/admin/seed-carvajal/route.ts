@@ -10,8 +10,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Remove old "special" version if it exists
+  await prisma.futCard.deleteMany({
+    where: { eaId: 186942, cardType: "special" },
+  });
+
   const card = await prisma.futCard.upsert({
-    where: { eaId_cardType: { eaId: 186942, cardType: "special" } },
+    where: { eaId_cardType: { eaId: 186942, cardType: "end_of_era" } },
     update: {
       name: "Dani Carvajal",
       commonName: "Carvajal",
@@ -29,7 +34,7 @@ export async function GET(request: Request) {
       nation: "España",
       promo: "End of Era",
       promoOrder: 100,
-      cardImageId: "end_of_era",
+      cardImageId: null,
       imageUrl: "https://cdn.futbin.com/content/fifa26/img/players/186942.png",
       skillMoves: 3,
       weakFoot: 3,
@@ -56,10 +61,10 @@ export async function GET(request: Request) {
       club: "Real Madrid",
       league: "LaLiga EA Sports",
       nation: "España",
-      cardType: "special",
+      cardType: "end_of_era",
       promo: "End of Era",
       promoOrder: 100,
-      cardImageId: "end_of_era",
+      cardImageId: null,
       imageUrl: "https://cdn.futbin.com/content/fifa26/img/players/186942.png",
       skillMoves: 3,
       weakFoot: 3,
@@ -73,5 +78,5 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, card: { id: card.id, name: card.name, overall: card.overall } });
+  return NextResponse.json({ ok: true, card: { id: card.id, name: card.name, overall: card.overall, cardType: card.cardType } });
 }

@@ -3,6 +3,7 @@ const API_BASE = "https://v3.football.api-sports.io";
 // --- League IDs (api-football) ---
 export const LEAGUE_IDS = {
   WORLD_CUP: 1,
+  FRIENDLIES: 10,
   CHAMPIONS_LEAGUE: 2,
   EUROPA_LEAGUE: 3,
   SUDAMERICANA: 11,
@@ -11,12 +12,14 @@ export const LEAGUE_IDS = {
   LIGUE_1: 61,
   BUNDESLIGA: 78,
   ARGENTINA_PRIMERA: 128,
+  COPA_ARGENTINA: 130,
   SERIE_A: 135,
   LA_LIGA: 140,
 } as const;
 
 export const LEAGUE_META: Record<number, { name: string; flag: string }> = {
   [LEAGUE_IDS.WORLD_CUP]: { name: "Mundial 2026", flag: "🌍" },
+  [LEAGUE_IDS.FRIENDLIES]: { name: "Amistoso Internacional", flag: "🌐" },
   [LEAGUE_IDS.CHAMPIONS_LEAGUE]: { name: "Champions League", flag: "🏆" },
   [LEAGUE_IDS.EUROPA_LEAGUE]: { name: "Europa League", flag: "🏆" },
   [LEAGUE_IDS.SUDAMERICANA]: { name: "Sudamericana", flag: "🏆" },
@@ -25,6 +28,7 @@ export const LEAGUE_META: Record<number, { name: string; flag: string }> = {
   [LEAGUE_IDS.LIGUE_1]: { name: "Ligue 1", flag: "🇫🇷" },
   [LEAGUE_IDS.BUNDESLIGA]: { name: "Bundesliga", flag: "🇩🇪" },
   [LEAGUE_IDS.ARGENTINA_PRIMERA]: { name: "Liga Argentina", flag: "🇦🇷" },
+  [LEAGUE_IDS.COPA_ARGENTINA]: { name: "Copa Argentina", flag: "🇦🇷" },
   [LEAGUE_IDS.SERIE_A]: { name: "Serie A", flag: "🇮🇹" },
   [LEAGUE_IDS.LA_LIGA]: { name: "La Liga", flag: "🇪🇸" },
 };
@@ -177,13 +181,11 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
   const today = new Date().toISOString().split("T")[0];
 
   try {
-    // Fetch all today's matches (no season filter — works on free plan)
     const data = await fetchApi(
       `/fixtures?date=${today}`,
-      300, // 5 min cache
+      300,
     );
 
-    // Filter to only our tracked leagues
     const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
     return data.response
       .filter((f: ApiFixture) => trackedIds.has(f.league.id))
@@ -198,7 +200,7 @@ export async function getLiveAllLeagues(): Promise<NormalizedFixture[]> {
   if (!process.env.FOOTBALL_API_KEY) return [];
 
   try {
-    const data = await fetchApi(`/fixtures?live=all`, 120); // 2 min cache
+    const data = await fetchApi(`/fixtures?live=all`, 120);
     const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
     return data.response
       .filter((f: ApiFixture) => trackedIds.has(f.league.id))
