@@ -131,6 +131,10 @@ export function getCardStyle(cardImageId?: string): CardStyle {
   if (id.includes("totw")) {
     return { textColor: "#fef3c7", statLabelColor: "#c4a636", nameColor: "#fef3c7", dividerColor: "#fef3c740" };
   }
+  // End of Era — black/gold prestige card
+  if (id.includes("end_of_era")) {
+    return { textColor: "#f0d080", statLabelColor: "#c4a030", nameColor: "#f0d080", dividerColor: "#f0d08040" };
+  }
   // Default special — white text on dark
   return { textColor: "#ffffff", statLabelColor: "#cccccc", nameColor: "#ffffff", dividerColor: "#ffffff40" };
 }
