@@ -10,17 +10,17 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Remove old "special" version if it exists
+  // Remove all records with wrong eaId (186942 = Gündoğan, not Carvajal)
   await prisma.futCard.deleteMany({
-    where: { eaId: 186942, cardType: "special" },
+    where: { eaId: 186942 },
   });
 
   const card = await prisma.futCard.upsert({
-    where: { eaId_cardType: { eaId: 186942, cardType: "end_of_era" } },
+    where: { eaId_cardType: { eaId: 204963, cardType: "end_of_era" } },
     update: {
       name: "Dani Carvajal",
       commonName: "Carvajal",
-      overall: 96,
+      overall: 94,
       position: "RB",
       altPositions: ["RWB"],
       pace: 85,
@@ -33,9 +33,9 @@ export async function GET(request: Request) {
       league: "LaLiga EA Sports",
       nation: "España",
       promo: "End of Era",
-      promoOrder: 100,
+      promoOrder: 999999,
       cardImageId: null,
-      imageUrl: "https://cdn.futbin.com/content/fifa26/img/players/186942.png",
+      imageUrl: null,
       skillMoves: 3,
       weakFoot: 3,
       foot: "Right",
@@ -46,10 +46,10 @@ export async function GET(request: Request) {
       releaseDate: new Date("2026-06-01"),
     },
     create: {
-      eaId: 186942,
+      eaId: 204963,
       name: "Dani Carvajal",
       commonName: "Carvajal",
-      overall: 96,
+      overall: 94,
       position: "RB",
       altPositions: ["RWB"],
       pace: 85,
@@ -63,9 +63,9 @@ export async function GET(request: Request) {
       nation: "España",
       cardType: "end_of_era",
       promo: "End of Era",
-      promoOrder: 100,
+      promoOrder: 999999,
       cardImageId: null,
-      imageUrl: "https://cdn.futbin.com/content/fifa26/img/players/186942.png",
+      imageUrl: null,
       skillMoves: 3,
       weakFoot: 3,
       foot: "Right",
@@ -78,5 +78,8 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, card: { id: card.id, name: card.name, overall: card.overall, cardType: card.cardType } });
+  return NextResponse.json({
+    ok: true,
+    card: { id: card.id, name: card.name, overall: card.overall, cardType: card.cardType, eaId: card.eaId },
+  });
 }
