@@ -80,7 +80,7 @@ export function LiveTicker() {
 
   useEffect(() => {
     fetchTicker();
-    const interval = setInterval(fetchTicker, 5 * 60 * 1000);
+    const interval = setInterval(fetchTicker, 10 * 60 * 1000); // 10 min — aligned with API cache
     return () => clearInterval(interval);
   }, [fetchTicker]);
 

@@ -174,7 +174,9 @@ export async function getWorldCupFixtures(): Promise<NormalizedFixture[]> {
   return data.response.map(normalizeFixture);
 }
 
-/** Today's matches across ALL tracked leagues (Argentina timezone) */
+/** Today's matches across ALL tracked leagues (Argentina timezone).
+ *  Single API call with 10-min cache to stay within free plan (100 req/day).
+ *  Shows tracked leagues + any live/in-progress match from any league. */
 export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
   if (!process.env.FOOTBALL_API_KEY) return [];
 
@@ -185,36 +187,25 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
   const today = argNow.toISOString().split("T")[0];
 
   try {
-    // Fetch by date AND also live matches to catch any in-progress games
-    const [dateData, liveData] = await Promise.all([
-      fetchApi(`/fixtures?date=${today}`, 300),
-      fetchApi(`/fixtures?live=all`, 120),
-    ]);
+    // Single call: all fixtures for today (1 API request, 10-min cache)
+    const data = await fetchApi(`/fixtures?date=${today}`, 600);
 
-    console.log(`[ticker] date=${today} dateFixtures=${dateData.response?.length ?? 0} liveFixtures=${liveData.response?.length ?? 0} dateErrors=${JSON.stringify(dateData.errors)} liveErrors=${JSON.stringify(liveData.errors)}`);
+    console.log(`[ticker] date=${today} fixtures=${data.response?.length ?? 0} errors=${JSON.stringify(data.errors)}`);
 
     const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
-
-    // Merge: live (all leagues) + date-based (tracked leagues only), dedupe by fixture id
-    const seen = new Set<number>();
     const results: NormalizedFixture[] = [];
 
-    // Live matches: show ALL leagues (few concurrent games, user wants to see them)
-    for (const f of (liveData.response || [])) {
-      if (seen.has(f.fixture.id)) continue;
-      seen.add(f.fixture.id);
-      results.push(normalizeFixture(f));
+    for (const f of (data.response || [])) {
+      const isTracked = trackedIds.has(f.league.id);
+      const isLive = ["1H", "2H", "HT", "ET", "BT", "P", "LIVE"].includes(f.fixture.status.short);
+
+      // Show: tracked leagues (any status) OR any league if currently live
+      if (isTracked || isLive) {
+        results.push(normalizeFixture(f));
+      }
     }
 
-    // Date-based: only tracked leagues (avoids flooding with minor leagues)
-    for (const f of (dateData.response || [])) {
-      if (!trackedIds.has(f.league.id)) continue;
-      if (seen.has(f.fixture.id)) continue;
-      seen.add(f.fixture.id);
-      results.push(normalizeFixture(f));
-    }
-
-    console.log(`[ticker] total results=${results.length}`);
+    console.log(`[ticker] results=${results.length}`);
     return results;
   } catch (err) {
     console.error("[ticker] getTodayAllLeagues error:", err);
