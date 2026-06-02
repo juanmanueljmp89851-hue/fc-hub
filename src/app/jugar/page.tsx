@@ -8,6 +8,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Duelos",
   description: "Desafiá rivales de EA FC en duelos directos y demostrá quién manda.",
+  alternates: { canonical: "/jugar" },
 };
 
 function getMedalEmoji(pos: number) {

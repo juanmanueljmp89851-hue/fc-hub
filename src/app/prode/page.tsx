@@ -7,6 +7,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Prode Mundial 2026",
   description: "Predecí los resultados del Mundial 2026. Competí con amigos y ganá premios.",
+  alternates: { canonical: "/prode" },
 };
 
 function getStatusInfo(status: string) {

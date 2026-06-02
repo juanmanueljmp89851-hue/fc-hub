@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Actualidad",
   description:
     "Noticias, novedades y actualizaciones de FC 26, Ultimate Team, eventos, esports y mercado.",
+  alternates: { canonical: "/actualidad" },
 };
 
 export default function ActualidadPage() {

@@ -36,6 +36,9 @@ export const metadata: Metadata = {
     images: ["/logo.svg"],
   },
   metadataBase: new URL("https://www.modofosa.com.ar"),
+  alternates: {
+    canonical: "/",
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/logo.svg",

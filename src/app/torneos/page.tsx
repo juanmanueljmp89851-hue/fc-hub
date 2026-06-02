@@ -8,6 +8,7 @@ import { TournamentFilters } from "@/components/tournaments/TournamentFilters";
 export const metadata: Metadata = {
   title: "Arena",
   description: "Torneos, copas y eventos de EA FC organizados por la comunidad Modo Fosa.",
+  alternates: { canonical: "/torneos" },
 };
 
 function getStatusLabel(status: string) {

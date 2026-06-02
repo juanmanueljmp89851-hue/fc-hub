@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata = {
   title: "Política de Privacidad — Modo Fosa",
+  alternates: { canonical: "/legal/privacidad" },
 };
 
 export default function PrivacidadPage() {

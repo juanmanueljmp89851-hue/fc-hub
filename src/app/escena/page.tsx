@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Competitivo",
   description: "Escena competitiva de FC 26: IESA, EFA, eLiga Profesional, VPG y más.",
+  alternates: { canonical: "/escena" },
 };
 
 function getGameModeLabel(mode: string) {

@@ -11,6 +11,7 @@ import { CommentSection } from "@/components/influencers/CommentSection";
 export const metadata: Metadata = {
   title: "Streamers",
   description: "Directorio de creadores y streamers de EA FC en español. Videos, streams y comunidad.",
+  alternates: { canonical: "/influencers" },
 };
 
 interface PageProps {

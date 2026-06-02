@@ -9,6 +9,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Clasificación",
   description: "Clasificación de jugadores de EA FC Argentina. Subí posiciones ganando duelos.",
+  alternates: { canonical: "/ranking" },
 };
 
 function getMedalClass(pos: number) {

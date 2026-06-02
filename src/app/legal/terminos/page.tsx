@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata = {
   title: "Términos y Condiciones — Modo Fosa",
+  alternates: { canonical: "/legal/terminos" },
 };
 
 export default function TerminosPage() {
