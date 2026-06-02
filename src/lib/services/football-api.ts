@@ -191,6 +191,8 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
       fetchApi(`/fixtures?live=all`, 120),
     ]);
 
+    console.log(`[ticker] date=${today} dateFixtures=${dateData.response?.length ?? 0} liveFixtures=${liveData.response?.length ?? 0} dateErrors=${JSON.stringify(dateData.errors)} liveErrors=${JSON.stringify(liveData.errors)}`);
+
     const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
 
     // Merge: live (all leagues) + date-based (tracked leagues only), dedupe by fixture id
@@ -212,8 +214,10 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
       results.push(normalizeFixture(f));
     }
 
+    console.log(`[ticker] total results=${results.length}`);
     return results;
-  } catch {
+  } catch (err) {
+    console.error("[ticker] getTodayAllLeagues error:", err);
     return [];
   }
 }
