@@ -130,7 +130,10 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               ) : (
                 <div className="space-y-2">
                   {weeks.map((week) => {
-                    const statusInfo = getWeekStatusInfo(week.status);
+                    const isGroupStage = week.title.toLowerCase().includes("fase de grupos");
+                    // Group stage weeks always show as "Abierta" (editable until each match starts)
+                    const displayStatus = isGroupStage && week.status !== "SCORED" ? "OPEN" : week.status;
+                    const statusInfo = getWeekStatusInfo(displayStatus);
                     return (
                       <Link
                         key={week.id}

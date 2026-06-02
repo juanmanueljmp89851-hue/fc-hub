@@ -19,19 +19,26 @@ interface MatchWithPrediction {
   predictions?: { predHomeScore: number; predAwayScore: number }[];
 }
 
+type SortMode = "group" | "date";
+
 interface PredictionFormProps {
   prodeId: string;
   weekId: string;
   weekStatus: string;
+  weekTitle: string;
   matches: MatchWithPrediction[];
 }
 
-export function PredictionForm({ prodeId, weekId, weekStatus, matches }: PredictionFormProps) {
+export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches }: PredictionFormProps) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<Record<string, { home: string; away: string }>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("group");
+
+  // Group stage: all matches editable until each match starts
+  const isGroupStage = weekTitle.toLowerCase().includes("fase de grupos");
 
   useEffect(() => {
     async function load() {
@@ -58,7 +65,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
     setPredictions(initial);
   }, [matches]);
 
-  const isOpen = weekStatus === "OPEN";
+  const isOpen = weekStatus === "OPEN" || isGroupStage;
   const canPredict = isOpen && userId;
 
   function updateScore(matchId: string, side: "home" | "away", value: string) {
@@ -96,12 +103,29 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
     setLoading(false);
   }
 
-  // Group matches by stage/group
+  // Group matches by selected sort mode
   const grouped = new Map<string, MatchWithPrediction[]>();
-  for (const match of matches) {
-    const key = match.group ? `Grupo ${match.group}` : match.stage ?? "Partidos";
-    if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key)!.push(match);
+  const sortedMatches = [...matches];
+
+  if (sortMode === "date") {
+    // Sort chronologically, group by date
+    sortedMatches.sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
+    for (const match of sortedMatches) {
+      const dateKey = new Date(match.matchDate).toLocaleDateString("es-AR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+      if (!grouped.has(dateKey)) grouped.set(dateKey, []);
+      grouped.get(dateKey)!.push(match);
+    }
+  } else {
+    // Sort by group
+    for (const match of sortedMatches) {
+      const key = match.group ? `Grupo ${match.group}` : match.stage ?? "Partidos";
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(match);
+    }
   }
 
   const filledCount = Object.values(predictions).filter(
@@ -116,6 +140,35 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
         </div>
       )}
 
+      {/* Sort toggle — only show if matches have groups */}
+      {matches.some((m) => m.group) && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-foreground/40">Ordenar por:</span>
+          <div className="inline-flex rounded-lg border border-surface-light bg-surface">
+            <button
+              onClick={() => setSortMode("group")}
+              className={`rounded-l-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                sortMode === "group"
+                  ? "bg-accent text-background"
+                  : "text-foreground/60 hover:text-accent"
+              }`}
+            >
+              Grupo
+            </button>
+            <button
+              onClick={() => setSortMode("date")}
+              className={`rounded-r-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                sortMode === "date"
+                  ? "bg-accent text-background"
+                  : "text-foreground/60 hover:text-accent"
+              }`}
+            >
+              Fecha
+            </button>
+          </div>
+        </div>
+      )}
+
       {Array.from(grouped.entries()).map(([groupName, groupMatches]) => (
         <div key={groupName}>
           <h3 className="mb-3 text-sm font-bold uppercase text-foreground/50">{groupName}</h3>
@@ -124,15 +177,25 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
               const pred = predictions[match.id];
               const isFinished = match.status === "FINISHED";
               const existingPred = match.predictions?.[0];
+              // Per-match lock: for group stage, lock when match already started
+              const matchStarted = isGroupStage && new Date(match.matchDate) <= new Date();
+              const matchLocked = isFinished || matchStarted;
 
               return (
                 <div
                   key={match.id}
-                  className="rounded-lg border border-surface-light bg-background p-4"
+                  className={`rounded-lg border p-4 ${
+                    matchLocked
+                      ? "border-surface-light/50 bg-background/50 opacity-75"
+                      : "border-surface-light bg-background"
+                  }`}
                 >
-                  {/* Match date + venue */}
+                  {/* Match date + venue + lock indicator */}
                   <div className="mb-2 flex flex-wrap items-center justify-between text-xs text-foreground/40">
-                    <span>
+                    <span className="flex items-center gap-1.5">
+                      {matchStarted && !isFinished && (
+                        <span className="text-gold" title="Partido en curso">🔒</span>
+                      )}
                       {new Date(match.matchDate).toLocaleDateString("es-AR", {
                         weekday: "short",
                         day: "numeric",
@@ -148,7 +211,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
                   <div className="flex items-center justify-center gap-4">
                     <span className="w-32 text-right font-medium">{match.homeTeam}</span>
 
-                    {canPredict && !isFinished ? (
+                    {canPredict && !matchLocked ? (
                       <div className="flex items-center gap-2">
                         <input
                           type="number"

@@ -309,29 +309,50 @@ export async function savePredictions(
   });
   if (!participant) return { error: "No participás en este prode" };
 
-  // Verify week is OPEN
+  // Fetch week + matches for validation
   const week = await prisma.prodeWeek.findUnique({
     where: { id: weekId },
-    select: { status: true, deadline: true },
+    select: { status: true, deadline: true, title: true },
   });
   if (!week) return { error: "Fecha no encontrada" };
-  if (week.status !== "OPEN") return { error: "Las predicciones están cerradas para esta fecha" };
-  if (new Date() > week.deadline) return { error: "Se pasó la fecha límite" };
 
-  // Validate
+  // Determine if this is a group stage week
+  const isGroupStage = week.title.toLowerCase().includes("fase de grupos");
+
+  // For group stage: allow editing until each match starts (per-match lock)
+  // For knockout: use traditional week status check
+  if (!isGroupStage) {
+    if (week.status !== "OPEN") return { error: "Las predicciones están cerradas para esta fecha" };
+    if (new Date() > week.deadline) return { error: "Se pasó la fecha límite" };
+  }
+
+  // Validate scores
   for (const pred of predictions) {
     if (pred.predHomeScore < 0 || pred.predAwayScore < 0) return { error: "Goles negativos inválidos" };
     if (pred.predHomeScore > 20 || pred.predAwayScore > 20) return { error: "Resultado inválido" };
   }
 
-  // Verify matches belong to week
-  const weekMatchIds = await prisma.prodeMatch.findMany({
+  // Verify matches belong to week + per-match time check for group stage
+  const weekMatches = await prisma.prodeMatch.findMany({
     where: { weekId },
-    select: { id: true },
+    select: { id: true, matchDate: true, status: true },
   });
-  const validIds = new Set(weekMatchIds.map((m) => m.id));
+  const matchMap = new Map(weekMatches.map((m) => [m.id, m]));
+  const now = new Date();
+
   for (const pred of predictions) {
-    if (!validIds.has(pred.matchId)) return { error: "Partido no pertenece a esta fecha" };
+    const match = matchMap.get(pred.matchId);
+    if (!match) return { error: "Partido no pertenece a esta fecha" };
+
+    // For group stage: block if match already started
+    if (isGroupStage) {
+      if (match.status === "FINISHED" || match.status === "IN_PROGRESS") {
+        return { error: "No podés predecir partidos que ya empezaron" };
+      }
+      if (now >= match.matchDate) {
+        return { error: "No podés predecir partidos que ya empezaron" };
+      }
+    }
   }
 
   // Upsert

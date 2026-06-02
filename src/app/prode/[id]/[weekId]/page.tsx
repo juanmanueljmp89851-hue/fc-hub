@@ -54,21 +54,34 @@ export default async function ProdeWeekPage({ params }: PageProps) {
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">{week.title}</h1>
-          <p className="mt-1 text-sm text-foreground/60">
-            {week.status === "OPEN"
-              ? `Cierre: ${new Date(week.deadline).toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`
-              : week.status === "SCORED"
-                ? "Fecha puntuada"
-                : week.status === "CLOSED"
-                  ? "Esperando resultados"
-                  : "Próximamente"}
-          </p>
+          {(() => {
+            const isGroupStage = week.title.toLowerCase().includes("fase de grupos");
+            if (isGroupStage && week.status !== "SCORED") {
+              return (
+                <p className="mt-1 text-sm text-accent">
+                  Podés predecir hasta que cada partido empiece
+                </p>
+              );
+            }
+            return (
+              <p className="mt-1 text-sm text-foreground/60">
+                {week.status === "OPEN"
+                  ? `Cierre: ${new Date(week.deadline).toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`
+                  : week.status === "SCORED"
+                    ? "Fecha puntuada"
+                    : week.status === "CLOSED"
+                      ? "Esperando resultados"
+                      : "Próximamente"}
+              </p>
+            );
+          })()}
         </div>
 
         <PredictionForm
           prodeId={prode.id}
           weekId={week.id}
           weekStatus={week.status}
+          weekTitle={week.title}
           matches={serializedMatches}
         />
       </main>
