@@ -193,11 +193,19 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
 
     const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
 
-    // Merge: date-based + live, dedupe by fixture id
+    // Merge: live (all leagues) + date-based (tracked leagues only), dedupe by fixture id
     const seen = new Set<number>();
     const results: NormalizedFixture[] = [];
 
-    for (const f of [...(liveData.response || []), ...(dateData.response || [])]) {
+    // Live matches: show ALL leagues (few concurrent games, user wants to see them)
+    for (const f of (liveData.response || [])) {
+      if (seen.has(f.fixture.id)) continue;
+      seen.add(f.fixture.id);
+      results.push(normalizeFixture(f));
+    }
+
+    // Date-based: only tracked leagues (avoids flooding with minor leagues)
+    for (const f of (dateData.response || [])) {
       if (!trackedIds.has(f.league.id)) continue;
       if (seen.has(f.fixture.id)) continue;
       seen.add(f.fixture.id);
