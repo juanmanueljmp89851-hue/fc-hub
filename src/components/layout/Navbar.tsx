@@ -252,6 +252,15 @@ export function Navbar() {
                 >
                   Mi perfil
                 </Link>
+                {user.role === "ADMIN" && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg border border-gold/30 bg-gold/10 px-4 py-2 text-center text-sm font-medium text-gold"
+                  >
+                    Panel Admin
+                  </Link>
+                )}
                 <button
                   onClick={async () => {
                     const supabase = createClient();
