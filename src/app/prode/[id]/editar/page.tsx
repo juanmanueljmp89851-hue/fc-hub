@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getProdeForEdit, updateProde } from "@/lib/actions/prode";
+import { uploadTournamentBanner } from "@/lib/actions/upload";
 
 export default function EditarProdePage() {
   const router = useRouter();
@@ -18,6 +19,11 @@ export default function EditarProdePage() {
   const [prizePerWeek, setPrizePerWeek] = useState("");
   const [prizeGroupOrder, setPrizeGroupOrder] = useState("");
   const [prizeRounds, setPrizeRounds] = useState("");
+
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [bannerUploading, setBannerUploading] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,6 +42,8 @@ export default function EditarProdePage() {
       setPrizePerWeek(p.prizePerWeek ?? "");
       setPrizeGroupOrder(p.prizeGroupOrder ?? "");
       setPrizeRounds(p.prizeRounds ?? "");
+      setImageUrl(p.imageUrl ?? "");
+      setBannerUrl(p.bannerUrl ?? "");
       setLoaded(true);
     }
     load();
@@ -50,6 +58,8 @@ export default function EditarProdePage() {
       prodeId,
       name,
       description,
+      imageUrl: imageUrl || null,
+      bannerUrl: bannerUrl || null,
       prizeGeneral,
       prizePerWeek,
       prizeGroupOrder,
@@ -123,6 +133,82 @@ export default function EditarProdePage() {
                   onChange={(e) => setDescription(e.target.value)}
                   className={inputClass}
                 />
+              </div>
+
+              {/* Image uploads */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground/70">Logo / Foto</label>
+                <div className="flex items-center gap-3">
+                  {imageUrl && (
+                    <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-surface-light">
+                      <img src={imageUrl} alt="Logo" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl("")}
+                        className="absolute right-0.5 top-0.5 rounded-full bg-background/80 px-1.5 text-xs text-red-400"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <label className="cursor-pointer rounded-lg border border-dashed border-surface-light px-3 py-2 text-sm text-foreground/50 hover:border-accent hover:text-accent">
+                    {imageUploading ? "Subiendo..." : imageUrl ? "Cambiar" : "🏆 Subir foto"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setImageUploading(true);
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const result = await uploadTournamentBanner(fd);
+                        if (result.url) setImageUrl(result.url);
+                        else setError(result.error ?? "Error al subir foto");
+                        setImageUploading(false);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground/70">Banner</label>
+                <div className="flex items-center gap-3">
+                  {bannerUrl && (
+                    <div className="relative h-16 w-28 overflow-hidden rounded-lg border border-surface-light">
+                      <img src={bannerUrl} alt="Banner" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setBannerUrl("")}
+                        className="absolute right-0.5 top-0.5 rounded-full bg-background/80 px-1.5 text-xs text-red-400"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <label className="cursor-pointer rounded-lg border border-dashed border-surface-light px-3 py-2 text-sm text-foreground/50 hover:border-accent hover:text-accent">
+                    {bannerUploading ? "Subiendo..." : bannerUrl ? "Cambiar" : "🖼️ Subir banner"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setBannerUploading(true);
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const result = await uploadTournamentBanner(fd);
+                        if (result.url) setBannerUrl(result.url);
+                        else setError(result.error ?? "Error al subir banner");
+                        setBannerUploading(false);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
             </div>
           </Card>

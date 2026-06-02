@@ -51,9 +51,21 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           ← Mis Prodes
         </Link>
 
+        {/* Banner */}
+        {prode.bannerUrl && (
+          <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
+            <Image src={prode.bannerUrl} alt={prode.name} fill className="object-cover" unoptimized />
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3">
+            {prode.imageUrl && (
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-surface-light">
+                <Image src={prode.imageUrl} alt="" fill className="object-cover" unoptimized />
+              </div>
+            )}
             <h1 className="text-2xl font-bold">{prode.name}</h1>
             {canEdit && (
               <>
@@ -68,7 +80,9 @@ export default async function ProdeDetailPage({ params }: PageProps) {
             )}
           </div>
           {prode.description && (
-            <p className="mt-1 text-foreground/60">{prode.description}</p>
+            <p className="mt-1 text-foreground/60 whitespace-pre-wrap">
+              <Linkify text={prode.description} />
+            </p>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-foreground/50">
             <span>Creado por <span className="text-accent">{prode.createdBy.username}</span></span>
@@ -258,5 +272,31 @@ export default async function ProdeDetailPage({ params }: PageProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+/** Converts URLs in text to clickable links */
+function Linkify({ text }: { text: string }) {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  const parts = text.split(urlRegex);
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        urlRegex.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent underline hover:opacity-80 break-all"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
   );
 }

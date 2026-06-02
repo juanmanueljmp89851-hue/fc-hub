@@ -429,6 +429,8 @@ model Prode {
   createdById     String      @map("created_by")
   shareCode       String      @unique @map("share_code")
   status          ProdeStatus @default(OPEN)
+  imageUrl        String?     @map("image_url")
+  bannerUrl       String?     @map("banner_url")
   prizeGeneral    String?     @map("prize_general")
   prizePerWeek    String?     @map("prize_per_week")
   prizeGroupOrder String?     @map("prize_group_order")

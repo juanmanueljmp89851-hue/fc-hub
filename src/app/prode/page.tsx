@@ -107,24 +107,36 @@ export default async function ProdePage() {
               const statusInfo = getStatusInfo(prode.status);
               return (
                 <Link key={prode.id} href={`/prode/${prode.id}`}>
-                  <Card className="h-full transition-colors hover:border-accent/50">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
-                        {statusInfo.label}
-                      </span>
-                      <span className="text-xs text-foreground/40">
-                        {prode._count.participants} participantes
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-bold">{prode.name}</h3>
-                    <p className="mt-1 text-xs text-foreground/50">
-                      Creado por {prode.createdBy.username}
-                    </p>
-                    {prode.prizeGeneral && (
-                      <p className="mt-2 text-sm text-gold">
-                        🏆 {prode.prizeGeneral}
-                      </p>
+                  <Card className="h-full overflow-hidden p-0 transition-colors hover:border-accent/50">
+                    {prode.bannerUrl && (
+                      <div className="h-28 w-full overflow-hidden">
+                        <img src={prode.bannerUrl} alt="" className="h-full w-full object-cover" />
+                      </div>
                     )}
+                    <div className={prode.bannerUrl ? "p-4" : "p-5"}>
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
+                          {statusInfo.label}
+                        </span>
+                        <span className="text-xs text-foreground/40">
+                          {prode._count.participants} participantes
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {prode.imageUrl && (
+                          <img src={prode.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                        )}
+                        <h3 className="text-lg font-bold">{prode.name}</h3>
+                      </div>
+                      <p className="mt-1 text-xs text-foreground/50">
+                        Creado por {prode.createdBy.username}
+                      </p>
+                      {prode.prizeGeneral && (
+                        <p className="mt-2 text-sm text-gold">
+                          🏆 {prode.prizeGeneral}
+                        </p>
+                      )}
+                    </div>
                   </Card>
                 </Link>
               );

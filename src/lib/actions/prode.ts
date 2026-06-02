@@ -35,6 +35,8 @@ function generateShareCode(): string {
 interface CreateProdeInput {
   name: string;
   description?: string;
+  imageUrl?: string;
+  bannerUrl?: string;
   prizeGeneral?: string;
   prizePerWeek?: string;
   prizeGroupOrder?: string;
@@ -62,6 +64,8 @@ export async function createProde(input: CreateProdeInput) {
     data: {
       name: input.name,
       description: input.description,
+      imageUrl: input.imageUrl,
+      bannerUrl: input.bannerUrl,
       createdById: userId,
       shareCode,
       prizeGeneral: input.prizeGeneral,
@@ -174,6 +178,8 @@ interface UpdateProdeInput {
   prodeId: string;
   name?: string;
   description?: string;
+  imageUrl?: string | null;
+  bannerUrl?: string | null;
   prizeGeneral?: string;
   prizePerWeek?: string;
   prizeGroupOrder?: string;
@@ -206,6 +212,8 @@ export async function updateProde(input: UpdateProdeInput) {
   const data: Record<string, unknown> = {};
   if (input.name !== undefined) data.name = input.name.trim();
   if (input.description !== undefined) data.description = input.description?.trim() || null;
+  if (input.imageUrl !== undefined) data.imageUrl = input.imageUrl || null;
+  if (input.bannerUrl !== undefined) data.bannerUrl = input.bannerUrl || null;
   if (input.prizeGeneral !== undefined) data.prizeGeneral = input.prizeGeneral?.trim() || null;
   if (input.prizePerWeek !== undefined) data.prizePerWeek = input.prizePerWeek?.trim() || null;
   if (input.prizeGroupOrder !== undefined) data.prizeGroupOrder = input.prizeGroupOrder?.trim() || null;
