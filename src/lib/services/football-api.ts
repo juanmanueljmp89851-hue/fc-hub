@@ -174,22 +174,37 @@ export async function getWorldCupFixtures(): Promise<NormalizedFixture[]> {
   return data.response.map(normalizeFixture);
 }
 
-/** Today's matches across ALL tracked leagues */
+/** Today's matches across ALL tracked leagues (Argentina timezone) */
 export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
   if (!process.env.FOOTBALL_API_KEY) return [];
 
-  const today = new Date().toISOString().split("T")[0];
+  // Use Argentina timezone (UTC-3) so late-night matches aren't missed
+  const argNow = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
+  );
+  const today = argNow.toISOString().split("T")[0];
 
   try {
-    const data = await fetchApi(
-      `/fixtures?date=${today}`,
-      300,
-    );
+    // Fetch by date AND also live matches to catch any in-progress games
+    const [dateData, liveData] = await Promise.all([
+      fetchApi(`/fixtures?date=${today}`, 300),
+      fetchApi(`/fixtures?live=all`, 120),
+    ]);
 
     const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
-    return data.response
-      .filter((f: ApiFixture) => trackedIds.has(f.league.id))
-      .map(normalizeFixture);
+
+    // Merge: date-based + live, dedupe by fixture id
+    const seen = new Set<number>();
+    const results: NormalizedFixture[] = [];
+
+    for (const f of [...(liveData.response || []), ...(dateData.response || [])]) {
+      if (!trackedIds.has(f.league.id)) continue;
+      if (seen.has(f.fixture.id)) continue;
+      seen.add(f.fixture.id);
+      results.push(normalizeFixture(f));
+    }
+
+    return results;
   } catch {
     return [];
   }
