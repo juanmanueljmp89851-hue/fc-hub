@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { getTournament } from "@/lib/actions/tournament";
 import { getCurrentUser } from "@/lib/actions/user";
 import { TournamentActions } from "@/components/tournaments/TournamentActions";
@@ -243,6 +244,11 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </div>
             )}
           </Card>
+        </div>
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
         </div>
       </main>
     </div>

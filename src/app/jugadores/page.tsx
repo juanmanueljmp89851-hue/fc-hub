@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { JugadoresClient } from "./JugadoresClient";
+import { AdSlot } from "@/components/ads/AdSlot";
 import type { FutPlayer } from "@/types/player";
 
 export const dynamic = "force-dynamic";
@@ -55,5 +56,12 @@ export default async function JugadoresPage() {
   // Get unique promos in order (for filter dropdown)
   const promos = [...new Set(cards.map((c) => c.promo).filter(Boolean))] as string[];
 
-  return <JugadoresClient players={players} promos={promos} />;
+  return (
+    <>
+      <JugadoresClient players={players} promos={promos} />
+      <div className="mx-auto max-w-7xl px-4 pb-8">
+        <AdSlot format="auto" />
+      </div>
+    </>
+  );
 }

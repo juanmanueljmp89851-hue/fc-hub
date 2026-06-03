@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { getInfluencers, getAllSpecialties } from "@/lib/actions/influencers";
 import Link from "next/link";
 import { InfluencerFilters } from "@/components/influencers/InfluencerFilters";
@@ -135,6 +136,11 @@ export default async function InfluencersPage({ searchParams }: PageProps) {
             ))}
           </div>
         )}
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
+        </div>
       </main>
     </div>
   );

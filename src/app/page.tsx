@@ -121,8 +121,8 @@ export default async function HomePage() {
         </section>
 
         {/* Ad Banner */}
-        <div className="mb-8 flex justify-center">
-          <AdSlot slot="banner" />
+        <div className="mb-8">
+          <AdSlot format="horizontal" />
         </div>
 
         {/* Latest Cards Strip */}
@@ -134,8 +134,8 @@ export default async function HomePage() {
         </section>
 
         {/* Ad In-Feed */}
-        <div className="mb-8 flex justify-center">
-          <AdSlot slot="inFeed" />
+        <div className="mb-8">
+          <AdSlot format="auto" />
         </div>
       </main>
     </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { getRanking } from "@/lib/actions/casual";
 import { RankingFilters } from "@/components/ranking/RankingFilters";
 import Link from "next/link";
@@ -170,6 +171,11 @@ export default async function RankingPage({ searchParams }: PageProps) {
             </table>
           </Card>
         )}
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
+        </div>
       </main>
     </div>
   );

@@ -22,10 +22,16 @@ export default function ActualidadPage() {
           </p>
         </div>
 
+        {/* Ad Banner top */}
+        <div className="mb-6">
+          <AdSlot format="horizontal" />
+        </div>
+
         <NewsFeed limit={80} />
 
-        <div className="mt-8 flex justify-center">
-          <AdSlot slot="inFeed" />
+        {/* Ad bottom */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
         </div>
       </main>
     </div>

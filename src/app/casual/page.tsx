@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { PlayerSearch } from "@/components/casual/PlayerSearch";
 import { getMyMatches } from "@/lib/actions/casual";
 import Link from "next/link";
@@ -144,6 +145,11 @@ export default async function CasualPage() {
               </Card>
             )}
           </div>
+        </div>
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
         </div>
       </main>
     </div>

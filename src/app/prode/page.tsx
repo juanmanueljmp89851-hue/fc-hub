@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { getMyProdes, getActiveWeek } from "@/lib/actions/prode";
 import Link from "next/link";
 
@@ -148,6 +149,11 @@ export default async function ProdePage() {
             })}
           </div>
         )}
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
+        </div>
       </main>
     </div>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { listTournaments } from "@/lib/actions/tournament";
 import { TournamentFilters } from "@/components/tournaments/TournamentFilters";
 
@@ -212,6 +213,11 @@ export default async function TorneosPage({ searchParams }: PageProps) {
             )}
           </>
         )}
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
+        </div>
       </main>
     </div>
   );

@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getProde, getProdeWeeks } from "@/lib/actions/prode";
 import { getCurrentUser } from "@/lib/actions/user";
 import Link from "next/link";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
 import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
 import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";
@@ -235,6 +236,11 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Ad */}
+        <div className="mt-8">
+          <AdSlot format="horizontal" />
         </div>
       </main>
     </div>
