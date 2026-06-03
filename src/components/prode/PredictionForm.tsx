@@ -210,9 +210,9 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
 
                   {/* Teams + scores */}
                   <div className="flex items-center justify-center gap-4">
-                    <span className="flex w-32 items-center justify-end gap-1.5 font-medium">
-                      <TeamFlag team={match.homeTeam} size={18} />
+                    <span className="flex w-36 items-center justify-end gap-1.5 font-medium">
                       {match.homeTeam}
+                      <TeamFlag team={match.homeTeam} />
                     </span>
 
                     {canPredict && !matchLocked ? (
@@ -270,8 +270,8 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
                       <span className="text-lg text-foreground/30">vs</span>
                     )}
 
-                    <span className="flex w-32 items-center gap-1.5 font-medium">
-                      <TeamFlag team={match.awayTeam} size={18} />
+                    <span className="flex w-36 items-center gap-1.5 font-medium">
+                      <TeamFlag team={match.awayTeam} />
                       {match.awayTeam}
                     </span>
                   </div>
