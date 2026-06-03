@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { saveGroupPredictions, getUserGroupPredictions } from "@/lib/actions/prode";
+import { getFlag } from "@/lib/teamFlags";
 
 const WORLD_CUP_GROUPS: Record<string, string[]> = {
   A: ["México", "Sudáfrica", "Corea del Sur", "Chequia"],
@@ -158,7 +159,7 @@ export default function GruposPredictionPage() {
                       >
                         {teams.map((team) => (
                           <option key={team} value={team}>
-                            {team}
+                            {getFlag(team)} {team}
                           </option>
                         ))}
                       </select>

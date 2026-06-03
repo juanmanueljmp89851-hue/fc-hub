@@ -10,6 +10,7 @@ import {
   getAdvanceRoundStatus,
   getAdvancedTeams,
 } from "@/lib/actions/prode";
+import { getFlag } from "@/lib/teamFlags";
 
 const ALL_TEAMS = [
   // Group A
@@ -214,7 +215,7 @@ export default function AvancePredictionPage() {
                               : "border-surface-light bg-surface/30 text-foreground/70 hover:border-accent/50 hover:text-accent"
                         }`}
                       >
-                        {team}
+                        {getFlag(team)} {team}
                       </button>
                     );
                   })}
@@ -254,7 +255,7 @@ export default function AvancePredictionPage() {
                             key={team}
                             className="rounded-full border border-surface-light/50 px-2.5 py-1 text-xs text-foreground/40"
                           >
-                            {team}
+                            {getFlag(team)} {team}
                           </span>
                         ))}
                       </div>
