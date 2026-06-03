@@ -952,3 +952,158 @@ export async function resolveJoinRequest(
   revalidatePath(`/prode/${request.prodeId}`);
   return { success: true };
 }
+
+// ─── PRODE CHAT ───────────────────────────────────────────
+
+export async function getProdeMessages(prodeId: string, cursor?: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { messages: [], hasMore: false };
+
+  // Verify participant
+  const participant = await prisma.prodeParticipant.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+  });
+  if (!participant) return { messages: [], hasMore: false };
+
+  const take = 50;
+  const messages = await prisma.prodeMessage.findMany({
+    where: {
+      prodeId,
+      ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+    },
+    include: {
+      user: { select: { id: true, username: true, avatarUrl: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: take + 1,
+  });
+
+  const hasMore = messages.length > take;
+  if (hasMore) messages.pop();
+
+  return { messages: messages.reverse(), hasMore };
+}
+
+export async function getNewProdeMessages(prodeId: string, after: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return [];
+
+  const participant = await prisma.prodeParticipant.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+  });
+  if (!participant) return [];
+
+  return prisma.prodeMessage.findMany({
+    where: {
+      prodeId,
+      createdAt: { gt: new Date(after) },
+    },
+    include: {
+      user: { select: { id: true, username: true, avatarUrl: true } },
+    },
+    orderBy: { createdAt: "asc" },
+    take: 100,
+  });
+}
+
+export async function sendProdeMessage(prodeId: string, text: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado" };
+
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.length > 500) return { error: "Mensaje inválido" };
+
+  const participant = await prisma.prodeParticipant.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+  });
+  if (!participant) return { error: "No participás en este prode" };
+
+  const msg = await prisma.prodeMessage.create({
+    data: { prodeId, userId, text: trimmed },
+    include: {
+      user: { select: { id: true, username: true, avatarUrl: true } },
+    },
+  });
+
+  return { success: true, message: msg };
+}
+
+// ─── DETAILED LEADERBOARD (per-week breakdown) ────────────
+
+export async function getProdeLeaderboardDetailed(prodeId: string) {
+  const participants = await prisma.prodeParticipant.findMany({
+    where: { prodeId },
+    include: {
+      user: { select: { id: true, username: true, avatarUrl: true } },
+    },
+  });
+
+  const userIds = participants.map((p) => p.userId);
+
+  // Get all scored weeks
+  const weeks = await prisma.prodeWeek.findMany({
+    where: { status: "SCORED" },
+    orderBy: { deadline: "asc" },
+    select: { id: true, title: true },
+  });
+
+  // Match predictions per week per user
+  const allPredictions = await prisma.prodePrediction.findMany({
+    where: { prodeId, userId: { in: userIds } },
+    include: { match: { select: { weekId: true } } },
+  });
+
+  // Build per-user per-week points
+  const weeklyPoints: Record<string, Record<string, number>> = {};
+  for (const pred of allPredictions) {
+    const uid = pred.userId;
+    const wid = pred.match.weekId;
+    if (!weeklyPoints[uid]) weeklyPoints[uid] = {};
+    weeklyPoints[uid][wid] = (weeklyPoints[uid][wid] ?? 0) + pred.pointsEarned;
+  }
+
+  // Group + advance totals
+  const groupPoints = await prisma.prodeGroupPrediction.groupBy({
+    by: ["userId"],
+    where: { prodeId, userId: { in: userIds } },
+    _sum: { pointsEarned: true },
+  });
+  const groupMap = new Map(groupPoints.map((g) => [g.userId, g._sum.pointsEarned ?? 0]));
+
+  const advancePoints = await prisma.prodeAdvancePrediction.groupBy({
+    by: ["userId"],
+    where: { prodeId, userId: { in: userIds } },
+    _sum: { pointsEarned: true },
+  });
+  const advanceMap = new Map(advancePoints.map((a) => [a.userId, a._sum.pointsEarned ?? 0]));
+
+  // Exact counts
+  const exactCounts = await prisma.prodePrediction.groupBy({
+    by: ["userId"],
+    where: { prodeId, userId: { in: userIds }, pointsEarned: PRODE.EXACT_RESULT },
+    _count: { id: true },
+  });
+  const exactMap = new Map(exactCounts.map((e) => [e.userId, e._count.id]));
+
+  const leaderboard = participants.map((p) => {
+    const wp = weeklyPoints[p.userId] ?? {};
+    const matchTotal = Object.values(wp).reduce((a, b) => a + b, 0);
+    const gp = groupMap.get(p.userId) ?? 0;
+    const ap = advanceMap.get(p.userId) ?? 0;
+
+    return {
+      userId: p.userId,
+      username: p.user.username,
+      avatarUrl: p.user.avatarUrl,
+      totalPoints: matchTotal + gp + ap,
+      matchPoints: matchTotal,
+      groupPoints: gp,
+      advancePoints: ap,
+      exactResults: exactMap.get(p.userId) ?? 0,
+      weeklyPoints: wp,
+    };
+  });
+
+  leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+  return { leaderboard, weeks };
+}

@@ -2,19 +2,14 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { getProde, getProdeLeaderboard, getProdeWeeks } from "@/lib/actions/prode";
+import { getProde, getProdeWeeks } from "@/lib/actions/prode";
 import { getCurrentUser } from "@/lib/actions/user";
 import Link from "next/link";
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
 import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
 import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";
-
-function getMedalClass(pos: number) {
-  if (pos === 1) return "bg-gold text-background";
-  if (pos === 2) return "bg-gray-300 text-background";
-  if (pos === 3) return "bg-amber-700 text-white";
-  return "bg-surface-light text-foreground/60";
-}
+import { ProdeChat } from "@/components/prode/ProdeChat";
+import { ProdeLeaderboard } from "@/components/prode/ProdeLeaderboard";
 
 function getWeekStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string }> = {
@@ -31,9 +26,8 @@ interface PageProps {
 }
 
 export default async function ProdeDetailPage({ params }: PageProps) {
-  const [prode, leaderboard, weeks] = await Promise.all([
+  const [prode, weeks] = await Promise.all([
     getProde(params.id),
-    getProdeLeaderboard(params.id),
     getProdeWeeks(),
   ]);
 
@@ -144,7 +138,10 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           </Card>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        {/* Leaderboard */}
+        <ProdeLeaderboard prodeId={prode.id} />
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* Left: Weeks + predictions */}
           <div className="space-y-6 lg:col-span-2">
             {/* Weeks list */}
@@ -158,7 +155,6 @@ export default async function ProdeDetailPage({ params }: PageProps) {
                 <div className="space-y-2">
                   {weeks.map((week) => {
                     const isGroupStage = week.title.toLowerCase().includes("fase de grupos");
-                    // Group stage weeks always show as "Abierta" (editable until each match starts)
                     const displayStatus = isGroupStage && week.status !== "SCORED" ? "OPEN" : week.status;
                     const statusInfo = getWeekStatusInfo(displayStatus);
                     return (
@@ -229,58 +225,13 @@ export default async function ProdeDetailPage({ params }: PageProps) {
             </Card>
           </div>
 
-          {/* Right: Leaderboard */}
+          {/* Right: Chat */}
           <div>
-            <Card className="sticky top-20">
-              <CardHeader>
-                <CardTitle>Ranking</CardTitle>
-              </CardHeader>
-              {leaderboard.length === 0 || leaderboard.every((e) => e.totalPoints === 0) ? (
-                <p className="text-sm text-foreground/50">
-                  Se actualiza cuando se puntúen las fechas
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {leaderboard.map((entry, i) => (
-                    <div
-                      key={entry.userId}
-                      className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${getMedalClass(i + 1)}`}
-                        >
-                          {i + 1}
-                        </span>
-                        <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
-                          {entry.avatarUrl ? (
-                            <Image src={entry.avatarUrl} alt="" fill className="object-cover" />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
-                          )}
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium">{entry.username}</span>
-                          {entry.exactResults > 0 && (
-                            <span className="ml-1 text-xs text-gold">{entry.exactResults}🎯</span>
-                          )}
-                        </div>
-                      </div>
-                      <span className="font-bold text-gold">{entry.totalPoints}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Points breakdown legend */}
-              <div className="mt-4 space-y-1 rounded-lg bg-surface-light/50 p-3 text-xs text-foreground/50">
-                <p className="font-medium text-foreground/70">Puntos</p>
-                <p>🎯 Exacto: <span className="font-bold text-gold">5</span></p>
-                <p>✅ Ganador: <span className="font-bold text-accent">3</span></p>
-                <p>📊 Grupo perfecto: <span className="font-bold text-gold">10</span></p>
-                <p>🔮 Campeón: <span className="font-bold text-accent">10</span></p>
+            {currentUser && (
+              <div className="sticky top-20">
+                <ProdeChat prodeId={prode.id} currentUserId={currentUser.id} />
               </div>
-            </Card>
+            )}
           </div>
         </div>
       </main>

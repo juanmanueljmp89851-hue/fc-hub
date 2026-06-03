@@ -61,6 +61,7 @@ model User {
   lobbyMessages         LobbyMessage[]
   prodeJoinRequests     ProdeJoinRequest[]  @relation("ProdeJoinRequester")
   prodeJoinResolutions  ProdeJoinRequest[]  @relation("ProdeJoinResolver")
+  prodeMessages         ProdeMessage[]
 
   @@map("users")
 }
@@ -448,6 +449,7 @@ model Prode {
   groupPredictions   ProdeGroupPrediction[]
   advancePredictions ProdeAdvancePrediction[]
   joinRequests       ProdeJoinRequest[]
+  messages           ProdeMessage[]
 
   @@map("prodes")
 }
@@ -596,6 +598,20 @@ model ProdeAdvancePrediction {
 
   @@unique([prodeId, userId, round])
   @@map("prode_advance_predictions")
+}
+
+model ProdeMessage {
+  id        String   @id @default(uuid())
+  prodeId   String   @map("prode_id")
+  userId    String   @map("user_id")
+  text      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  prode Prode @relation(fields: [prodeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([prodeId, createdAt])
+  @@map("prode_messages")
 }
 
 // ─── ESCENA COMPETITIVA (LIGAS EXTERNAS) ────────────────────
