@@ -14,14 +14,8 @@ interface AdSlotProps {
 
 /**
  * Responsive AdSense ad slot.
- * Uses data-ad-format="auto" + data-full-width-responsive="true"
- * so Google picks the best size for the available space.
- *
- * Usage:
- *   <AdSlot />                          — auto format (Google picks)
- *   <AdSlot format="horizontal" />      — prefer banner/leaderboard
- *   <AdSlot format="rectangle" />       — prefer 300x250 / 336x280
- *   <AdSlot format="vertical" />        — prefer skyscraper/sidebar
+ * Works with Auto Ads enabled in AdSense panel.
+ * Container provides width context so Google can pick best ad size.
  */
 export function AdSlot({ format = "auto", className = "" }: AdSlotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,28 +23,31 @@ export function AdSlot({ format = "auto", className = "" }: AdSlotProps) {
 
   useEffect(() => {
     if (AD_CONFIG.provider !== "adsense" || pushedRef.current) return;
-    pushedRef.current = true;
 
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-    } catch {
-      // AdSense script not loaded yet
-    }
+    // Wait for container to have layout dimensions before pushing
+    const timer = setTimeout(() => {
+      if (containerRef.current && containerRef.current.offsetWidth > 0) {
+        pushedRef.current = true;
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } catch {
+          // AdSense script not loaded yet
+        }
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
   }, []);
 
   if (AD_CONFIG.provider === "none") return null;
 
   return (
-    <div
-      ref={containerRef}
-      className={`ad-container flex items-center justify-center overflow-hidden ${className}`}
-    >
+    <div ref={containerRef} className={`w-full overflow-hidden ${className}`}>
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client={AD_CONFIG.adsense.publisherId}
-        data-ad-slot=""
         data-ad-format={format}
         data-full-width-responsive="true"
       />
