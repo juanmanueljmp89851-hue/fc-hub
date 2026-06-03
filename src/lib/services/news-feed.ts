@@ -348,7 +348,7 @@ async function fetchAllNews(): Promise<NewsItem[]> {
 function insertPinnedArticles(items: NewsItem[]): NewsItem[] {
   // Remove any RSS items that match pinned article URLs (avoid duplicates)
   const pinnedUrls = new Set(PINNED_ARTICLES.map((p) => p.item.link));
-  let filtered = items.filter((item) => !pinnedUrls.has(item.link));
+  const filtered = items.filter((item) => !pinnedUrls.has(item.link));
 
   // Insert pinned articles at their fixed positions
   for (const pinned of PINNED_ARTICLES) {
