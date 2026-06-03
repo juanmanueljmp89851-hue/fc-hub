@@ -138,9 +138,6 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           </Card>
         )}
 
-        {/* Leaderboard */}
-        <ProdeLeaderboard prodeId={prode.id} />
-
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* Left: Weeks + predictions */}
           <div className="space-y-6 lg:col-span-2">
@@ -199,6 +196,9 @@ export default async function ProdeDetailPage({ params }: PageProps) {
                 </Card>
               </Link>
             </div>
+
+            {/* Leaderboard */}
+            <ProdeLeaderboard prodeId={prode.id} />
 
             {/* Participants */}
             <Card>

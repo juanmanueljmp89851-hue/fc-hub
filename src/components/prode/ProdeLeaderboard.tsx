@@ -29,9 +29,9 @@ function getMedalClass(pos: number) {
 }
 
 function shortWeekTitle(title: string) {
-  // "Jornada 1 — Fase de Grupos (11–15 de junio)" → "J1"
-  const match = title.match(/Jornada\s+(\d+)/i);
-  if (match) return `J${match[1]}`;
+  // "Fecha 1 — Fase de Grupos" → "F1"
+  const match = title.match(/Fecha\s+(\d+)/i);
+  if (match) return `F${match[1]}`;
   if (title.toLowerCase().includes("octavos")) return "8vos";
   if (title.toLowerCase().includes("cuartos")) return "4tos";
   if (title.toLowerCase().includes("semi")) return "Semi";
