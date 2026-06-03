@@ -39,7 +39,7 @@ function shortWeekTitle(title: string) {
   return title.slice(0, 4);
 }
 
-export function ProdeLeaderboard({ prodeId }: { prodeId: string }) {
+export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRows?: number }) {
   const [data, setData] = useState<{ leaderboard: LeaderboardEntry[]; weeks: Week[] } | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -73,7 +73,7 @@ export function ProdeLeaderboard({ prodeId }: { prodeId: string }) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-surface-light px-4 py-3">
         <h3 className="text-sm font-bold">🏆 Tabla de posiciones</h3>
-        {weeks.length > 0 && (
+        {weeks.length > 0 && !maxRows && (
           <button
             onClick={() => setShowDetail(!showDetail)}
             className="text-xs text-foreground/40 hover:text-accent"
@@ -105,7 +105,7 @@ export function ProdeLeaderboard({ prodeId }: { prodeId: string }) {
             </tr>
           </thead>
           <tbody>
-            {leaderboard.map((entry, i) => (
+            {(maxRows ? leaderboard.slice(0, maxRows) : leaderboard).map((entry, i) => (
               <tr
                 key={entry.userId}
                 className={`border-b border-surface-light/30 ${i < 3 ? "bg-gold/5" : ""}`}

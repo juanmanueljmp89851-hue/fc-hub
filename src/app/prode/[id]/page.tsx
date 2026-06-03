@@ -138,6 +138,9 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           </Card>
         )}
 
+        {/* Top 5 leaderboard */}
+        <ProdeLeaderboard prodeId={prode.id} maxRows={5} />
+
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* Left: Weeks + predictions */}
           <div className="space-y-6 lg:col-span-2">
