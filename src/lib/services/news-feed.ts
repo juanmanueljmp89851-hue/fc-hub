@@ -303,7 +303,7 @@ const PINNED_ARTICLES: Array<{
       title: "EA FC 26: así es el modo Mundial 2026 del juego",
       description: "Todo lo que sabemos sobre el modo Copa del Mundo FIFA 2026 en EA Sports FC 26.",
       link: "https://culturageek.com.ar/ea-fc-26-modo-mundial-2026/",
-      imageUrl: "https://culturageek.com.ar/wp-content/uploads/2025/05/EA-FC-26.webp",
+      imageUrl: "https://culturageek.com.ar/wp-content/uploads/2026/05/Screenshot-2026-05-27-at-11-57-21-EA-Sports-FC-26-The-Worlds-Game-Update-details-1.webp",
       source: "CulturaGeek",
       sourceIcon: "🎮",
       pubDate: new Date("2025-05-28T12:00:00Z"),
