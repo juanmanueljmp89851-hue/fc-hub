@@ -185,28 +185,64 @@ export async function getTodayAllLeagues(): Promise<NormalizedFixture[]> {
     new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
   );
   const today = argNow.toISOString().split("T")[0];
+  const argHour = argNow.getHours();
 
   try {
-    // Single call: all fixtures for today (1 API request, 10-min cache)
+    const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
+
+    // Fetch today's fixtures (1 API request, 10-min cache)
     const data = await fetchApi(`/fixtures?date=${today}`, 600);
 
     console.log(`[ticker] date=${today} fixtures=${data.response?.length ?? 0} errors=${JSON.stringify(data.errors)}`);
 
-    const trackedIds = new Set<number>(Object.values(LEAGUE_IDS));
     const results: NormalizedFixture[] = [];
 
     for (const f of (data.response || [])) {
       const isTracked = trackedIds.has(f.league.id);
       const isLive = ["1H", "2H", "HT", "ET", "BT", "P", "LIVE"].includes(f.fixture.status.short);
 
-      // Show: tracked leagues (any status) OR any league if currently live
       if (isTracked || isLive) {
         results.push(normalizeFixture(f));
       }
     }
 
-    console.log(`[ticker] results=${results.length}`);
-    return results;
+    // Before noon BsAs: also fetch yesterday so finished matches stay visible ~12h
+    if (argHour < 12) {
+      const yesterday = new Date(argNow);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      try {
+        const yData = await fetchApi(`/fixtures?date=${yesterdayStr}`, 600);
+        const now = Date.now();
+
+        for (const f of (yData.response || [])) {
+          const isTracked = trackedIds.has(f.league.id);
+          if (!isTracked) continue;
+
+          const matchTime = new Date(f.fixture.date).getTime();
+          const hoursAgo = (now - matchTime) / (1000 * 60 * 60);
+
+          // Only include matches from last 12 hours
+          if (hoursAgo <= 12) {
+            results.push(normalizeFixture(f));
+          }
+        }
+      } catch {
+        // Yesterday fetch failed — continue with today only
+      }
+    }
+
+    // Dedupe by externalId (in case a match appears in both days)
+    const seen = new Set<number>();
+    const deduped = results.filter((r) => {
+      if (seen.has(r.externalId)) return false;
+      seen.add(r.externalId);
+      return true;
+    });
+
+    console.log(`[ticker] results=${deduped.length}`);
+    return deduped;
   } catch (err) {
     console.error("[ticker] getTodayAllLeagues error:", err);
     return [];
