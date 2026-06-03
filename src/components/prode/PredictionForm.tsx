@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { savePredictions } from "@/lib/actions/prode";
 import { getCurrentUser } from "@/lib/actions/user";
-import { getFlag } from "@/lib/teamFlags";
+import { TeamFlag } from "@/components/prode/TeamFlag";
 
 interface MatchWithPrediction {
   id: string;
@@ -210,7 +210,10 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
 
                   {/* Teams + scores */}
                   <div className="flex items-center justify-center gap-4">
-                    <span className="w-32 text-right font-medium">{getFlag(match.homeTeam)} {match.homeTeam}</span>
+                    <span className="flex w-32 items-center justify-end gap-1.5 font-medium">
+                      <TeamFlag team={match.homeTeam} size={18} />
+                      {match.homeTeam}
+                    </span>
 
                     {canPredict && !matchLocked ? (
                       <div className="flex items-center gap-2">
@@ -267,7 +270,10 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
                       <span className="text-lg text-foreground/30">vs</span>
                     )}
 
-                    <span className="w-32 font-medium">{match.awayTeam} {getFlag(match.awayTeam)}</span>
+                    <span className="flex w-32 items-center gap-1.5 font-medium">
+                      <TeamFlag team={match.awayTeam} size={18} />
+                      {match.awayTeam}
+                    </span>
                   </div>
                 </div>
               );

@@ -10,7 +10,7 @@ import {
   getAdvanceRoundStatus,
   getAdvancedTeams,
 } from "@/lib/actions/prode";
-import { getFlag } from "@/lib/teamFlags";
+import { TEAM_CODES } from "@/lib/teamFlags";
 
 const ALL_TEAMS = [
   // Group A
@@ -207,7 +207,7 @@ export default function AvancePredictionPage() {
                         key={team}
                         onClick={() => toggleTeam(round.key, team, round.teamsNeeded)}
                         disabled={isFull}
-                        className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
                           isSelected
                             ? "border-accent bg-accent/20 text-accent"
                             : isFull
@@ -215,7 +215,10 @@ export default function AvancePredictionPage() {
                               : "border-surface-light bg-surface/30 text-foreground/70 hover:border-accent/50 hover:text-accent"
                         }`}
                       >
-                        {getFlag(team)} {team}
+                        {TEAM_CODES[team] && (
+                          <img src={`https://flagcdn.com/w20/${TEAM_CODES[team]}.png`} alt="" width={16} height={12} />
+                        )}
+                        {team}
                       </button>
                     );
                   })}
@@ -253,9 +256,12 @@ export default function AvancePredictionPage() {
                         {saved.map((team) => (
                           <span
                             key={team}
-                            className="rounded-full border border-surface-light/50 px-2.5 py-1 text-xs text-foreground/40"
+                            className="inline-flex items-center gap-1 rounded-full border border-surface-light/50 px-2.5 py-1 text-xs text-foreground/40"
                           >
-                            {getFlag(team)} {team}
+                            {TEAM_CODES[team] && (
+                              <img src={`https://flagcdn.com/w20/${TEAM_CODES[team]}.png`} alt="" width={14} height={10} />
+                            )}
+                            {team}
                           </span>
                         ))}
                       </div>

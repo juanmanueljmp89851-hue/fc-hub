@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { saveGroupPredictions, getUserGroupPredictions } from "@/lib/actions/prode";
-import { getFlag } from "@/lib/teamFlags";
+import { TEAM_CODES } from "@/lib/teamFlags";
 
 const WORLD_CUP_GROUPS: Record<string, string[]> = {
   A: ["México", "Sudáfrica", "Corea del Sur", "Chequia"],
@@ -152,6 +152,15 @@ export default function GruposPredictionPage() {
                       <span className="w-6 text-center text-sm font-bold text-foreground/40">
                         {i + 1}°
                       </span>
+                      {TEAM_CODES[ordered[i]] && (
+                        <img
+                          src={`https://flagcdn.com/w20/${TEAM_CODES[ordered[i]]}.png`}
+                          alt=""
+                          width={20}
+                          height={15}
+                          className="shrink-0"
+                        />
+                      )}
                       <select
                         value={ordered[i]}
                         onChange={(e) => setPosition(groupName, pos, e.target.value)}
@@ -159,7 +168,7 @@ export default function GruposPredictionPage() {
                       >
                         {teams.map((team) => (
                           <option key={team} value={team}>
-                            {getFlag(team)} {team}
+                            {team}
                           </option>
                         ))}
                       </select>

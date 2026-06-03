@@ -1,74 +1,77 @@
-/** Country flag emoji map for World Cup 2026 teams */
-export const TEAM_FLAGS: Record<string, string> = {
+/** ISO country code map for World Cup 2026 teams (used for flag images) */
+export const TEAM_CODES: Record<string, string> = {
   // Group A
-  "México": "🇲🇽",
-  "Sudáfrica": "🇿🇦",
-  "Corea del Sur": "🇰🇷",
-  "Chequia": "🇨🇿",
+  "México": "mx",
+  "Sudáfrica": "za",
+  "Corea del Sur": "kr",
+  "Chequia": "cz",
   // Group B
-  "Canadá": "🇨🇦",
-  "Bosnia y Herzegovina": "🇧🇦",
-  "Catar": "🇶🇦",
-  "Suiza": "🇨🇭",
+  "Canadá": "ca",
+  "Bosnia y Herzegovina": "ba",
+  "Catar": "qa",
+  "Suiza": "ch",
   // Group C
-  "Brasil": "🇧🇷",
-  "Marruecos": "🇲🇦",
-  "Haití": "🇭🇹",
-  "Escocia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  "Brasil": "br",
+  "Marruecos": "ma",
+  "Haití": "ht",
+  "Escocia": "gb-sct",
   // Group D
-  "Estados Unidos": "🇺🇸",
-  "Paraguay": "🇵🇾",
-  "Australia": "🇦🇺",
-  "Turquía": "🇹🇷",
+  "Estados Unidos": "us",
+  "Paraguay": "py",
+  "Australia": "au",
+  "Turquía": "tr",
   // Group E
-  "Alemania": "🇩🇪",
-  "Curazao": "🇨🇼",
-  "Costa de Marfil": "🇨🇮",
-  "Ecuador": "🇪🇨",
+  "Alemania": "de",
+  "Curazao": "cw",
+  "Costa de Marfil": "ci",
+  "Ecuador": "ec",
   // Group F
-  "Países Bajos": "🇳🇱",
-  "Japón": "🇯🇵",
-  "Suecia": "🇸🇪",
-  "Túnez": "🇹🇳",
+  "Países Bajos": "nl",
+  "Japón": "jp",
+  "Suecia": "se",
+  "Túnez": "tn",
   // Group G
-  "Bélgica": "🇧🇪",
-  "Egipto": "🇪🇬",
-  "Irán": "🇮🇷",
-  "Nueva Zelanda": "🇳🇿",
+  "Bélgica": "be",
+  "Egipto": "eg",
+  "Irán": "ir",
+  "Nueva Zelanda": "nz",
   // Group H
-  "España": "🇪🇸",
-  "Cabo Verde": "🇨🇻",
-  "Arabia Saudita": "🇸🇦",
-  "Uruguay": "🇺🇾",
+  "España": "es",
+  "Cabo Verde": "cv",
+  "Arabia Saudita": "sa",
+  "Uruguay": "uy",
   // Group I
-  "Francia": "🇫🇷",
-  "Senegal": "🇸🇳",
-  "Irak": "🇮🇶",
-  "Noruega": "🇳🇴",
+  "Francia": "fr",
+  "Senegal": "sn",
+  "Irak": "iq",
+  "Noruega": "no",
   // Group J
-  "Argentina": "🇦🇷",
-  "Argelia": "🇩🇿",
-  "Austria": "🇦🇹",
-  "Jordania": "🇯🇴",
+  "Argentina": "ar",
+  "Argelia": "dz",
+  "Austria": "at",
+  "Jordania": "jo",
   // Group K
-  "Portugal": "🇵🇹",
-  "RD Congo": "🇨🇩",
-  "Uzbekistán": "🇺🇿",
-  "Colombia": "🇨🇴",
+  "Portugal": "pt",
+  "RD Congo": "cd",
+  "Uzbekistán": "uz",
+  "Colombia": "co",
   // Group L
-  "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-  "Croacia": "🇭🇷",
-  "Ghana": "🇬🇭",
-  "Panamá": "🇵🇦",
+  "Inglaterra": "gb-eng",
+  "Croacia": "hr",
+  "Ghana": "gh",
+  "Panamá": "pa",
 };
 
-/** Get flag emoji for team name, empty string if not found */
-export function getFlag(team: string): string {
-  return TEAM_FLAGS[team] ?? "";
+/** Get flag image URL for a team (20px wide) */
+export function getFlagUrl(team: string): string | null {
+  const code = TEAM_CODES[team];
+  if (!code) return null;
+  return `https://flagcdn.com/w20/${code}.png`;
 }
 
-/** Team name with flag prefix */
-export function teamWithFlag(team: string): string {
-  const flag = TEAM_FLAGS[team];
-  return flag ? `${flag} ${team}` : team;
+/** Get flag image URL at custom width */
+export function getFlagUrlW(team: string, width: number): string | null {
+  const code = TEAM_CODES[team];
+  if (!code) return null;
+  return `https://flagcdn.com/w${width}/${code}.png`;
 }
