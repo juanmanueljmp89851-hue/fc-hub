@@ -10,6 +10,7 @@ import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
 import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";
 import { ProdeChat } from "@/components/prode/ProdeChat";
 import { ProdeLeaderboard } from "@/components/prode/ProdeLeaderboard";
+import { ProdeParticipants } from "@/components/prode/ProdeParticipants";
 
 function getWeekStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string }> = {
@@ -36,7 +37,11 @@ export default async function ProdeDetailPage({ params }: PageProps) {
   }
 
   const currentUser = await getCurrentUser();
-  const canEdit = currentUser && (currentUser.id === prode.createdById || currentUser.role === "ADMIN");
+  const isCreator = currentUser && currentUser.id === prode.createdById;
+  const isProdeAdmin = currentUser && prode.participants.some(
+    (p) => p.userId === currentUser.id && p.role === "ADMIN"
+  );
+  const canEdit = currentUser && (isCreator || isProdeAdmin || currentUser.role === "ADMIN");
 
   return (
     <div className="min-h-screen">
@@ -208,23 +213,17 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               <CardHeader>
                 <CardTitle>Participantes ({prode.participants.length})</CardTitle>
               </CardHeader>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {prode.participants.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center gap-2 rounded-lg bg-background/50 px-3 py-2"
-                  >
-                    <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
-                      {p.user.avatarUrl ? (
-                        <Image src={p.user.avatarUrl} alt="" fill className="object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
-                      )}
-                    </div>
-                    <span className="truncate text-sm">{p.user.username}</span>
-                  </div>
-                ))}
-              </div>
+              <ProdeParticipants
+                prodeId={prode.id}
+                createdById={prode.createdById}
+                participants={prode.participants.map((p) => ({
+                  id: p.id,
+                  userId: p.userId,
+                  role: p.role,
+                  user: p.user,
+                }))}
+                isCreator={!!isCreator}
+              />
             </Card>
           </div>
 

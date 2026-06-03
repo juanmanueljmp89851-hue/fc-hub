@@ -292,6 +292,26 @@ function deduplicateNews(items: NewsItem[]): NewsItem[] {
   });
 }
 
+// --- Pinned articles (always appear at fixed position, don't move) ---
+const PINNED_ARTICLES: Array<{
+  position: number; // 0-based index in final list
+  item: Omit<NewsItem, "pubDate"> & { pubDate: Date };
+}> = [
+  {
+    position: 1, // Second item (index 1)
+    item: {
+      title: "EA FC 26: así es el modo Mundial 2026 del juego",
+      description: "Todo lo que sabemos sobre el modo Copa del Mundo FIFA 2026 en EA Sports FC 26.",
+      link: "https://culturageek.com.ar/ea-fc-26-modo-mundial-2026/",
+      imageUrl: "https://culturageek.com.ar/wp-content/uploads/2025/05/EA-FC-26.webp",
+      source: "CulturaGeek",
+      sourceIcon: "🎮",
+      pubDate: new Date("2025-05-28T12:00:00Z"),
+      language: "es",
+    },
+  },
+];
+
 // --- In-memory cache (5 min TTL, avoids 6 RSS fetches per request) ---
 let cachedNews: NewsItem[] | null = null;
 let cacheTimestamp = 0;
@@ -325,6 +345,20 @@ async function fetchAllNews(): Promise<NewsItem[]> {
   return allItems;
 }
 
+function insertPinnedArticles(items: NewsItem[]): NewsItem[] {
+  // Remove any RSS items that match pinned article URLs (avoid duplicates)
+  const pinnedUrls = new Set(PINNED_ARTICLES.map((p) => p.item.link));
+  let filtered = items.filter((item) => !pinnedUrls.has(item.link));
+
+  // Insert pinned articles at their fixed positions
+  for (const pinned of PINNED_ARTICLES) {
+    const pos = Math.min(pinned.position, filtered.length);
+    filtered.splice(pos, 0, pinned.item as NewsItem);
+  }
+
+  return filtered;
+}
+
 export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   const now = Date.now();
 
@@ -332,7 +366,8 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
     return cachedNews.slice(0, limit);
   }
 
-  const news = await fetchAllNews();
+  let news = await fetchAllNews();
+  news = insertPinnedArticles(news);
   cachedNews = news;
   cacheTimestamp = now;
 

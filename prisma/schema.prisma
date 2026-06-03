@@ -466,16 +466,22 @@ enum ProdeVisibility {
 }
 
 model ProdeParticipant {
-  id       String   @id @default(uuid())
-  prodeId  String   @map("prode_id")
-  userId   String   @map("user_id")
-  joinedAt DateTime @default(now()) @map("joined_at")
+  id       String               @id @default(uuid())
+  prodeId  String               @map("prode_id")
+  userId   String               @map("user_id")
+  role     ProdeParticipantRole @default(MEMBER)
+  joinedAt DateTime             @default(now()) @map("joined_at")
 
   prode Prode @relation(fields: [prodeId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
 
   @@unique([prodeId, userId])
   @@map("prode_participants")
+}
+
+enum ProdeParticipantRole {
+  MEMBER
+  ADMIN
 }
 
 model ProdeJoinRequest {

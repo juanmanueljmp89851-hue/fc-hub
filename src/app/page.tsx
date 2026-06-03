@@ -18,6 +18,12 @@ const quickLinks = [
     icon: "📰",
   },
   {
+    href: "/prode",
+    title: "Prode",
+    description: "Predicciones del Mundial 2026",
+    icon: "⚽",
+  },
+  {
     href: "/jugadores",
     title: "Cartas FC26",
     description: "Base de datos de jugadores y cartas",
@@ -28,12 +34,6 @@ const quickLinks = [
     title: "Arena",
     description: "Torneos y copas de la comunidad",
     icon: "🏆",
-  },
-  {
-    href: "/jugar",
-    title: "Duelos",
-    description: "Desafiá rivales y demostrá quién manda",
-    icon: "🎮",
   },
 ];
 

@@ -922,8 +922,11 @@ export async function resolveJoinRequest(
   });
   if (!request) return { error: "Solicitud no encontrada" };
 
-  // Only creator or ADMIN
-  if (request.prode.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+  // Only creator, prode ADMIN, or site ADMIN
+  const isProdeAdmin = await prisma.prodeParticipant.findFirst({
+    where: { prodeId: request.prodeId, userId: dbUser.id, role: "ADMIN" },
+  });
+  if (request.prode.createdById !== dbUser.id && !isProdeAdmin && dbUser.role !== "ADMIN") {
     return { error: "No autorizado" };
   }
 
@@ -1106,4 +1109,52 @@ export async function getProdeLeaderboardDetailed(prodeId: string) {
 
   leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
   return { leaderboard, weeks };
+}
+
+// ─── PRODE ADMIN ROLE ─────────────────────────────────────
+
+export async function setParticipantRole(
+  prodeId: string,
+  targetUserId: string,
+  role: "ADMIN" | "MEMBER",
+) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  // Only prode creator or site ADMIN can promote/demote
+  const prode = await prisma.prode.findUnique({
+    where: { id: prodeId },
+    select: { createdById: true },
+  });
+  if (!prode) return { error: "Prode no encontrado" };
+
+  if (dbUser.id !== prode.createdById && dbUser.role !== "ADMIN") {
+    return { error: "Solo el creador puede cambiar roles" };
+  }
+
+  // Can't change own role or creator's role
+  if (targetUserId === prode.createdById) {
+    return { error: "No se puede cambiar el rol del creador" };
+  }
+
+  const participant = await prisma.prodeParticipant.findUnique({
+    where: { prodeId_userId: { prodeId, userId: targetUserId } },
+  });
+  if (!participant) return { error: "No es participante" };
+
+  await prisma.prodeParticipant.update({
+    where: { id: participant.id },
+    data: { role },
+  });
+
+  return { success: true };
 }
