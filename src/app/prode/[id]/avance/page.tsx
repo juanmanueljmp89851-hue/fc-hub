@@ -12,21 +12,39 @@ import {
 } from "@/lib/actions/prode";
 
 const ALL_TEAMS = [
-  "México", "Serbia", "Canadá", "Países Bajos",
-  "Estados Unidos", "Bolivia", "Turquía", "Gales",
-  "Argentina", "Uzbekistán", "Dinamarca", "Perú",
-  "Francia", "Colombia", "Corea del Sur", "Panamá",
-  "Brasil", "Marruecos", "Japón", "Indonesia",
-  "Alemania", "Uruguay", "Senegal", "República Checa",
+  // Group A
+  "México", "Sudáfrica", "Corea del Sur", "Chequia",
+  // Group B
+  "Canadá", "Bosnia y Herzegovina", "Catar", "Suiza",
+  // Group C
+  "Brasil", "Marruecos", "Haití", "Escocia",
+  // Group D
+  "Estados Unidos", "Paraguay", "Australia", "Turquía",
+  // Group E
+  "Alemania", "Curazao", "Costa de Marfil", "Ecuador",
+  // Group F
+  "Países Bajos", "Japón", "Suecia", "Túnez",
+  // Group G
+  "Bélgica", "Egipto", "Irán", "Nueva Zelanda",
+  // Group H
+  "España", "Cabo Verde", "Arabia Saudita", "Uruguay",
+  // Group I
+  "Francia", "Senegal", "Irak", "Noruega",
+  // Group J
+  "Argentina", "Argelia", "Austria", "Jordania",
+  // Group K
+  "Portugal", "RD Congo", "Uzbekistán", "Colombia",
+  // Group L
+  "Inglaterra", "Croacia", "Ghana", "Panamá",
 ];
 
 const ROUNDS = [
-  { key: "ROUND_32", label: "Clasificados a Octavos", teamsNeeded: 12, pts: 1, prevLabel: "" },
-  { key: "ROUND_16", label: "Octavos de final", teamsNeeded: 6, pts: 2, prevLabel: "la fase de grupos" },
-  { key: "QUARTERS", label: "Cuartos de final", teamsNeeded: 3, pts: 3, prevLabel: "los octavos" },
-  { key: "SEMIS", label: "Semifinales", teamsNeeded: 2, pts: 5, prevLabel: "los cuartos" },
-  { key: "FINAL", label: "Final", teamsNeeded: 2, pts: 7, prevLabel: "las semis" },
-  { key: "CHAMPION", label: "Campeón", teamsNeeded: 1, pts: 10, prevLabel: "las semis" },
+  { key: "ROUND_32", label: "Clasificados a Octavos de Final (32)", teamsNeeded: 32, pts: 1, prevLabel: "" },
+  { key: "ROUND_16", label: "Octavos de final (16)", teamsNeeded: 16, pts: 2, prevLabel: "la fase de grupos" },
+  { key: "QUARTERS", label: "Cuartos de final (8)", teamsNeeded: 8, pts: 3, prevLabel: "los octavos" },
+  { key: "SEMIS", label: "Semifinales (4)", teamsNeeded: 4, pts: 5, prevLabel: "los cuartos" },
+  { key: "FINAL", label: "Final (2)", teamsNeeded: 2, pts: 7, prevLabel: "las semis" },
+  { key: "CHAMPION", label: "Campeón", teamsNeeded: 1, pts: 10, prevLabel: "la final" },
 ];
 
 export default function AvancePredictionPage() {

@@ -7,12 +7,18 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { saveGroupPredictions, getUserGroupPredictions } from "@/lib/actions/prode";
 
 const WORLD_CUP_GROUPS: Record<string, string[]> = {
-  A: ["México", "Serbia", "Canadá", "Países Bajos"],
-  B: ["Estados Unidos", "Bolivia", "Turquía", "Gales"],
-  C: ["Argentina", "Uzbekistán", "Dinamarca", "Perú"],
-  D: ["Francia", "Colombia", "Corea del Sur", "Panamá"],
-  E: ["Brasil", "Marruecos", "Japón", "Indonesia"],
-  F: ["Alemania", "Uruguay", "Senegal", "República Checa"],
+  A: ["México", "Sudáfrica", "Corea del Sur", "Chequia"],
+  B: ["Canadá", "Bosnia y Herzegovina", "Catar", "Suiza"],
+  C: ["Brasil", "Marruecos", "Haití", "Escocia"],
+  D: ["Estados Unidos", "Paraguay", "Australia", "Turquía"],
+  E: ["Alemania", "Curazao", "Costa de Marfil", "Ecuador"],
+  F: ["Países Bajos", "Japón", "Suecia", "Túnez"],
+  G: ["Bélgica", "Egipto", "Irán", "Nueva Zelanda"],
+  H: ["España", "Cabo Verde", "Arabia Saudita", "Uruguay"],
+  I: ["Francia", "Senegal", "Irak", "Noruega"],
+  J: ["Argentina", "Argelia", "Austria", "Jordania"],
+  K: ["Portugal", "RD Congo", "Uzbekistán", "Colombia"],
+  L: ["Inglaterra", "Croacia", "Ghana", "Panamá"],
 };
 
 export default function GruposPredictionPage() {
@@ -127,7 +133,7 @@ export default function GruposPredictionPage() {
           <span className="text-foreground/50">+1</span> por 1
         </p>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Object.entries(WORLD_CUP_GROUPS).map(([groupName, teams]) => {
             const pred = predictions[groupName];
             if (!pred) return null;
