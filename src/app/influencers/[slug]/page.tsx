@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -7,6 +8,21 @@ import Link from "next/link";
 
 interface PageProps {
   params: { slug: string };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const influencer = await getInfluencerBySlug(params.slug);
+  if (!influencer) return { title: "Streamer no encontrado" };
+  return {
+    title: influencer.name,
+    description: influencer.description || `${influencer.name} — Creador de contenido de EA FC en Modo Fosa.`,
+    alternates: { canonical: `/influencers/${influencer.slug}` },
+    openGraph: {
+      title: `${influencer.name} | Modo Fosa`,
+      description: influencer.description || `Streamer de EA FC`,
+      ...(influencer.avatarUrl && { images: [{ url: influencer.avatarUrl }] }),
+    },
+  };
 }
 
 export default async function InfluencerDetailPage({ params }: PageProps) {

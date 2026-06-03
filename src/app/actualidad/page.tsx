@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   description:
     "Noticias, novedades y actualizaciones de FC 26, Ultimate Team, eventos, esports y mercado.",
   alternates: { canonical: "/actualidad" },
+  openGraph: {
+    title: "Actualidad | Modo Fosa",
+    description: "Últimas noticias de EA FC 26, eventos y mercado.",
+  },
 };
 
 export default function ActualidadPage() {

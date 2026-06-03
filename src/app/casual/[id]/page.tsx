@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -6,6 +7,15 @@ import { getCasualMatch, getMatchMessages } from "@/lib/actions/casual";
 import { CasualMatchActions } from "@/components/casual/CasualMatchActions";
 import { CasualMatchChat } from "@/components/casual/CasualMatchChat";
 import { getCurrentUser } from "@/lib/actions/user";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const match = await getCasualMatch(params.id);
+  if (!match) return { title: "Partido no encontrado" };
+  return {
+    title: `${match.challenger.username} vs ${match.challenged.username}`,
+    description: `Partido casual de EA FC entre ${match.challenger.username} y ${match.challenged.username} en Modo Fosa.`,
+  };
+}
 
 function getStatusLabel(status: string) {
   const map: Record<string, { label: string; color: string }> = {

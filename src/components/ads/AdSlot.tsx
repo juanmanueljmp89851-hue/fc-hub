@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { AD_CONFIG } from "@/lib/ads-config";
 
-type AdFormat = "auto" | "horizontal" | "vertical" | "rectangle";
+type AdFormat = "auto" | "horizontal" | "vertical" | "rectangle" | "in-article";
 
 interface AdSlotProps {
   /** Ad format hint for AdSense responsive ads */
@@ -12,14 +12,37 @@ interface AdSlotProps {
   className?: string;
 }
 
+function getSlotConfig(format: AdFormat) {
+  const { slots } = AD_CONFIG.adsense;
+
+  if (format === "in-article") {
+    return {
+      slotId: slots.inArticle,
+      adFormat: "fluid" as const,
+      layout: "in-article" as const,
+      style: { display: "block", textAlign: "center" as const },
+    };
+  }
+
+  return {
+    slotId: slots.display,
+    adFormat: format === "auto" ? "auto" : format,
+    layout: undefined,
+    style: { display: "block" },
+  };
+}
+
 /**
- * Responsive AdSense ad slot.
- * Works with Auto Ads enabled in AdSense panel.
- * Container provides width context so Google can pick best ad size.
+ * Responsive AdSense ad slot with real ad unit IDs.
+ * Maps format to the correct slot:
+ *   - display/horizontal/vertical/rectangle/auto → Display slot
+ *   - in-article → In-Article slot (fluid layout)
  */
 export function AdSlot({ format = "auto", className = "" }: AdSlotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pushedRef = useRef(false);
+
+  const config = getSlotConfig(format);
 
   useEffect(() => {
     if (AD_CONFIG.provider !== "adsense" || pushedRef.current) return;
@@ -46,9 +69,11 @@ export function AdSlot({ format = "auto", className = "" }: AdSlotProps) {
     <div ref={containerRef} className={`w-full overflow-hidden ${className}`}>
       <ins
         className="adsbygoogle"
-        style={{ display: "block" }}
+        style={config.style}
         data-ad-client={AD_CONFIG.adsense.publisherId}
-        data-ad-format={format}
+        data-ad-slot={config.slotId}
+        data-ad-format={config.adFormat}
+        {...(config.layout && { "data-ad-layout": config.layout })}
         data-full-width-responsive="true"
       />
     </div>

@@ -1,6 +1,14 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Inicio",
+  description:
+    "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode del Mundial 2026, ranking, cartas FC 26, noticias y más.",
+  alternates: { canonical: "/" },
+};
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { NewsFeed } from "@/components/home/NewsFeed";

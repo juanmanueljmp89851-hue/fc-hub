@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { getChallengeDetail } from "@/lib/actions/casual";
 import { getCurrentUser } from "@/lib/actions/user";
 import { DuelActions } from "./DuelActions";
+
+export const metadata: Metadata = {
+  title: "Duelo",
+  description: "Detalle de desafío casual en Modo Fosa.",
+};
 
 interface PageProps {
   params: { id: string };

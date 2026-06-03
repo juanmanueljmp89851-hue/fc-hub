@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
@@ -10,6 +11,10 @@ export const metadata: Metadata = {
   title: "Arena",
   description: "Torneos, copas y eventos de EA FC organizados por la comunidad Modo Fosa.",
   alternates: { canonical: "/torneos" },
+  openGraph: {
+    title: "Arena | Modo Fosa",
+    description: "Torneos de EA FC organizados por la comunidad.",
+  },
 };
 
 function getStatusLabel(status: string) {
@@ -129,8 +134,8 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                   <Card className="overflow-hidden p-0 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
                     {/* Banner */}
                     {torneo.bannerUrl && (
-                      <div className="h-28 w-full overflow-hidden">
-                        <img src={torneo.bannerUrl} alt="" className="h-full w-full object-cover" />
+                      <div className="relative h-28 w-full overflow-hidden">
+                        <Image src={torneo.bannerUrl} alt="" fill className="object-cover" unoptimized />
                       </div>
                     )}
                     <div className={torneo.bannerUrl ? "p-4" : "p-5"}>
@@ -157,7 +162,9 @@ export default async function TorneosPage({ searchParams }: PageProps) {
 
                     <div className="flex items-center gap-3">
                       {torneo.logoUrl && (
-                        <img src={torneo.logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                          <Image src={torneo.logoUrl} alt="" fill className="object-cover" unoptimized />
+                        </div>
                       )}
                       <h3 className="text-lg font-bold">{torneo.name}</h3>
                     </div>

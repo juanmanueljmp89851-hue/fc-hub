@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: "Competitivo",
   description: "Escena competitiva de FC 26: IESA, EFA, eLiga Profesional, VPG y más.",
   alternates: { canonical: "/escena" },
+  openGraph: {
+    title: "Escena Competitiva | Modo Fosa",
+    description: "Ligas y torneos competitivos de EA FC en Argentina.",
+  },
 };
 
 function getGameModeLabel(mode: string) {

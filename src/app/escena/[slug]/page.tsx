@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getExternalLeague } from "@/lib/actions/external-leagues";
 import Link from "next/link";
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const league = await getExternalLeague(params.slug);
+  if (!league) return { title: "Liga no encontrada" };
+  return {
+    title: league.name,
+    description: league.description || `${league.name} — Liga competitiva de EA FC en Modo Fosa.`,
+    alternates: { canonical: `/escena/${league.slug}` },
+    openGraph: {
+      title: `${league.name} | Modo Fosa`,
+      description: league.description || `Liga competitiva en Modo Fosa`,
+      ...(league.logoUrl && { images: [{ url: league.logoUrl }] }),
+    },
+  };
+}
 
 function getGameModeLabel(mode: string) {
   const map: Record<string, string> = {

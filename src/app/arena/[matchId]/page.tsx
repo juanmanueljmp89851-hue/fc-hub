@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +7,11 @@ import { Card } from "@/components/ui/Card";
 import { getTournamentMatchDetail } from "@/lib/actions/tournament";
 import { ArenaMatchActions } from "@/components/arena/ArenaMatchActions";
 import { ArenaChat } from "@/components/arena/ArenaChat";
+
+export const metadata: Metadata = {
+  title: "Partido de Torneo",
+  description: "Detalle de partido de torneo en Modo Fosa.",
+};
 
 function getStatusLabel(status: string) {
   const map: Record<string, { label: string; color: string }> = {

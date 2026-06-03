@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +11,21 @@ import { TournamentActions } from "@/components/tournaments/TournamentActions";
 import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
 import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const tournament = await getTournament(params.id);
+  if (!tournament) return { title: "Torneo no encontrado" };
+  return {
+    title: tournament.name,
+    description: tournament.description || `Torneo ${tournament.name} en Modo Fosa. Formato: ${tournament.format}. ${tournament.maxPlayers} jugadores.`,
+    alternates: { canonical: `/torneos/${tournament.id}` },
+    openGraph: {
+      title: `${tournament.name} | Modo Fosa`,
+      description: tournament.description || `Torneo de EA FC en Modo Fosa`,
+      ...(tournament.bannerUrl && { images: [{ url: tournament.bannerUrl }] }),
+    },
+  };
+}
 
 function getStatusLabel(status: string) {
   const map: Record<string, string> = {

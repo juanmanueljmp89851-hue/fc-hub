@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -5,6 +6,13 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { PlayerSearch } from "@/components/casual/PlayerSearch";
 import { getMyMatches } from "@/lib/actions/casual";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Partidos Casuales",
+  description:
+    "Desafiá a otros jugadores de EA FC, ganá puntos y subí en el ranking de Modo Fosa.",
+  alternates: { canonical: "/casual" },
+};
 
 function getStatusLabel(status: string) {
   const map: Record<string, { label: string; color: string }> = {

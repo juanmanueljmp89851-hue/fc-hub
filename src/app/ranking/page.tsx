@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: "Clasificación",
   description: "Clasificación de jugadores de EA FC Argentina. Subí posiciones ganando duelos.",
   alternates: { canonical: "/ranking" },
+  openGraph: {
+    title: "Clasificación | Modo Fosa",
+    description: "Ranking de jugadores de EA FC Argentina.",
+  },
 };
 
 function getMedalClass(pos: number) {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { AdSlot } from "@/components/ads/AdSlot";
@@ -9,6 +10,10 @@ export const metadata: Metadata = {
   title: "Prode Mundial 2026",
   description: "Predecí los resultados del Mundial 2026. Competí con amigos y ganá premios.",
   alternates: { canonical: "/prode" },
+  openGraph: {
+    title: "Prode Mundial 2026 | Modo Fosa",
+    description: "Predecí resultados del Mundial y competí con amigos.",
+  },
 };
 
 function getStatusInfo(status: string) {
@@ -110,8 +115,8 @@ export default async function ProdePage() {
                 <Link key={prode.id} href={`/prode/${prode.id}`}>
                   <Card className="h-full overflow-hidden p-0 transition-colors hover:border-accent/50">
                     {prode.bannerUrl && (
-                      <div className="h-28 w-full overflow-hidden">
-                        <img src={prode.bannerUrl} alt="" className="h-full w-full object-cover" />
+                      <div className="relative h-28 w-full overflow-hidden">
+                        <Image src={prode.bannerUrl} alt="" fill className="object-cover" unoptimized />
                       </div>
                     )}
                     <div className={prode.bannerUrl ? "p-4" : "p-5"}>
@@ -130,7 +135,9 @@ export default async function ProdePage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {prode.imageUrl && (
-                          <img src={prode.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                            <Image src={prode.imageUrl} alt="" fill className="object-cover" unoptimized />
+                          </div>
                         )}
                         <h3 className="text-lg font-bold">{prode.name}</h3>
                       </div>

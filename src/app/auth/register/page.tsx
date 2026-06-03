@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/client";
 
-export default function RegisterPage() {
+function RegisterForm() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,10 +74,16 @@ export default function RegisterPage() {
       return;
     }
     const supabase = createClient();
+
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    if (redirectTo && redirectTo !== "/") {
+      callbackUrl.searchParams.set("redirect", redirectTo);
+    }
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl.toString(),
       },
     });
   }
@@ -91,7 +101,7 @@ export default function RegisterPage() {
               Hacé click en el link para activar tu cuenta.
             </p>
             <Link
-              href="/auth/login"
+              href={`/auth/login${redirectTo !== "/" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
               className="inline-block text-sm text-accent hover:underline"
             >
               Ir a iniciar sesión
@@ -205,12 +215,23 @@ export default function RegisterPage() {
 
           <p className="mt-4 text-center text-sm text-foreground/50">
             ¿Ya tenés cuenta?{" "}
-            <Link href="/auth/login" className="text-accent hover:underline">
+            <Link
+              href={`/auth/login${redirectTo !== "/" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
+              className="text-accent hover:underline"
+            >
               Iniciá sesión
             </Link>
           </p>
         </Card>
       </main>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="h-96" />}>
+      <RegisterForm />
+    </Suspense>
   );
 }

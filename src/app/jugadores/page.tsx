@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { JugadoresClient } from "./JugadoresClient";
 import { AdSlot } from "@/components/ads/AdSlot";
@@ -5,6 +6,13 @@ import type { FutPlayer } from "@/types/player";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300; // 5 min cache
+
+export const metadata: Metadata = {
+  title: "Cartas FC 26",
+  description:
+    "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
+  alternates: { canonical: "/jugadores" },
+};
 
 export default async function JugadoresPage() {
   // Fetch cards from DB grouped by promo, newest first

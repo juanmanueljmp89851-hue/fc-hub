@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: "Streamers",
   description: "Directorio de creadores y streamers de EA FC en español. Videos, streams y comunidad.",
   alternates: { canonical: "/influencers" },
+  openGraph: {
+    title: "Streamers | Modo Fosa",
+    description: "Creadores de contenido de EA FC en español.",
+  },
 };
 
 interface PageProps {

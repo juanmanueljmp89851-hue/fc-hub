@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { getProde, getProdeWeek, getUserPredictions } from "@/lib/actions/prode";
 import { PredictionForm } from "@/components/prode/PredictionForm";
 import Link from "next/link";
+
+export async function generateMetadata({ params }: { params: { id: string; weekId: string } }): Promise<Metadata> {
+  const [prode, week] = await Promise.all([getProde(params.id), getProdeWeek(params.weekId)]);
+  if (!prode || !week) return { title: "Fecha no encontrada" };
+  return {
+    title: `${week.title} — ${prode.name}`,
+    description: `Predicciones para ${week.title} en ${prode.name}. Prode del Mundial 2026 en Modo Fosa.`,
+  };
+}
 
 interface PageProps {
   params: { id: string; weekId: string };

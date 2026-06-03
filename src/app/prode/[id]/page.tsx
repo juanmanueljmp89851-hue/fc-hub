@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -6,6 +7,21 @@ import { getProde, getProdeWeeks } from "@/lib/actions/prode";
 import { getCurrentUser } from "@/lib/actions/user";
 import Link from "next/link";
 import { AdSlot } from "@/components/ads/AdSlot";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const prode = await getProde(params.id);
+  if (!prode) return { title: "Prode no encontrado" };
+  return {
+    title: prode.name,
+    description: prode.description || `Prode ${prode.name} — Predecí resultados y competí con amigos en Modo Fosa.`,
+    alternates: { canonical: `/prode/${prode.id}` },
+    openGraph: {
+      title: `${prode.name} | Modo Fosa`,
+      description: prode.description || `Prode de fútbol en Modo Fosa`,
+      ...(prode.bannerUrl && { images: [{ url: prode.bannerUrl }] }),
+    },
+  };
+}
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
 import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
 import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";

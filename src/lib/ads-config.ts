@@ -15,5 +15,9 @@ export const AD_CONFIG = {
 
   adsense: {
     publisherId: process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || "ca-pub-1298419664713208",
+    slots: {
+      display: "6524932355",
+      inArticle: "2585687344",
+    },
   },
 } as const;
