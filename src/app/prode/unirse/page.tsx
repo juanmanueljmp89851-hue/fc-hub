@@ -15,6 +15,8 @@ function UnirseProdeContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [prodeName, setProdeName] = useState("");
+  const [pendingSent, setPendingSent] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   useEffect(() => {
     if (codeFromUrl) {
@@ -26,6 +28,7 @@ function UnirseProdeContent() {
     const prode = await getProdeByShareCode(shareCode);
     if (prode) {
       setProdeName(prode.name);
+      setIsPrivate(prode.visibility === "PRIVATE");
     }
   }
 
@@ -42,6 +45,9 @@ function UnirseProdeContent() {
         router.push(`/prode/${result.prodeId}`);
         return;
       }
+    } else if (result.pending) {
+      setPendingSent(true);
+      if (result.prodeName) setProdeName(result.prodeName);
     } else if (result.prodeId) {
       router.push(`/prode/${result.prodeId}`);
       return;
@@ -54,10 +60,38 @@ function UnirseProdeContent() {
       <Card className="text-center">
         <h1 className="text-2xl font-bold">Unirse a un Prode</h1>
 
-        {prodeName && (
-          <p className="mt-2 text-lg text-accent">{prodeName}</p>
+        {prodeName && !pendingSent && (
+          <div className="mt-2">
+            <p className="text-lg text-accent">{prodeName}</p>
+            {isPrivate && (
+              <p className="mt-1 text-xs text-foreground/40">🔒 Prode privado — requiere aprobación del creador</p>
+            )}
+          </div>
         )}
 
+        {pendingSent ? (
+          <div className="mt-6 space-y-4">
+            <div className="rounded-lg border border-accent/30 bg-accent/5 p-4">
+              <p className="text-lg font-bold text-accent">🔒 Solicitud enviada</p>
+              <p className="mt-2 text-sm text-foreground/60">
+                {prodeName ? (
+                  <>Tu solicitud para unirte a <span className="font-medium text-accent">{prodeName}</span> fue enviada.</>
+                ) : (
+                  <>Tu solicitud fue enviada.</>
+                )}
+              </p>
+              <p className="mt-1 text-sm text-foreground/40">
+                El creador del prode va a revisar tu solicitud. Te vamos a avisar cuando te acepten.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/prode")}
+              className="w-full rounded-lg border border-surface-light py-3 font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+            >
+              Volver a Mis Prodes
+            </button>
+          </div>
+        ) : (
         <div className="mt-6 space-y-4">
           <input
             type="text"
@@ -73,13 +107,14 @@ function UnirseProdeContent() {
             disabled={loading || code.length < 6}
             className="w-full rounded-lg bg-accent py-3 font-bold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? "Uniéndote..." : "Unirme al Prode"}
+            {loading ? "Enviando..." : isPrivate ? "Solicitar unirme" : "Unirme al Prode"}
           </button>
 
           {error && (
             <p className="text-sm text-red-400">{error}</p>
           )}
         </div>
+        )}
       </Card>
     </main>
   );

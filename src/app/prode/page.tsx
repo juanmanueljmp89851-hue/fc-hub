@@ -115,9 +115,14 @@ export default async function ProdePage() {
                     )}
                     <div className={prode.bannerUrl ? "p-4" : "p-5"}>
                       <div className="mb-2 flex items-center justify-between">
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
-                          {statusInfo.label}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
+                            {statusInfo.label}
+                          </span>
+                          {prode.visibility === "PRIVATE" && (
+                            <span className="text-xs text-foreground/30">🔒</span>
+                          )}
+                        </div>
                         <span className="text-xs text-foreground/40">
                           {prode._count.participants} participantes
                         </span>

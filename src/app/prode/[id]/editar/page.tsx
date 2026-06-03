@@ -24,6 +24,7 @@ export default function EditarProdePage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [bannerUrl, setBannerUrl] = useState("");
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,6 +45,7 @@ export default function EditarProdePage() {
       setPrizeRounds(p.prizeRounds ?? "");
       setImageUrl(p.imageUrl ?? "");
       setBannerUrl(p.bannerUrl ?? "");
+      setVisibility(p.visibility as "PUBLIC" | "PRIVATE");
       setLoaded(true);
     }
     load();
@@ -60,6 +62,7 @@ export default function EditarProdePage() {
       description,
       imageUrl: imageUrl || null,
       bannerUrl: bannerUrl || null,
+      visibility,
       prizeGeneral,
       prizePerWeek,
       prizeGroupOrder,
@@ -208,6 +211,36 @@ export default function EditarProdePage() {
                       }}
                     />
                   </label>
+                </div>
+              </div>
+              {/* Visibility toggle */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground/70">Visibilidad</label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("PUBLIC")}
+                    className={`flex-1 rounded-lg border px-4 py-3 text-left transition-colors ${
+                      visibility === "PUBLIC"
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-surface-light bg-surface/30 text-foreground/60 hover:border-accent/50"
+                    }`}
+                  >
+                    <p className="font-medium">🌐 Público</p>
+                    <p className="mt-0.5 text-xs opacity-70">Cualquiera con el código puede unirse</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("PRIVATE")}
+                    className={`flex-1 rounded-lg border px-4 py-3 text-left transition-colors ${
+                      visibility === "PRIVATE"
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-surface-light bg-surface/30 text-foreground/60 hover:border-accent/50"
+                    }`}
+                  >
+                    <p className="font-medium">🔒 Privado</p>
+                    <p className="mt-0.5 text-xs opacity-70">Los usuarios envían solicitud y vos aceptás</p>
+                  </button>
                 </div>
               </div>
             </div>

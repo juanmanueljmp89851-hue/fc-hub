@@ -22,6 +22,7 @@ export default function CrearProdePage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [bannerUrl, setBannerUrl] = useState("");
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +34,7 @@ export default function CrearProdePage() {
       description: description || undefined,
       imageUrl: imageUrl || undefined,
       bannerUrl: bannerUrl || undefined,
+      visibility,
       prizeGeneral: prizeGeneral || undefined,
       prizePerWeek: prizePerWeek || undefined,
       prizeGroupOrder: prizeGroupOrder || undefined,
@@ -164,6 +166,38 @@ export default function CrearProdePage() {
                       }}
                     />
                   </label>
+                </div>
+              </div>
+              {/* Visibility toggle */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground/70">
+                  Visibilidad
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("PUBLIC")}
+                    className={`flex-1 rounded-lg border px-4 py-3 text-left transition-colors ${
+                      visibility === "PUBLIC"
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-surface-light bg-surface/30 text-foreground/60 hover:border-accent/50"
+                    }`}
+                  >
+                    <p className="font-medium">🌐 Público</p>
+                    <p className="mt-0.5 text-xs opacity-70">Cualquiera con el código puede unirse</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("PRIVATE")}
+                    className={`flex-1 rounded-lg border px-4 py-3 text-left transition-colors ${
+                      visibility === "PRIVATE"
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-surface-light bg-surface/30 text-foreground/60 hover:border-accent/50"
+                    }`}
+                  >
+                    <p className="font-medium">🔒 Privado</p>
+                    <p className="mt-0.5 text-xs opacity-70">Los usuarios envían solicitud y vos aceptás</p>
+                  </button>
                 </div>
               </div>
             </div>

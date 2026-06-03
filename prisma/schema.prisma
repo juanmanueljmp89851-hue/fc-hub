@@ -59,6 +59,8 @@ model User {
   notifications         Notification[]
   influencerComments    InfluencerComment[]
   lobbyMessages         LobbyMessage[]
+  prodeJoinRequests     ProdeJoinRequest[]  @relation("ProdeJoinRequester")
+  prodeJoinResolutions  ProdeJoinRequest[]  @relation("ProdeJoinResolver")
 
   @@map("users")
 }
@@ -423,27 +425,29 @@ model RankingHistory {
 // ─── PRODE MUNDIAL 2026 ─────────────────────────────────────
 
 model Prode {
-  id              String      @id @default(uuid())
+  id              String          @id @default(uuid())
   name            String
   description     String?
-  createdById     String      @map("created_by")
-  shareCode       String      @unique @map("share_code")
-  status          ProdeStatus @default(OPEN)
-  imageUrl        String?     @map("image_url")
-  bannerUrl       String?     @map("banner_url")
-  prizeGeneral    String?     @map("prize_general")
-  prizePerWeek    String?     @map("prize_per_week")
-  prizeGroupOrder String?     @map("prize_group_order")
-  prizeRounds     String?     @map("prize_rounds")
-  deletedAt       DateTime?   @map("deleted_at")
-  deletedById     String?     @map("deleted_by")
-  createdAt       DateTime    @default(now()) @map("created_at")
+  createdById     String          @map("created_by")
+  shareCode       String          @unique @map("share_code")
+  status          ProdeStatus     @default(OPEN)
+  visibility      ProdeVisibility @default(PUBLIC)
+  imageUrl        String?         @map("image_url")
+  bannerUrl       String?         @map("banner_url")
+  prizeGeneral    String?         @map("prize_general")
+  prizePerWeek    String?         @map("prize_per_week")
+  prizeGroupOrder String?         @map("prize_group_order")
+  prizeRounds     String?         @map("prize_rounds")
+  deletedAt       DateTime?       @map("deleted_at")
+  deletedById     String?         @map("deleted_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
 
   createdBy          User                    @relation("ProdeCreator", fields: [createdById], references: [id])
   participants       ProdeParticipant[]
   predictions        ProdePrediction[]
   groupPredictions   ProdeGroupPrediction[]
   advancePredictions ProdeAdvancePrediction[]
+  joinRequests       ProdeJoinRequest[]
 
   @@map("prodes")
 }
@@ -452,6 +456,11 @@ enum ProdeStatus {
   OPEN
   IN_PROGRESS
   FINISHED
+}
+
+enum ProdeVisibility {
+  PUBLIC
+  PRIVATE
 }
 
 model ProdeParticipant {
@@ -465,6 +474,30 @@ model ProdeParticipant {
 
   @@unique([prodeId, userId])
   @@map("prode_participants")
+}
+
+model ProdeJoinRequest {
+  id        String             @id @default(uuid())
+  prodeId   String             @map("prode_id")
+  userId    String             @map("user_id")
+  status    ProdeRequestStatus @default(PENDING)
+  message   String?
+  createdAt DateTime           @default(now()) @map("created_at")
+  resolvedAt DateTime?         @map("resolved_at")
+  resolvedById String?         @map("resolved_by")
+
+  prode      Prode  @relation(fields: [prodeId], references: [id])
+  user       User   @relation("ProdeJoinRequester", fields: [userId], references: [id])
+  resolvedBy User?  @relation("ProdeJoinResolver", fields: [resolvedById], references: [id])
+
+  @@unique([prodeId, userId])
+  @@map("prode_join_requests")
+}
+
+enum ProdeRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model ProdeWeek {

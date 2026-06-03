@@ -37,6 +37,7 @@ interface CreateProdeInput {
   description?: string;
   imageUrl?: string;
   bannerUrl?: string;
+  visibility?: "PUBLIC" | "PRIVATE";
   prizeGeneral?: string;
   prizePerWeek?: string;
   prizeGroupOrder?: string;
@@ -66,6 +67,7 @@ export async function createProde(input: CreateProdeInput) {
       description: input.description,
       imageUrl: input.imageUrl,
       bannerUrl: input.bannerUrl,
+      visibility: input.visibility ?? "PUBLIC",
       createdById: userId,
       shareCode,
       prizeGeneral: input.prizeGeneral,
@@ -104,6 +106,30 @@ export async function joinProdeByCode(shareCode: string) {
 
   if (existing) return { error: "Ya estás participando en este prode", prodeId: prode.id };
 
+  // Private prode → create join request instead of direct join
+  if (prode.visibility === "PRIVATE") {
+    const existingRequest = await prisma.prodeJoinRequest.findUnique({
+      where: { prodeId_userId: { prodeId: prode.id, userId } },
+    });
+
+    if (existingRequest) {
+      if (existingRequest.status === "PENDING") {
+        return { error: "Ya tenés una solicitud pendiente para este prode", pending: true };
+      }
+      if (existingRequest.status === "REJECTED") {
+        return { error: "Tu solicitud fue rechazada" };
+      }
+    }
+
+    await prisma.prodeJoinRequest.create({
+      data: { prodeId: prode.id, userId },
+    });
+
+    revalidatePath(`/prode/${prode.id}`);
+    return { success: true, pending: true, prodeName: prode.name };
+  }
+
+  // Public prode → direct join
   await prisma.prodeParticipant.create({
     data: { prodeId: prode.id, userId },
   });
@@ -145,6 +171,7 @@ export async function getProde(id: string) {
         },
         orderBy: { joinedAt: "asc" },
       },
+      _count: { select: { joinRequests: true } },
     },
   });
 }
@@ -180,6 +207,7 @@ interface UpdateProdeInput {
   description?: string;
   imageUrl?: string | null;
   bannerUrl?: string | null;
+  visibility?: "PUBLIC" | "PRIVATE";
   prizeGeneral?: string;
   prizePerWeek?: string;
   prizeGroupOrder?: string;
@@ -218,6 +246,7 @@ export async function updateProde(input: UpdateProdeInput) {
   if (input.prizePerWeek !== undefined) data.prizePerWeek = input.prizePerWeek?.trim() || null;
   if (input.prizeGroupOrder !== undefined) data.prizeGroupOrder = input.prizeGroupOrder?.trim() || null;
   if (input.prizeRounds !== undefined) data.prizeRounds = input.prizeRounds?.trim() || null;
+  if (input.visibility !== undefined) data.visibility = input.visibility;
 
   await prisma.prode.update({
     where: { id: input.prodeId },
@@ -834,5 +863,92 @@ export async function restoreProde(prodeId: string) {
 
   revalidatePath("/prode");
   revalidatePath("/admin/moderacion");
+  return { success: true };
+}
+
+// ─── JOIN REQUESTS (Private prodes) ───────────────────────
+
+export async function getJoinRequests(prodeId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return [];
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return [];
+
+  const prode = await prisma.prode.findUnique({
+    where: { id: prodeId },
+    select: { createdById: true },
+  });
+  if (!prode) return [];
+
+  // Only creator or ADMIN can see requests
+  if (prode.createdById !== dbUser.id && dbUser.role !== "ADMIN") return [];
+
+  return prisma.prodeJoinRequest.findMany({
+    where: { prodeId },
+    include: {
+      user: { select: { id: true, username: true, avatarUrl: true } },
+      resolvedBy: { select: { username: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function resolveJoinRequest(
+  requestId: string,
+  action: "ACCEPTED" | "REJECTED",
+) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const request = await prisma.prodeJoinRequest.findUnique({
+    where: { id: requestId },
+    include: { prode: { select: { createdById: true, id: true } } },
+  });
+  if (!request) return { error: "Solicitud no encontrada" };
+
+  // Only creator or ADMIN
+  if (request.prode.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "No autorizado" };
+  }
+
+  if (request.status !== "PENDING") {
+    return { error: "Solicitud ya fue resuelta" };
+  }
+
+  await prisma.prodeJoinRequest.update({
+    where: { id: requestId },
+    data: {
+      status: action,
+      resolvedAt: new Date(),
+      resolvedById: dbUser.id,
+    },
+  });
+
+  // If accepted, add as participant
+  if (action === "ACCEPTED") {
+    await prisma.prodeParticipant.upsert({
+      where: { prodeId_userId: { prodeId: request.prodeId, userId: request.userId } },
+      update: {},
+      create: { prodeId: request.prodeId, userId: request.userId },
+    });
+  }
+
+  revalidatePath(`/prode/${request.prodeId}`);
   return { success: true };
 }

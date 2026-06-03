@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/actions/user";
 import Link from "next/link";
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
 import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
+import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";
 
 function getMedalClass(pos: number) {
   if (pos === 1) return "bg-gold text-background";
@@ -67,6 +68,11 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               </div>
             )}
             <h1 className="text-2xl font-bold">{prode.name}</h1>
+            {prode.visibility === "PRIVATE" && (
+              <span className="rounded-full bg-surface-light px-2.5 py-0.5 text-xs font-medium text-foreground/50">
+                🔒 Privado
+              </span>
+            )}
             {canEdit && (
               <>
                 <Link
@@ -94,6 +100,13 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           <div className="mt-4">
             <ShareCodeCopy shareCode={prode.shareCode} />
           </div>
+
+          {/* Join requests panel (private prodes, creator/admin only) */}
+          {prode.visibility === "PRIVATE" && canEdit && (
+            <div className="mt-4">
+              <JoinRequestsPanel prodeId={prode.id} />
+            </div>
+          )}
         </div>
 
         {/* Prizes */}
