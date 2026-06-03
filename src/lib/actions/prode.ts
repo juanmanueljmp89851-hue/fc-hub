@@ -454,6 +454,109 @@ interface AdvancePredInput {
   teams: string[];
 }
 
+// Round unlock logic: which weeks must be SCORED for each round to open
+const ROUND_UNLOCK_MAP: Record<string, { requiredWeekPattern: string; prevRound?: string }> = {
+  ROUND_32: { requiredWeekPattern: "" },  // Always open
+  ROUND_16: { requiredWeekPattern: "fase de grupos", prevRound: "ROUND_32" },
+  QUARTERS: { requiredWeekPattern: "octavos", prevRound: "ROUND_16" },
+  SEMIS:    { requiredWeekPattern: "cuartos", prevRound: "QUARTERS" },
+  FINAL:    { requiredWeekPattern: "semifinales", prevRound: "SEMIS" },
+  CHAMPION: { requiredWeekPattern: "semifinales", prevRound: "FINAL" },
+};
+
+/** Get which rounds are open for advance predictions */
+export async function getAdvanceRoundStatus(): Promise<Record<string, boolean>> {
+  const weeks = await prisma.prodeWeek.findMany({
+    select: { title: true, status: true },
+  });
+
+  function allWeeksScored(pattern: string): boolean {
+    if (!pattern) return true;
+    const matching = weeks.filter((w) => w.title.toLowerCase().includes(pattern));
+    return matching.length > 0 && matching.every((w) => w.status === "SCORED");
+  }
+
+  const status: Record<string, boolean> = {};
+  for (const [round, config] of Object.entries(ROUND_UNLOCK_MAP)) {
+    status[round] = allWeeksScored(config.requiredWeekPattern);
+  }
+  return status;
+}
+
+/** Get actual teams that advanced (from finished matches) */
+export async function getAdvancedTeams(): Promise<Record<string, string[]>> {
+  const weeks = await prisma.prodeWeek.findMany({
+    include: {
+      matches: {
+        where: { status: "FINISHED" },
+        select: { homeTeam: true, awayTeam: true, homeScore: true, awayScore: true, group: true },
+      },
+    },
+  });
+
+  const result: Record<string, string[]> = {};
+
+  // Group stage results → teams that qualified (top 2 per group)
+  const groupWeeks = weeks.filter((w) => w.title.toLowerCase().includes("fase de grupos"));
+  if (groupWeeks.every((w) => w.matches.length > 0)) {
+    // Tally group standings from finished matches
+    const standings: Record<string, Record<string, { pts: number; gd: number }>> = {};
+    for (const w of groupWeeks) {
+      for (const m of w.matches) {
+        if (!m.group || m.homeScore === null || m.awayScore === null) continue;
+        if (!standings[m.group]) standings[m.group] = {};
+        const s = standings[m.group];
+        if (!s[m.homeTeam]) s[m.homeTeam] = { pts: 0, gd: 0 };
+        if (!s[m.awayTeam]) s[m.awayTeam] = { pts: 0, gd: 0 };
+
+        if (m.homeScore > m.awayScore) {
+          s[m.homeTeam].pts += 3;
+        } else if (m.homeScore < m.awayScore) {
+          s[m.awayTeam].pts += 3;
+        } else {
+          s[m.homeTeam].pts += 1;
+          s[m.awayTeam].pts += 1;
+        }
+        s[m.homeTeam].gd += m.homeScore - m.awayScore;
+        s[m.awayTeam].gd += m.awayScore - m.homeScore;
+      }
+    }
+
+    // Top 2 per group
+    const qualified: string[] = [];
+    for (const [, teams] of Object.entries(standings)) {
+      const sorted = Object.entries(teams)
+        .sort(([, a], [, b]) => b.pts - a.pts || b.gd - a.gd)
+        .slice(0, 2)
+        .map(([name]) => name);
+      qualified.push(...sorted);
+    }
+    if (qualified.length > 0) result.ROUND_32 = qualified;
+  }
+
+  // Knockout stage results
+  const knockoutMap: Record<string, string> = {
+    "octavos": "ROUND_16",
+    "cuartos": "QUARTERS",
+    "semifinales": "SEMIS",
+    "final": "CHAMPION",
+  };
+
+  for (const [pattern, roundKey] of Object.entries(knockoutMap)) {
+    const matchingWeeks = weeks.filter((w) => w.title.toLowerCase().includes(pattern));
+    const winners: string[] = [];
+    for (const w of matchingWeeks) {
+      for (const m of w.matches) {
+        if (m.homeScore === null || m.awayScore === null) continue;
+        winners.push(m.homeScore > m.awayScore ? m.homeTeam : m.awayTeam);
+      }
+    }
+    if (winners.length > 0) result[roundKey] = winners;
+  }
+
+  return result;
+}
+
 export async function saveAdvancePredictions(prodeId: string, rounds: AdvancePredInput[]) {
   const userId = await getAuthUserId();
   if (!userId) return { error: "No autenticado" };
@@ -462,6 +565,14 @@ export async function saveAdvancePredictions(prodeId: string, rounds: AdvancePre
     where: { prodeId_userId: { prodeId, userId } },
   });
   if (!participant) return { error: "No participás en este prode" };
+
+  // Validate: only save rounds that are currently open
+  const roundStatus = await getAdvanceRoundStatus();
+  for (const r of rounds) {
+    if (!roundStatus[r.round]) {
+      return { error: `La ronda "${r.round}" aún no está habilitada` };
+    }
+  }
 
   await prisma.$transaction(
     rounds.map((r) =>
