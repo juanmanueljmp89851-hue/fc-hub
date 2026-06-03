@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Footer } from "@/components/layout/Footer";
+import { CookieBanner } from "@/components/layout/CookieBanner";
 import { AdScripts } from "@/components/ads/AdScripts";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
@@ -72,6 +73,7 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
           <Footer />
         </AuthProvider>
+        <CookieBanner />
         <Analytics />
         <SpeedInsights />
       </body>
