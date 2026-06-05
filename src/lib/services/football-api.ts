@@ -19,6 +19,7 @@ const ESPN_LEAGUES = {
   CHAMPIONS_LEAGUE: { slug: "uefa.champions", name: "Champions League", flag: "🏆" },
   EUROPA_LEAGUE: { slug: "uefa.europa", name: "Europa League", flag: "🏆" },
   WORLD_CUP: { slug: "fifa.world", name: "Mundial 2026", flag: "🌍" },
+  FRIENDLIES: { slug: "fifa.friendly", name: "Amistoso Int.", flag: "🤝" },
   COPA_AMERICA: { slug: "conmebol.america", name: "Copa América", flag: "🏆" },
 } as const;
 
@@ -157,6 +158,7 @@ const SLUG_TO_LEAGUE_ID: Record<string, number> = {
   "uefa.champions": LEAGUE_IDS.CHAMPIONS_LEAGUE,
   "uefa.europa": LEAGUE_IDS.EUROPA_LEAGUE,
   "fifa.world": LEAGUE_IDS.WORLD_CUP,
+  "fifa.friendly": LEAGUE_IDS.FRIENDLIES,
   "conmebol.america": 0,
 };
 
