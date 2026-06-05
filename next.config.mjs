@@ -1,5 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Redirect non-www → www (canonical domain is www.modofosa.com.ar)
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "modofosa.com.ar" }],
+        destination: "https://www.modofosa.com.ar/:path*",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       // RSS feed image sources
