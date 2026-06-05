@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   description:
     "Desafiá a otros jugadores de EA FC, ganá puntos y subí en el ranking de Modo Fosa.",
   alternates: { canonical: "/casual" },
+  openGraph: {
+    title: "Partidos Casuales | Modo Fosa",
+    description: "Desafiá a otros jugadores de EA FC, ganá puntos y subí en el ranking.",
+  },
 };
 
 function getStatusLabel(status: string) {

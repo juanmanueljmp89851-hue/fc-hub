@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { getTopRanking, getActiveMatches } from "@/lib/actions/lobby";
 import { LobbyChat } from "@/components/jugar/LobbyChat";
 import Link from "next/link";
@@ -9,6 +10,10 @@ export const metadata: Metadata = {
   title: "Duelos",
   description: "Desafiá rivales de EA FC en duelos directos y demostrá quién manda.",
   alternates: { canonical: "/jugar" },
+  openGraph: {
+    title: "Duelos | Modo Fosa",
+    description: "Desafiá rivales de EA FC en duelos directos y demostrá quién manda.",
+  },
 };
 
 function getMedalEmoji(pos: number) {
@@ -51,6 +56,11 @@ export default async function JugarPage() {
           >
             Jugar duelo
           </Link>
+        </div>
+
+        {/* Ad Banner top */}
+        <div className="mb-6">
+          <AdSlot format="horizontal" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -153,6 +163,10 @@ export default async function JugarPage() {
           <div className="lg:col-span-2">
             <LobbyChat />
           </div>
+        </div>
+        {/* Ad bottom */}
+        <div className="mt-8">
+          <AdSlot format="auto" />
         </div>
       </main>
     </div>

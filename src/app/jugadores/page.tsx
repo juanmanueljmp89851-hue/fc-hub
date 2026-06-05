@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   description:
     "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
   alternates: { canonical: "/jugadores" },
+  openGraph: {
+    title: "Cartas FC 26 | Modo Fosa",
+    description: "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
+  },
 };
 
 export default async function JugadoresPage() {

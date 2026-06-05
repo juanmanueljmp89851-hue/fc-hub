@@ -341,7 +341,8 @@ function inferPromo(cardImageId: string): {
   if (id.includes("knockout")) return PROMO_MAP.knockout_royalty;
   if (id.includes("end_of_era")) return PROMO_MAP.end_of_era;
   if (id.includes("premium_world_tour") || id.includes("world_tour")) return PROMO_MAP.premium_world_tour;
-  if (id.includes("fof") || id.includes("answer")) return PROMO_MAP.fof;
+  if (id.includes("festival_of_football_icon") || id.includes("fof_icon")) return { cardType: "icon", promo: "Festival of Football Icon", order: 115 };
+  if (id.includes("fof") || id.includes("answer") || id.includes("festival_of_football")) return PROMO_MAP.fof;
   if (id.includes("icon")) return PROMO_MAP.icon;
   if (id.includes("hero")) return PROMO_MAP.hero;
   if (id.includes("gold") && id.includes("rare")) return PROMO_MAP.gold_rare;
