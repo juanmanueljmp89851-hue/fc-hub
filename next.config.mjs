@@ -12,6 +12,8 @@ const nextConfig = {
     ];
   },
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400, // 24h image optimization cache
     remotePatterns: [
       // RSS feed image sources
       { protocol: "https", hostname: "**.ole.com.ar" },

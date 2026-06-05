@@ -131,7 +131,7 @@ export default async function ProdePage() {
                   <Card className="h-full overflow-hidden p-0 transition-colors hover:border-accent/50">
                     {prode.bannerUrl && (
                       <div className="relative h-28 w-full overflow-hidden">
-                        <Image src={prode.bannerUrl} alt="" fill className="object-cover" unoptimized />
+                        <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
                       </div>
                     )}
                     <div className={prode.bannerUrl ? "p-4" : "p-5"}>
@@ -151,7 +151,7 @@ export default async function ProdePage() {
                       <div className="flex items-center gap-2">
                         {prode.imageUrl && (
                           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                            <Image src={prode.imageUrl} alt="" fill className="object-cover" unoptimized />
+                            <Image src={prode.imageUrl} alt="" fill className="object-cover" />
                           </div>
                         )}
                         <h3 className="text-lg font-bold">{prode.name}</h3>

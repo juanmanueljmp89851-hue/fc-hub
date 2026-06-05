@@ -71,7 +71,7 @@ export default async function ProdeDetailPage({ params }: PageProps) {
         {/* Banner */}
         {prode.bannerUrl && (
           <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
-            <Image src={prode.bannerUrl} alt={prode.name} fill className="object-cover" unoptimized />
+            <Image src={prode.bannerUrl} alt={prode.name} fill className="object-cover" />
           </div>
         )}
 
@@ -80,7 +80,7 @@ export default async function ProdeDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-3">
             {prode.imageUrl && (
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-surface-light">
-                <Image src={prode.imageUrl} alt="" fill className="object-cover" unoptimized />
+                <Image src={prode.imageUrl} alt="" fill className="object-cover" />
               </div>
             )}
             <h1 className="text-2xl font-bold">{prode.name}</h1>

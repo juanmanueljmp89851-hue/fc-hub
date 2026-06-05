@@ -149,7 +149,7 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                     {/* Banner */}
                     {torneo.bannerUrl && (
                       <div className="relative h-28 w-full overflow-hidden">
-                        <Image src={torneo.bannerUrl} alt="" fill className="object-cover" unoptimized />
+                        <Image src={torneo.bannerUrl} alt="" fill className="object-cover" />
                       </div>
                     )}
                     <div className={torneo.bannerUrl ? "p-4" : "p-5"}>
@@ -177,7 +177,7 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                     <div className="flex items-center gap-3">
                       {torneo.logoUrl && (
                         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                          <Image src={torneo.logoUrl} alt="" fill className="object-cover" unoptimized />
+                          <Image src={torneo.logoUrl} alt="" fill className="object-cover" />
                         </div>
                       )}
                       <h3 className="text-lg font-bold">{torneo.name}</h3>

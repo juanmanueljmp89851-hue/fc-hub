@@ -103,6 +103,8 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
             style={{ borderRadius: 12 * s }}
             onError={() => setBgErr(true)}
             draggable={false}
+            loading="lazy"
+            decoding="async"
             width={w}
             height={h}
           />
@@ -126,6 +128,10 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
           <img
             src={faceUrl!}
             alt=""
+            width={Math.round(w * 0.65)}
+            height={Math.round(h * 0.55)}
+            loading="lazy"
+            decoding="async"
             style={{
               maxHeight: "100%",
               objectFit: "contain",

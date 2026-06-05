@@ -571,7 +571,7 @@ export function ModerationPanel({ tournaments, deletedTournaments, prodes, delet
                           <div key={player.id} className="rounded-lg border border-surface-light bg-background p-3">
                             <div className="mb-2 flex items-center gap-2">
                               {player.avatarUrl ? (
-                                <Image src={player.avatarUrl} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" unoptimized />
+                                <Image src={player.avatarUrl} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
                               ) : (
                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">
                                   {player.username[0]?.toUpperCase()}

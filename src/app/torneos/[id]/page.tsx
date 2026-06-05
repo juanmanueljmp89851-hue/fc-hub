@@ -99,7 +99,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
         <div className="mb-8">
           {tournament.bannerUrl && (
             <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
-              <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" unoptimized />
+              <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" />
             </div>
           )}
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -116,7 +116,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-4">
             {tournament.logoUrl && (
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-surface-light">
-                <Image src={tournament.logoUrl} alt="" fill className="object-cover" unoptimized />
+                <Image src={tournament.logoUrl} alt="" fill className="object-cover" />
               </div>
             )}
             <h1 className="text-3xl font-bold">{tournament.name}</h1>
