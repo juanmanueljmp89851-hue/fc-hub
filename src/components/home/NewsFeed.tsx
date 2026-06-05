@@ -53,6 +53,7 @@ function NewsImage({ src, alt, className, fallbackSize = "text-4xl" }: {
         className="object-cover transition-transform group-hover:scale-105"
         onError={() => setError(true)}
         loading="lazy"
+        unoptimized
       />
     </div>
   );
