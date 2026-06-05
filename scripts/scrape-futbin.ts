@@ -46,6 +46,10 @@ const SQUAD_MAP: Record<string, { cardType: string; promo: string; order: number
 // Map FUTBIN version filter slugs to our promo names
 const PROMO_MAP: Record<string, { cardType: string; promo: string; order: number }> = {
   // Newest promos first (higher order = newer)
+  greats_of_the_game: { cardType: "icon", promo: "Greats of the Game", order: 112 },
+  icon_journey_of_nations: { cardType: "icon", promo: "Icon Journey Of Nations", order: 111 },
+  path_to_glory: { cardType: "special", promo: "Path To Glory", order: 110 },
+  national_pride: { cardType: "special", promo: "National Pride", order: 109 },
   prime_heroes: { cardType: "hero", promo: "Prime Heroes", order: 105 },
   tots: { cardType: "tots", promo: "TOTS", order: 100 },
   tots_champions: { cardType: "tots", promo: "TOTS Champions", order: 99 },
@@ -304,6 +308,14 @@ function inferPromo(cardImageId: string): {
   if (!cardImageId) return { cardType: "special", promo: "Especial", order: 15 };
 
   const id = cardImageId.toLowerCase();
+
+  // New promos (June 2026)
+  if (id.includes("trophy_titans")) return PROMO_MAP.greats_of_the_game;
+  if (id.includes("greats_of_the_game") || id.includes("gotg")) return PROMO_MAP.greats_of_the_game;
+  if (id.includes("ecl_champion") || id.includes("champion_icon")) return PROMO_MAP.greats_of_the_game;
+  if (id.includes("journey_of_nations") || id.includes("jon")) return PROMO_MAP.icon_journey_of_nations;
+  if (id.includes("path_to_glory") || id.includes("ptg")) return PROMO_MAP.path_to_glory;
+  if (id.includes("national_pride")) return PROMO_MAP.national_pride;
 
   // Prime Heroes — check before generic hero
   if (id.includes("prime_hero")) return PROMO_MAP.prime_heroes;
