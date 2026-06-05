@@ -155,7 +155,7 @@ export function JugadoresClient({ players, promos }: Props) {
             <select
               value={posFilter}
               onChange={(e) => setPosFilter(e.target.value)}
-              className="rounded-lg border border-surface-light bg-surface px-3 py-2 text-xs font-medium text-foreground/70 focus:border-accent focus:outline-none"
+              className="min-h-[44px] rounded-lg border border-surface-light bg-surface px-3 py-2 text-sm font-medium text-foreground/70 focus:border-accent focus:outline-none sm:min-h-0 sm:text-xs"
             >
               <option value="">Posición</option>
               {POSITIONS.map((pos) => (
@@ -166,7 +166,7 @@ export function JugadoresClient({ players, promos }: Props) {
             <select
               value={promoFilter}
               onChange={(e) => setPromoFilter(e.target.value)}
-              className="rounded-lg border border-surface-light bg-surface px-3 py-2 text-xs font-medium text-foreground/70 focus:border-accent focus:outline-none"
+              className="min-h-[44px] rounded-lg border border-surface-light bg-surface px-3 py-2 text-sm font-medium text-foreground/70 focus:border-accent focus:outline-none sm:min-h-0 sm:text-xs"
             >
               <option value="">Promo</option>
               {promos.map((p) => (
@@ -267,15 +267,17 @@ export function JugadoresClient({ players, promos }: Props) {
                     </span>
                   </div>
                   <div
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+                    className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
                     style={{ justifyItems: "center" }}
                   >
                     {visibleCards.map((player) => (
-                      <FutCard
-                        key={player.id}
-                        player={player}
-                        onClick={() => setSelectedPlayer(player)}
-                      />
+                      <div key={player.id} className="w-full flex justify-center">
+                        <FutCard
+                          player={player}
+                          onClick={() => setSelectedPlayer(player)}
+                          responsive
+                        />
+                      </div>
                     ))}
                   </div>
                   {hasMore && !isExpanded && (
@@ -302,15 +304,17 @@ export function JugadoresClient({ players, promos }: Props) {
           /* GRID VIEW — flat sorted */
           <>
             <div
-              className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
               style={{ justifyItems: "center" }}
             >
               {filtered.slice(0, 60).map((player) => (
-                <FutCard
-                  key={player.id}
-                  player={player}
-                  onClick={() => setSelectedPlayer(player)}
-                />
+                <div key={player.id} className="w-full flex justify-center">
+                  <FutCard
+                    player={player}
+                    onClick={() => setSelectedPlayer(player)}
+                    responsive
+                  />
+                </div>
               ))}
             </div>
             {filtered.length > 60 && (

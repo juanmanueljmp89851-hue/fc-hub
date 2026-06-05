@@ -29,6 +29,12 @@
 
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Remove 300ms tap delay on mobile */
+  a, button, input, select, textarea {
+    touch-action: manipulation;
   }
 
   ::-webkit-scrollbar {

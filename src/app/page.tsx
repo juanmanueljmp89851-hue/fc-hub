@@ -86,7 +86,7 @@ export default async function HomePage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8">
         {/* Hero Banner */}
-        <section className="relative mb-8 overflow-hidden rounded-2xl border border-surface-light bg-gradient-to-br from-surface via-surface to-surface-light p-8 md:p-12">
+        <section className="relative mb-8 overflow-hidden rounded-2xl border border-surface-light bg-gradient-to-br from-surface via-surface to-surface-light p-5 sm:p-8 md:p-12">
           <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
 
@@ -94,7 +94,7 @@ export default async function HomePage() {
             <span className="inline-block h-px w-5 bg-accent" />
             Todo el universo EA FC y fútbol en una sola plataforma
           </p>
-          <h1 className="mb-3 text-4xl font-black leading-[1.1] md:text-5xl">
+          <h1 className="mb-3 text-2xl font-black leading-[1.1] sm:text-4xl md:text-5xl">
             <span className="italic text-foreground">Stats, mercado y fútbol. </span>
             <span className="italic text-accent">No salís más, caíste.</span>
           </h1>
@@ -112,7 +112,7 @@ export default async function HomePage() {
         <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           {quickLinks.map((link) => (
             <Link key={link.href} href={link.href} className="group">
-              <Card className="flex h-full flex-col justify-between transition-all hover:border-accent/30 hover:shadow-[0_0_20px_rgba(0,255,135,0.05)]">
+              <Card className="flex h-full min-h-[120px] flex-col justify-between transition-all hover:border-accent/30 hover:shadow-[0_0_20px_rgba(0,255,135,0.05)]">
                 <div>
                   <span className="mb-2 block text-2xl">{link.icon}</span>
                   <h3 className="font-bold text-foreground">{link.title}</h3>

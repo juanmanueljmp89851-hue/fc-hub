@@ -55,9 +55,9 @@ export function LatestCards({ cards, lastUpdated }: LatestCardsProps) {
 
       {/* Horizontal scroll strip */}
       <div className="relative">
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-surface-light">
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth scrollbar-thin scrollbar-track-transparent scrollbar-thumb-surface-light touch-pan-x">
           {cards.map((card) => (
-            <div key={card.id} className="flex-shrink-0">
+            <div key={card.id} className="flex-shrink-0 snap-start">
               <FutCard player={card} size="sm" onClick={() => setSelectedPlayer(card)} />
             </div>
           ))}

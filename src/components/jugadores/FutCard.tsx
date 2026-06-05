@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   type FutPlayer,
   playerFaceUrl,
@@ -13,6 +13,8 @@ interface FutCardProps {
   player: FutPlayer;
   onClick?: () => void;
   size?: "sm" | "md" | "lg";
+  /** When true, renders sm on mobile (<640px) and md on desktop */
+  responsive?: boolean;
 }
 
 const SIZES = {
@@ -21,7 +23,21 @@ const SIZES = {
   lg: { w: 220, h: 308 },
 };
 
-export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
+function useResponsiveSize(): "sm" | "md" {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile ? "sm" : "md";
+}
+
+export function FutCard({ player, onClick, size = "md", responsive }: FutCardProps) {
+  const responsiveSize = useResponsiveSize();
+  if (responsive) size = responsiveSize;
   const [bgErr, setBgErr] = useState(false);
   const [faceEaErr, setFaceEaErr] = useState(false);
   const [faceImgErr, setFaceImgErr] = useState(false);
@@ -307,9 +323,9 @@ export function FutCard({ player, onClick, size = "md" }: FutCardProps) {
         }}
       />
 
-      {/* Hover stats overlay */}
+      {/* Hover stats overlay — hidden on touch devices, tap opens modal instead */}
       <div
-        className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center rounded-xl bg-black/85 backdrop-blur-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-0 z-30 hidden flex-col items-center justify-center rounded-xl bg-black/85 backdrop-blur-sm opacity-0 transition-opacity duration-200 sm:flex group-hover:opacity-100"
         style={{ borderRadius: 12 * s }}
         onClick={(e) => e.stopPropagation()}
       >

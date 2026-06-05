@@ -150,7 +150,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-surface-light bg-background/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-surface-light bg-background/80 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="Modo Fosa" width={36} height={36} className="h-9 w-9" />
@@ -203,12 +203,14 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex flex-col gap-1.5 md:hidden"
-          aria-label="Menú"
-        >
+        {/* Mobile: notification bell + hamburger */}
+        <div className="flex items-center gap-3 md:hidden">
+          {authChecked && user && <NotificationBell />}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex flex-col gap-1.5"
+            aria-label="Menú"
+          >
           <span
             className={`h-0.5 w-6 bg-foreground transition-transform ${mobileOpen ? "translate-y-2 rotate-45" : ""}`}
           />
@@ -219,11 +221,12 @@ export function Navbar() {
             className={`h-0.5 w-6 bg-foreground transition-transform ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`}
           />
         </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-surface-light bg-background px-4 pb-4 md:hidden">
+        <div className="animate-[slideDown_200ms_ease-out] border-t border-surface-light bg-background px-4 pb-4 md:hidden">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -241,10 +244,6 @@ export function Navbar() {
           <div className="mt-3 flex flex-col gap-2">
             {user ? (
               <>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-foreground/40">Notificaciones</span>
-                  <NotificationBell />
-                </div>
                 <Link
                   href="/perfil"
                   onClick={() => setMobileOpen(false)}

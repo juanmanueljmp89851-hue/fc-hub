@@ -101,25 +101,25 @@ export function LiveTicker() {
   const duration = Math.max(matches.length * 2, 15);
 
   return (
-    <div className="relative overflow-hidden border-y border-surface-light bg-surface/50">
+    <div className="group/ticker relative overflow-hidden border-y border-surface-light bg-surface/50 touch-manipulation">
       {/* Fixed "Resultados en vivo" label — solid bg, no overlap */}
-      <div className="absolute left-0 top-0 z-20 flex h-full items-center pl-3 pr-2" style={{ background: "var(--background, #0a0a0a)" }}>
-        <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wide text-red-500">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
-          Resultados en vivo
+      <div className="absolute left-0 top-0 z-20 flex h-full items-center pl-2 pr-1 sm:pl-3 sm:pr-2" style={{ background: "var(--background, #0a0a0a)" }}>
+        <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-red-500 sm:gap-1.5 sm:text-xs">
+          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500 sm:h-2 sm:w-2" />
+          <span className="hidden sm:inline">Resultados en vivo</span>
+          <span className="sm:hidden">EN VIVO</span>
         </span>
       </div>
       {/* Fade between label and scrolling content */}
-      <div className="pointer-events-none absolute left-[170px] top-0 z-10 h-full w-6 bg-gradient-to-r from-[var(--background,#0a0a0a)] to-transparent" />
+      <div className="pointer-events-none absolute left-[75px] top-0 z-10 h-full w-4 bg-gradient-to-r from-[var(--background,#0a0a0a)] to-transparent sm:left-[170px] sm:w-6" />
 
       {/* Right fade edge */}
       <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-12 bg-gradient-to-l from-background to-transparent" />
 
       <div
-        className="flex whitespace-nowrap py-2 animate-[ticker_var(--ticker-duration)_linear_infinite]"
+        className="flex whitespace-nowrap py-2 pl-[90px] sm:pl-[195px] animate-[ticker_var(--ticker-duration)_linear_infinite] group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]"
         style={{
           "--ticker-duration": `${duration}s`,
-          paddingLeft: "195px", // offset for fixed label
         } as React.CSSProperties}
       >
         {tickerItems.map((match, i) => {
