@@ -28,13 +28,13 @@ export const metadata: Metadata = {
     siteName: "Modo Fosa",
     title: "Modo Fosa — Comunidad EA FC Argentina",
     description: "Stats, mercado y fútbol. Donde vive el meta.",
-    images: [{ url: "/logo.svg", width: 512, height: 512, alt: "Modo Fosa" }],
+    images: [{ url: "/api/og", width: 1200, height: 630, alt: "Modo Fosa — Comunidad EA FC Argentina" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Modo Fosa — Comunidad EA FC Argentina",
     description: "Stats, mercado y fútbol. Donde vive el meta.",
-    images: ["/logo.svg"],
+    images: ["/api/og"],
   },
   metadataBase: new URL("https://www.modofosa.com.ar"),
   alternates: {
@@ -65,6 +65,41 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.modofosa.com.ar/#website",
+                  url: "https://www.modofosa.com.ar",
+                  name: "Modo Fosa",
+                  description: "La comunidad de EA FC Argentina. Stats, mercado y fútbol.",
+                  inLanguage: "es-AR",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: "https://www.modofosa.com.ar/jugadores?q={search_term_string}",
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://www.modofosa.com.ar/#organization",
+                  name: "Modo Fosa",
+                  url: "https://www.modofosa.com.ar",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://www.modofosa.com.ar/api/og",
+                    width: 1200,
+                    height: 630,
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body
         className={`${inter.variable} font-sans bg-background text-foreground antialiased flex min-h-screen flex-col`}

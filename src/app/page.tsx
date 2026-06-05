@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Inicio",
+  title: { absolute: "Modo Fosa — Comunidad EA FC Argentina | Stats, Torneos, Prode" },
   description:
     "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode del Mundial 2026, ranking, cartas FC 26, noticias y más.",
   alternates: { canonical: "/" },
