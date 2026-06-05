@@ -37,14 +37,14 @@ function NewsImage({ src, alt, className, fallbackSize = "text-4xl" }: {
 
   if (!src || error) {
     return (
-      <div className={`${className} flex items-center justify-center bg-surface-light`}>
+      <div className={`${className} flex items-center justify-center bg-surface-light`} style={{ aspectRatio: "16/9" }}>
         <span className={`${fallbackSize} text-foreground/20`}>📰</span>
       </div>
     );
   }
 
   return (
-    <div className={`${className} relative overflow-hidden bg-surface-light`}>
+    <div className={`${className} relative overflow-hidden bg-surface-light`} style={{ aspectRatio: "16/9" }}>
       <Image
         src={src}
         alt={alt}
@@ -78,12 +78,12 @@ export function NewsFeed({ limit = 16 }: NewsFeedProps) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" style={{ minHeight: 600, contain: "layout" }}>
         <h2 className="text-xl font-bold">Últimas Noticias</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="animate-pulse rounded-xl border border-surface-light bg-surface">
-              <div className="h-40 rounded-t-xl bg-surface-light" />
+              <div className="rounded-t-xl bg-surface-light" style={{ aspectRatio: "16/9" }} />
               <div className="space-y-2 p-4">
                 <div className="h-4 w-3/4 rounded bg-surface-light" />
                 <div className="h-3 w-1/2 rounded bg-surface-light" />
@@ -102,7 +102,7 @@ export function NewsFeed({ limit = 16 }: NewsFeedProps) {
   const [featured, ...rest] = news;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" style={{ minHeight: 600, contain: "layout" }}>
       <h2 className="text-xl font-bold">Últimas Noticias</h2>
 
       {/* Featured article */}

@@ -66,7 +66,7 @@ export function AdSlot({ format = "auto", className = "" }: AdSlotProps) {
   if (AD_CONFIG.provider === "none") return null;
 
   return (
-    <div ref={containerRef} className={`w-full overflow-hidden ${className}`}>
+    <div ref={containerRef} className={`w-full overflow-hidden ${className}`} style={{ minHeight: 90, contain: "layout" }}>
       <ins
         className="adsbygoogle"
         style={config.style}
