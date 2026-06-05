@@ -68,8 +68,22 @@ export default async function JugadoresPage() {
   // Get unique promos in order (for filter dropdown)
   const promos = [...new Set(cards.map((c) => c.promo).filter(Boolean))] as string[];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Cartas FC 26",
+    description: "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
+    url: "https://www.modofosa.com.ar/jugadores",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+    numberOfItems: players.length,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <JugadoresClient players={players} promos={promos} />
       <div className="mx-auto max-w-7xl px-4 pb-8">
         <AdSlot format="auto" />

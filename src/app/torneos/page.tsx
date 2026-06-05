@@ -89,8 +89,22 @@ export default async function TorneosPage({ searchParams }: PageProps) {
     page: searchParams.page ? parseInt(searchParams.page) : 1,
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Arena — Torneos EA FC",
+    description: "Torneos, copas y eventos de EA FC organizados por la comunidad Modo Fosa.",
+    url: "https://www.modofosa.com.ar/torneos",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+    numberOfItems: total,
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8 flex items-center justify-between">

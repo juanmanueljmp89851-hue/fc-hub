@@ -31,8 +31,23 @@ export default async function ProdePage() {
     getActiveWeek(),
   ]);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Prode Mundial 2026",
+    description: "Predecí los resultados del Mundial 2026. Competí con amigos y ganá premios.",
+    url: "https://www.modofosa.com.ar/prode",
+    applicationCategory: "GameApplication",
+    operatingSystem: "Web",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

@@ -15,8 +15,21 @@ export const metadata: Metadata = {
 };
 
 export default function ActualidadPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Actualidad EA FC 26",
+    description: "Noticias, novedades y actualizaciones de FC 26, Ultimate Team, eventos y mercado.",
+    url: "https://www.modofosa.com.ar/actualidad",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8">

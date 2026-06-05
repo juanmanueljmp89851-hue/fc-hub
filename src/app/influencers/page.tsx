@@ -29,8 +29,22 @@ export default async function InfluencersPage({ searchParams }: PageProps) {
     getAllSpecialties(),
   ]);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Streamers y Creadores EA FC",
+    description: "Directorio de creadores y streamers de EA FC en español.",
+    url: "https://www.modofosa.com.ar/influencers",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+    numberOfItems: influencers.length,
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8">

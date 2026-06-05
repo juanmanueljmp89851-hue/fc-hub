@@ -32,8 +32,21 @@ export default async function RankingPage({ searchParams }: PageProps) {
   const period = (searchParams.period ?? "all") as "all" | "month" | "week";
   const ranking = await getRanking({ period });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Clasificación — Ranking EA FC Argentina",
+    description: "Clasificación de jugadores de EA FC Argentina. Subí posiciones ganando duelos.",
+    url: "https://www.modofosa.com.ar/ranking",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8">

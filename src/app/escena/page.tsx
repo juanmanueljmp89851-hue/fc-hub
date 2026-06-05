@@ -31,8 +31,22 @@ function getGameModeLabel(mode: string) {
 export default async function EscenaPage() {
   const leagues = await getExternalLeagues();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Escena Competitiva EA FC Argentina",
+    description: "Ligas y torneos competitivos de EA FC en Argentina: IESA, EFA, eLiga Profesional, VPG.",
+    url: "https://www.modofosa.com.ar/escena",
+    isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
+    numberOfItems: leagues.length,
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8">
