@@ -49,6 +49,7 @@ const PROMO_MAP: Record<string, { cardType: string; promo: string; order: number
   greats_of_the_game: { cardType: "icon", promo: "Greats of the Game", order: 112 },
   icon_journey_of_nations: { cardType: "icon", promo: "Icon Journey Of Nations", order: 111 },
   path_to_glory: { cardType: "special", promo: "Path To Glory", order: 110 },
+  national_pride_red: { cardType: "special", promo: "National Pride Red", order: 109.5 },
   national_pride: { cardType: "special", promo: "National Pride", order: 109 },
   prime_heroes: { cardType: "hero", promo: "Prime Heroes", order: 105 },
   tots: { cardType: "tots", promo: "TOTS", order: 100 },

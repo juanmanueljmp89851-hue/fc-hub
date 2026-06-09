@@ -3,8 +3,10 @@ import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { getMyProdes, getActiveWeek } from "@/lib/actions/prode";
+import { getMyProdes, getActiveWeek, getAllProdes } from "@/lib/actions/prode";
+import { JoinProdeButton } from "@/components/prode/JoinProdeButton";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Prode Mundial 2026",
@@ -26,9 +28,16 @@ function getStatusInfo(status: string) {
 }
 
 export default async function ProdePage() {
-  const [myProdes, activeWeek] = await Promise.all([
-    getMyProdes(),
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  const isLoggedIn = !!authUser;
+
+  const [myProdes, activeWeek, allProdes] = await Promise.all([
+    isLoggedIn ? getMyProdes() : Promise.resolve([]),
     getActiveWeek(),
+    getAllProdes(),
   ]);
 
   const jsonLd = {
@@ -56,15 +65,19 @@ export default async function ProdePage() {
               Prode <span className="text-gold">Mundial 2026</span>
             </h1>
             <p className="mt-1 text-foreground/60">
-              Creá tu prode, invitá amigos y competí por premios
+              {isLoggedIn
+                ? "Creá tu prode, invitá amigos y competí por premios"
+                : "Predecí los resultados del Mundial 2026 y competí con amigos"}
             </p>
           </div>
-          <Link
-            href="/prode/crear"
-            className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
-          >
-            Crear Prode
-          </Link>
+          {isLoggedIn && (
+            <Link
+              href="/prode/crear"
+              className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
+            >
+              Crear Prode
+            </Link>
+          )}
         </div>
 
         {/* Scoring info */}
@@ -105,68 +118,153 @@ export default async function ProdePage() {
           </div>
         )}
 
-        {/* Join by code */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Unirte a un Prode</CardTitle>
-          </CardHeader>
-          <JoinByCodeForm />
-        </Card>
+        {/* ── LOGGED IN: Join by code + My prodes ── */}
+        {isLoggedIn && (
+          <>
+            {/* Join by code */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Unirte a un Prode</CardTitle>
+              </CardHeader>
+              <JoinByCodeForm />
+            </Card>
 
-        {/* My prodes */}
-        <h2 className="mb-4 text-xl font-bold">Mis Prodes</h2>
-        {myProdes.length === 0 ? (
+            {/* My prodes */}
+            <h2 className="mb-4 text-xl font-bold">Mis Prodes</h2>
+            {myProdes.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-lg font-medium text-foreground/50">No tenés prodes todavía</p>
+                <p className="mt-2 text-sm text-foreground/40">
+                  Creá uno y compartí el link con tus amigos, o pedí que te pasen un código para unirte
+                </p>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {myProdes.map((prode) => {
+                  const statusInfo = getStatusInfo(prode.status);
+                  return (
+                    <Link key={prode.id} href={`/prode/${prode.id}`}>
+                      <Card className="h-full overflow-hidden p-0 transition-colors hover:border-accent/50">
+                        {prode.bannerUrl && (
+                          <div className="relative h-28 w-full overflow-hidden">
+                            <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
+                          </div>
+                        )}
+                        <div className={prode.bannerUrl ? "p-4" : "p-5"}>
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
+                                {statusInfo.label}
+                              </span>
+                              {prode.visibility === "PRIVATE" && (
+                                <span className="text-xs text-foreground/30">🔒</span>
+                              )}
+                            </div>
+                            <span className="text-xs text-foreground/40">
+                              {prode._count.participants} participantes
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {prode.imageUrl && (
+                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                                <Image src={prode.imageUrl} alt="" fill className="object-cover" />
+                              </div>
+                            )}
+                            <h3 className="text-lg font-bold">{prode.name}</h3>
+                          </div>
+                          <p className="mt-1 text-xs text-foreground/50">
+                            Creado por {prode.createdBy.username}
+                          </p>
+                          {prode.prizeGeneral && (
+                            <p className="mt-2 text-sm text-gold">
+                              🏆 {prode.prizeGeneral}
+                            </p>
+                          )}
+                        </div>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── PRODES DISPONIBLES (visible siempre) ── */}
+        <h2 className="mb-4 mt-10 text-xl font-bold">Prodes disponibles</h2>
+
+        {!isLoggedIn && (
+          <div className="mb-4 rounded-xl border border-accent/30 bg-accent/5 p-4 text-center">
+            <p className="text-sm text-foreground/60">
+              <Link href="/auth/register" className="font-bold text-accent hover:underline">
+                Registrate
+              </Link>{" "}
+              o{" "}
+              <Link href="/auth/login" className="font-bold text-accent hover:underline">
+                iniciá sesión
+              </Link>{" "}
+              para unirte a un prode y competir con tus amigos
+            </p>
+          </div>
+        )}
+
+        {allProdes.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-lg font-medium text-foreground/50">No tenés prodes todavía</p>
+            <p className="text-lg font-medium text-foreground/50">No hay prodes disponibles</p>
             <p className="mt-2 text-sm text-foreground/40">
-              Creá uno y compartí el link con tus amigos, o pedí que te pasen un código para unirte
+              Sé el primero en crear uno y compartilo con tus amigos
             </p>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {myProdes.map((prode) => {
+            {allProdes.map((prode) => {
               const statusInfo = getStatusInfo(prode.status);
               return (
-                <Link key={prode.id} href={`/prode/${prode.id}`}>
-                  <Card className="h-full overflow-hidden p-0 transition-colors hover:border-accent/50">
-                    {prode.bannerUrl && (
-                      <div className="relative h-28 w-full overflow-hidden">
-                        <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
-                      </div>
-                    )}
-                    <div className={prode.bannerUrl ? "p-4" : "p-5"}>
-                      <div className="mb-2 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
-                            {statusInfo.label}
-                          </span>
-                          {prode.visibility === "PRIVATE" && (
-                            <span className="text-xs text-foreground/30">🔒</span>
-                          )}
-                        </div>
-                        <span className="text-xs text-foreground/40">
-                          {prode._count.participants} participantes
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {prode.imageUrl && (
-                          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                            <Image src={prode.imageUrl} alt="" fill className="object-cover" />
-                          </div>
-                        )}
-                        <h3 className="text-lg font-bold">{prode.name}</h3>
-                      </div>
-                      <p className="mt-1 text-xs text-foreground/50">
-                        Creado por {prode.createdBy.username}
-                      </p>
-                      {prode.prizeGeneral && (
-                        <p className="mt-2 text-sm text-gold">
-                          🏆 {prode.prizeGeneral}
-                        </p>
-                      )}
+                <Card key={prode.id} className="h-full overflow-hidden p-0">
+                  {prode.bannerUrl && (
+                    <div className="relative h-28 w-full overflow-hidden">
+                      <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
                     </div>
-                  </Card>
-                </Link>
+                  )}
+                  <div className={prode.bannerUrl ? "p-4" : "p-5"}>
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
+                          {statusInfo.label}
+                        </span>
+                        {prode.visibility === "PRIVATE" && (
+                          <span className="text-xs text-foreground/30">🔒</span>
+                        )}
+                      </div>
+                      <span className="text-xs text-foreground/40">
+                        {prode._count.participants} participantes
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {prode.imageUrl && (
+                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                          <Image src={prode.imageUrl} alt="" fill className="object-cover" />
+                        </div>
+                      )}
+                      <h3 className="text-lg font-bold">{prode.name}</h3>
+                    </div>
+                    <p className="mt-1 text-xs text-foreground/50">
+                      Creado por {prode.createdBy.username}
+                    </p>
+                    {prode.prizeGeneral && (
+                      <p className="mt-2 text-sm text-gold">
+                        🏆 {prode.prizeGeneral}
+                      </p>
+                    )}
+                    <div className="mt-3">
+                      <JoinProdeButton
+                        prodeId={prode.id}
+                        userStatus={prode.userStatus}
+                        isPrivate={prode.visibility === "PRIVATE"}
+                      />
+                    </div>
+                  </div>
+                </Card>
               );
             })}
           </div>

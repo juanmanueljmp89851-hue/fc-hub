@@ -1,10 +1,14 @@
-import { getProdeWeeksAdmin } from "@/lib/actions/admin";
+import { getProdeWeeksAdmin, getAllProdesAdmin } from "@/lib/actions/admin";
 import { ProdeWeekManager } from "@/components/admin/ProdeWeekManager";
+import { AdminProdeList } from "@/components/admin/AdminProdeList";
 
 export default async function AdminProdePage() {
-  const weeks = await getProdeWeeksAdmin();
+  const [weeks, prodes] = await Promise.all([
+    getProdeWeeksAdmin(),
+    getAllProdesAdmin(),
+  ]);
 
-  const serialized = weeks.map((w) => ({
+  const serializedWeeks = weeks.map((w) => ({
     ...w,
     deadline: w.deadline.toISOString(),
     createdAt: w.createdAt.toISOString(),
@@ -14,10 +18,30 @@ export default async function AdminProdePage() {
     })),
   }));
 
+  const serializedProdes = prodes.map((p) => ({
+    id: p.id,
+    name: p.name,
+    visibility: p.visibility,
+    status: p.status,
+    createdBy: p.createdBy.username,
+    participants: p._count.participants,
+    joinRequests: p._count.joinRequests,
+    createdAt: p.createdAt.toISOString(),
+    deletedAt: p.deletedAt?.toISOString() ?? null,
+    shareCode: p.shareCode,
+  }));
+
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">Gestión Prode</h1>
-      <ProdeWeekManager weeks={serialized} />
+
+      {/* Prodes list */}
+      <AdminProdeList prodes={serializedProdes} />
+
+      {/* Week manager */}
+      <div className="mt-8">
+        <ProdeWeekManager weeks={serializedWeeks} />
+      </div>
     </div>
   );
 }

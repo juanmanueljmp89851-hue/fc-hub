@@ -121,8 +121,25 @@ export async function joinProdeByCode(shareCode: string) {
       }
     }
 
+    const requester = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true },
+    });
+
     await prisma.prodeJoinRequest.create({
       data: { prodeId: prode.id, userId },
+    });
+
+    // Notify prode creator about new join request
+    await prisma.notification.create({
+      data: {
+        userId: prode.createdById,
+        type: "PRODE_JOIN_REQUEST",
+        title: "Nueva solicitud de unión",
+        message: `${requester?.username ?? "Un usuario"} quiere unirse a tu prode "${prode.name}".`,
+        relatedId: prode.id,
+        linkUrl: `/prode/${prode.id}`,
+      },
     });
 
     revalidatePath(`/prode/${prode.id}`);
@@ -138,7 +155,109 @@ export async function joinProdeByCode(shareCode: string) {
   return { success: true, prodeId: prode.id };
 }
 
+// ─── Inscribirse desde listado ──────────────────────────────
+
+export async function requestJoinProde(prodeId: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado", requireAuth: true };
+
+  const prode = await prisma.prode.findUnique({
+    where: { id: prodeId },
+    select: { id: true, name: true, status: true, visibility: true, createdById: true, shareCode: true },
+  });
+
+  if (!prode) return { error: "Prode no encontrado" };
+  if (prode.status === "FINISHED") return { error: "Este prode ya finalizó" };
+
+  // Already joined?
+  const existing = await prisma.prodeParticipant.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+  });
+  if (existing) return { error: "Ya estás participando en este prode", alreadyJoined: true };
+
+  if (prode.visibility === "PRIVATE") {
+    // Check existing request
+    const existingRequest = await prisma.prodeJoinRequest.findUnique({
+      where: { prodeId_userId: { prodeId, userId } },
+    });
+    if (existingRequest?.status === "PENDING") return { error: "Ya tenés una solicitud pendiente", pending: true };
+    if (existingRequest?.status === "REJECTED") return { error: "Tu solicitud fue rechazada" };
+
+    const requester = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true },
+    });
+
+    await prisma.prodeJoinRequest.create({
+      data: { prodeId, userId },
+    });
+
+    // Notify creator
+    await prisma.notification.create({
+      data: {
+        userId: prode.createdById,
+        type: "PRODE_JOIN_REQUEST",
+        title: "Nueva solicitud de unión",
+        message: `${requester?.username ?? "Un usuario"} quiere unirse a tu prode "${prode.name}".`,
+        relatedId: prodeId,
+        linkUrl: `/prode/${prodeId}`,
+      },
+    });
+
+    revalidatePath(`/prode/${prodeId}`);
+    revalidatePath("/prode");
+    return { success: true, pending: true, prodeName: prode.name };
+  }
+
+  // PUBLIC → direct join
+  await prisma.prodeParticipant.create({
+    data: { prodeId, userId },
+  });
+
+  revalidatePath(`/prode/${prodeId}`);
+  revalidatePath("/prode");
+  return { success: true, prodeId };
+}
+
 // ─── Queries ────────────────────────────────────────────────
+
+/** All non-deleted prodes (for public listing) */
+export async function getAllProdes() {
+  const userId = await getAuthUserId();
+
+  const prodes = await prisma.prode.findMany({
+    where: { deletedAt: null },
+    include: {
+      createdBy: { select: { id: true, username: true } },
+      _count: { select: { participants: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Mark which prodes the current user already joined or has pending request
+  if (!userId) return prodes.map((p) => ({ ...p, userStatus: "guest" as const }));
+
+  const myParticipations = await prisma.prodeParticipant.findMany({
+    where: { userId, prodeId: { in: prodes.map((p) => p.id) } },
+    select: { prodeId: true },
+  });
+  const joinedSet = new Set(myParticipations.map((p) => p.prodeId));
+
+  const myRequests = await prisma.prodeJoinRequest.findMany({
+    where: { userId, prodeId: { in: prodes.map((p) => p.id) } },
+    select: { prodeId: true, status: true },
+  });
+  const requestMap = new Map(myRequests.map((r) => [r.prodeId, r.status]));
+
+  return prodes.map((p) => {
+    let userStatus: "joined" | "pending" | "rejected" | "available" | "guest";
+    if (joinedSet.has(p.id)) userStatus = "joined";
+    else if (requestMap.get(p.id) === "PENDING") userStatus = "pending";
+    else if (requestMap.get(p.id) === "REJECTED") userStatus = "rejected";
+    else userStatus = "available";
+    return { ...p, userStatus };
+  });
+}
 
 export async function getMyProdes() {
   const userId = await getAuthUserId();
@@ -918,7 +1037,9 @@ export async function resolveJoinRequest(
 
   const request = await prisma.prodeJoinRequest.findUnique({
     where: { id: requestId },
-    include: { prode: { select: { createdById: true, id: true } } },
+    include: {
+      prode: { select: { createdById: true, id: true, name: true, createdBy: { select: { username: true } } } },
+    },
   });
   if (!request) return { error: "Solicitud no encontrada" };
 
@@ -951,6 +1072,28 @@ export async function resolveJoinRequest(
       create: { prodeId: request.prodeId, userId: request.userId },
     });
   }
+
+  // Notify the requester about the decision
+  const prodeName = request.prode.name;
+  const creatorUsername = request.prode.createdBy?.username ?? "el creador";
+  const notifType = action === "ACCEPTED" ? "PRODE_JOIN_ACCEPTED" : "PRODE_JOIN_REJECTED";
+  const notifTitle = action === "ACCEPTED"
+    ? "¡Te aceptaron en un prode!"
+    : "Solicitud rechazada";
+  const notifMessage = action === "ACCEPTED"
+    ? `Se aceptó tu solicitud al prode "${prodeName}". ¡Ya podés participar!`
+    : `Se rechazó tu solicitud al prode "${prodeName}". Si tenés dudas, contactá a ${creatorUsername}.`;
+
+  await prisma.notification.create({
+    data: {
+      userId: request.userId,
+      type: notifType as import("@prisma/client").NotificationType,
+      title: notifTitle,
+      message: notifMessage,
+      relatedId: request.prodeId,
+      linkUrl: action === "ACCEPTED" ? `/prode/${request.prodeId}` : "/prode",
+    },
+  });
 
   revalidatePath(`/prode/${request.prodeId}`);
   return { success: true };

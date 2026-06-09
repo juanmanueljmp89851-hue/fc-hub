@@ -72,6 +72,20 @@ export async function toggleUserRole(userId: string) {
   return { success: true, newRole };
 }
 
+// ─── Admin: all prodes (including deleted) ────────────────
+
+export async function getAllProdesAdmin() {
+  await requireAdmin();
+
+  return prisma.prode.findMany({
+    include: {
+      createdBy: { select: { username: true } },
+      _count: { select: { participants: true, joinRequests: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 // ─── Prode week management ────────────────────────────────
 
 export async function getProdeWeeksAdmin() {
