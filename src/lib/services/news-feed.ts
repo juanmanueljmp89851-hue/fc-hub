@@ -134,6 +134,46 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
 }
 
+function decodeHTMLEntities(text: string): string {
+  const entities: Record<string, string> = {
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&quot;": '"',
+    "&apos;": "'",
+    "&#039;": "'",
+    "&nbsp;": " ",
+    "&ndash;": "–",
+    "&mdash;": "—",
+    "&laquo;": "«",
+    "&raquo;": "»",
+    "&iexcl;": "¡",
+    "&iquest;": "¿",
+    "&ntilde;": "ñ",
+    "&Ntilde;": "Ñ",
+    "&aacute;": "á",
+    "&eacute;": "é",
+    "&iacute;": "í",
+    "&oacute;": "ó",
+    "&uacute;": "ú",
+    "&Aacute;": "Á",
+    "&Eacute;": "É",
+    "&Iacute;": "Í",
+    "&Oacute;": "Ó",
+    "&Uacute;": "Ú",
+    "&uuml;": "ü",
+    "&Uuml;": "Ü",
+  };
+  let result = text;
+  for (const [entity, char] of Object.entries(entities)) {
+    result = result.replaceAll(entity, char);
+  }
+  // Decode numeric entities (&#123; and &#x1F; formats)
+  result = result.replace(/&#(\d+);/g, (_, num) => String.fromCharCode(Number(num)));
+  result = result.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  return result;
+}
+
 function extractFromTag(xml: string, tag: string): string {
   const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i");
   const match = xml.match(regex);
@@ -169,8 +209,8 @@ function parseRSSItems(xml: string, config: FeedConfig): NewsItem[] {
 
   while ((match = itemRegex.exec(xml)) !== null) {
     const itemXml = match[1];
-    const title = stripHtml(extractFromTag(itemXml, "title"));
-    const description = stripHtml(extractFromTag(itemXml, "description")).slice(0, 200);
+    const title = decodeHTMLEntities(stripHtml(extractFromTag(itemXml, "title")));
+    const description = decodeHTMLEntities(stripHtml(extractFromTag(itemXml, "description"))).slice(0, 200);
     const link = extractFromTag(itemXml, "link").trim() || extractFromTag(itemXml, "guid").trim();
     const pubDateStr = extractFromTag(itemXml, "pubDate");
     const imageUrl = extractImageUrl(itemXml);
