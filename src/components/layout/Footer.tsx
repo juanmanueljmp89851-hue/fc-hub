@@ -22,7 +22,6 @@ const legalLinks = [
 const socialLinks = [
   { href: "https://x.com/modofosa", label: "X / TWITTER" },
   { href: "https://instagram.com/modofosa", label: "INSTAGRAM" },
-  { href: "https://youtube.com/@modofosa", label: "YOUTUBE" },
 ];
 
 export function Footer() {
