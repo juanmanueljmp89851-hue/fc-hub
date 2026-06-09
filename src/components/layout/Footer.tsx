@@ -9,7 +9,6 @@ const platformLinks = [
 ];
 
 const communityLinks = [
-  { href: "https://discord.gg/modofosa", label: "Discord", external: true },
   { href: "/reglamento", label: "Reglamento" },
   { href: "/contacto", label: "Contacto" },
   { href: "/sobre-nosotros", label: "Sobre nosotros" },
@@ -21,7 +20,6 @@ const legalLinks = [
 ];
 
 const socialLinks = [
-  { href: "https://discord.gg/modofosa", label: "DISCORD" },
   { href: "https://x.com/modofosa", label: "X / TWITTER" },
   { href: "https://instagram.com/modofosa", label: "INSTAGRAM" },
   { href: "https://youtube.com/@modofosa", label: "YOUTUBE" },
@@ -87,23 +85,12 @@ export function Footer() {
             <ul className="space-y-2.5">
               {communityLinks.map((l) => (
                 <li key={l.href}>
-                  {l.external ? (
-                    <a
-                      href={l.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-foreground/50 transition-colors hover:text-foreground/80"
-                    >
-                      {l.label}
-                    </a>
-                  ) : (
-                    <Link
-                      href={l.href}
-                      className="text-sm text-foreground/50 transition-colors hover:text-foreground/80"
-                    >
-                      {l.label}
-                    </Link>
-                  )}
+                  <Link
+                    href={l.href}
+                    className="text-sm text-foreground/50 transition-colors hover:text-foreground/80"
+                  >
+                    {l.label}
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -46,21 +46,6 @@ export default function ContactoPage() {
             </a>
           </div>
 
-          {/* Discord */}
-          <div className="rounded-xl border border-surface-light bg-surface/30 p-6">
-            <div className="mb-3 text-3xl">🎮</div>
-            <h2 className="mb-1 text-lg font-bold">Discord</h2>
-            <p className="text-sm text-foreground/60">Unite a la comunidad, organizamos torneos y eventos.</p>
-            <a
-              href="https://discord.gg/modofosa"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-block text-accent hover:underline"
-            >
-              discord.gg/modofosa
-            </a>
-          </div>
-
           {/* Redes */}
           <div className="rounded-xl border border-surface-light bg-surface/30 p-6">
             <div className="mb-3 text-3xl">📱</div>
