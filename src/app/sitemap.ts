@@ -20,8 +20,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/escena`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/influencers`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/casual`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
-    { url: `${BASE}/legal/terminos`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
-    { url: `${BASE}/legal/privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${BASE}/contacto`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/reglamento`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/sobre-nosotros`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/legal/terminos`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE}/legal/privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   // ── Dynamic pages (fail gracefully if DB unavailable) ──
