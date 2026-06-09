@@ -11,7 +11,8 @@ const platformLinks = [
 const communityLinks = [
   { href: "https://discord.gg/modofosa", label: "Discord", external: true },
   { href: "/reglamento", label: "Reglamento" },
-  { href: "mailto:contacto@modofosa.com", label: "Contacto", external: true },
+  { href: "/contacto", label: "Contacto" },
+  { href: "/sobre-nosotros", label: "Sobre nosotros" },
 ];
 
 const legalLinks = [
@@ -138,7 +139,7 @@ export function Footer() {
           </p>
           <div className="shrink-0 text-right text-xs text-foreground/40">
             <p>Contacto</p>
-            <p className="text-foreground/50">contacto@modofosa.com</p>
+            <p className="text-foreground/50">juanmanueljmp89851@gmail.com</p>
             <p className="text-foreground/40">Buenos Aires, Argentina</p>
           </div>
         </div>
