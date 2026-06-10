@@ -178,8 +178,17 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
               const pred = predictions[match.id];
               const isFinished = match.status === "FINISHED";
               const existingPred = match.predictions?.[0];
-              // Per-match lock: for group stage, lock when match already started
-              const matchStarted = isGroupStage && new Date(match.matchDate) <= new Date();
+              // Per-match lock: for group stage, lock at 15:30 AR (18:30 UTC) on match day
+              // or when match has started — whichever comes first
+              const matchDate = new Date(match.matchDate);
+              const cutoff = new Date(Date.UTC(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                18, 30, 0, 0 // 15:30 AR = 18:30 UTC
+              ));
+              const lockTime = cutoff < matchDate ? cutoff : matchDate;
+              const matchStarted = isGroupStage && lockTime <= new Date();
               const matchLocked = isFinished || matchStarted;
 
               return (
