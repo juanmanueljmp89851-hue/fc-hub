@@ -175,6 +175,11 @@ export default async function ProdePage() {
                           <p className="mt-1 text-xs text-foreground/50">
                             Creado por {prode.createdBy.username}
                           </p>
+                          {prode.description && (
+                            <p className="mt-1.5 line-clamp-2 text-xs text-foreground/40">
+                              {prode.description}
+                            </p>
+                          )}
                           {prode.prizeGeneral && (
                             <p className="mt-2 text-sm text-gold">
                               🏆 {prode.prizeGeneral}
@@ -251,6 +256,11 @@ export default async function ProdePage() {
                     <p className="mt-1 text-xs text-foreground/50">
                       Creado por {prode.createdBy.username}
                     </p>
+                    {prode.description && (
+                      <p className="mt-1.5 line-clamp-2 text-xs text-foreground/40">
+                        {prode.description}
+                      </p>
+                    )}
                     {prode.prizeGeneral && (
                       <p className="mt-2 text-sm text-gold">
                         🏆 {prode.prizeGeneral}

@@ -500,24 +500,14 @@ export async function savePredictions(
     const match = matchMap.get(pred.matchId);
     if (!match) return { error: "Partido no pertenece a esta fecha" };
 
-    // For group stage: block at 15:30 Argentina time (UTC-3) on match day,
-    // or when the match has already started — whichever comes first.
+    // For group stage: block 1 minute before match kickoff
     if (isGroupStage) {
       if (match.status === "FINISHED" || match.status === "IN_PROGRESS") {
         return { error: "No podés predecir partidos que ya empezaron" };
       }
-      // Build 15:30 AR cutoff for the match day (18:30 UTC)
-      const matchDay = new Date(match.matchDate);
-      const cutoff = new Date(Date.UTC(
-        matchDay.getUTCFullYear(),
-        matchDay.getUTCMonth(),
-        matchDay.getUTCDate(),
-        18, 30, 0, 0 // 15:30 AR = 18:30 UTC
-      ));
-      // Use the earlier of cutoff and matchDate
-      const lockTime = cutoff < match.matchDate ? cutoff : match.matchDate;
-      if (now >= lockTime) {
-        return { error: "Las predicciones cierran a las 15:30 hs Argentina" };
+      const cutoff = new Date(match.matchDate.getTime() - 60_000); // 1 min before
+      if (now >= cutoff) {
+        return { error: "Las predicciones cierran 1 minuto antes del partido" };
       }
     }
   }
