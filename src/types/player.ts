@@ -12,7 +12,9 @@ export type CardType =
   | "icon"
   | "hero"
   | "special"
-  | "end_of_era";
+  | "end_of_era"
+  | "national_pride"
+  | "path_to_glory";
 
 export type PositionCategory = "ATK" | "MID" | "DEF" | "GK";
 
@@ -136,6 +138,14 @@ export function getCardStyle(cardImageId?: string): CardStyle {
   if (id.includes("end_of_era")) {
     return { textColor: "#f0c060", statLabelColor: "#c4900a", nameColor: "#f0c060", dividerColor: "#f0c06040" };
   }
+  // National Pride — purple/green Festival of Football card
+  if (id.includes("national_pride")) {
+    return { textColor: "#b8f0c0", statLabelColor: "#80c090", nameColor: "#b8f0c0", dividerColor: "#b8f0c040" };
+  }
+  // Path to Glory — green/dark Festival of Football card
+  if (id.includes("path_to_glory")) {
+    return { textColor: "#c0f0d0", statLabelColor: "#80d0a0", nameColor: "#c0f0d0", dividerColor: "#c0f0d040" };
+  }
   // Default special — white text on dark
   return { textColor: "#ffffff", statLabelColor: "#cccccc", nameColor: "#ffffff", dividerColor: "#ffffff40" };
 }
@@ -195,5 +205,13 @@ export const CARD_COLORS: Record<CardType, {
   end_of_era: {
     gradient: "linear-gradient(160deg, #0a0804 0%, #1e1208 15%, #3d2410 35%, #6b3c18 50%, #3d2410 65%, #1e1208 85%, #0a0804 100%)",
     text: "#f0c060", accent: "#e8a030", statText: "#f0c060", nameBg: "rgba(10, 8, 4, 0.7)",
+  },
+  national_pride: {
+    gradient: "linear-gradient(160deg, #1a0530 0%, #3a1060 20%, #6020a0 40%, #40b070 55%, #6020a0 70%, #3a1060 90%, #1a0530 100%)",
+    text: "#b8f0c0", accent: "#60d080", statText: "#b8f0c0", nameBg: "rgba(26, 5, 48, 0.7)",
+  },
+  path_to_glory: {
+    gradient: "linear-gradient(160deg, #041a10 0%, #0a3520 20%, #106030 40%, #20a050 55%, #106030 70%, #0a3520 90%, #041a10 100%)",
+    text: "#c0f0d0", accent: "#40d080", statText: "#c0f0d0", nameBg: "rgba(4, 26, 16, 0.7)",
   },
 };

@@ -1,0 +1,148 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  if (searchParams.get("token") !== "seed_sbc_june10_2026") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // ── Richards National Pride 93 ──
+  const richards = await prisma.futCard.upsert({
+    where: { eaId_cardType: { eaId: 250954, cardType: "national_pride" } },
+    update: {
+      name: "Chris Richards",
+      commonName: "Richards",
+      overall: 93,
+      position: "CB",
+      altPositions: [],
+      pace: 91,
+      shooting: 50,
+      passing: 87,
+      dribbling: 86,
+      defending: 93,
+      physical: 93,
+      club: "Crystal Palace",
+      league: "Premier League",
+      nation: "United States",
+      promo: "National Pride",
+      promoOrder: 1000010,
+      cardImageId: "98_national_pride",
+      imageUrl: null,
+      skillMoves: 4,
+      weakFoot: 4,
+      foot: "Right",
+      height: 188,
+      weight: 87,
+      workRateAtk: "Medium",
+      workRateDef: "High",
+      releaseDate: new Date("2026-06-10"),
+    },
+    create: {
+      eaId: 250954,
+      name: "Chris Richards",
+      commonName: "Richards",
+      overall: 93,
+      position: "CB",
+      altPositions: [],
+      pace: 91,
+      shooting: 50,
+      passing: 87,
+      dribbling: 86,
+      defending: 93,
+      physical: 93,
+      club: "Crystal Palace",
+      league: "Premier League",
+      nation: "United States",
+      cardType: "national_pride",
+      promo: "National Pride",
+      promoOrder: 1000010,
+      cardImageId: "98_national_pride",
+      imageUrl: null,
+      skillMoves: 4,
+      weakFoot: 4,
+      foot: "Right",
+      height: 188,
+      weight: 87,
+      workRateAtk: "Medium",
+      workRateDef: "High",
+      releaseDate: new Date("2026-06-10"),
+      source: "manual",
+    },
+  });
+
+  // ── Mazraoui Path to Glory 93 ──
+  const mazraoui = await prisma.futCard.upsert({
+    where: { eaId_cardType: { eaId: 236401, cardType: "path_to_glory" } },
+    update: {
+      name: "Noussair Mazraoui",
+      commonName: "Mazraoui",
+      overall: 93,
+      position: "RB",
+      altPositions: ["CB", "LB", "RM"],
+      pace: 92,
+      shooting: 81,
+      passing: 90,
+      dribbling: 92,
+      defending: 93,
+      physical: 92,
+      club: "Manchester Utd",
+      league: "Premier League",
+      nation: "Morocco",
+      promo: "Path to Glory",
+      promoOrder: 1000010,
+      cardImageId: "107_path_to_glory",
+      imageUrl: null,
+      skillMoves: 4,
+      weakFoot: 4,
+      foot: "Right",
+      height: 183,
+      weight: 65,
+      workRateAtk: "High",
+      workRateDef: "High",
+      releaseDate: new Date("2026-06-10"),
+    },
+    create: {
+      eaId: 236401,
+      name: "Noussair Mazraoui",
+      commonName: "Mazraoui",
+      overall: 93,
+      position: "RB",
+      altPositions: ["CB", "LB", "RM"],
+      pace: 92,
+      shooting: 81,
+      passing: 90,
+      dribbling: 92,
+      defending: 93,
+      physical: 92,
+      club: "Manchester Utd",
+      league: "Premier League",
+      nation: "Morocco",
+      cardType: "path_to_glory",
+      promo: "Path to Glory",
+      promoOrder: 1000010,
+      cardImageId: "107_path_to_glory",
+      imageUrl: null,
+      skillMoves: 4,
+      weakFoot: 4,
+      foot: "Right",
+      height: 183,
+      weight: 65,
+      workRateAtk: "High",
+      workRateDef: "High",
+      releaseDate: new Date("2026-06-10"),
+      source: "manual",
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    cards: [
+      { id: richards.id, name: richards.name, overall: richards.overall, cardType: richards.cardType },
+      { id: mazraoui.id, name: mazraoui.name, overall: mazraoui.overall, cardType: mazraoui.cardType },
+    ],
+  });
+}
