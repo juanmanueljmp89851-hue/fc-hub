@@ -87,6 +87,29 @@ export default async function EscenaPage() {
                 { label: "Instagram", url: "https://www.instagram.com/vpgesports/" },
               ]}
             />
+            {/* VPN — featured card with "Seguir Liga" */}
+            <Link href="/escena/vpn" className="group">
+              <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 transition-colors hover:border-accent/50 hover:bg-accent/10">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1a7db5]/20 text-xl">
+                    🏆
+                  </div>
+                  <div>
+                    <h3 className="font-bold">Liga Argentina VPN</h3>
+                    <p className="text-xs text-foreground/50">Virtual Pro Network</p>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-foreground/60">
+                  Liga oficial de Clubes Pro en Xbox. 4 divisiones con ascensos y descensos. 100+ equipos.
+                </p>
+                <span className="mt-2 inline-block rounded bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                  Clubes Pro
+                </span>
+                <div className="mt-3 rounded-lg bg-accent px-4 py-2 text-center text-sm font-bold text-background transition-opacity group-hover:opacity-90">
+                  Seguir Liga →
+                </div>
+              </div>
+            </Link>
             <LeagueInfoCard
               name="Liga Argentina de Clubes Pro"
               description="Comunidad argentina independiente de Clubes Pro."

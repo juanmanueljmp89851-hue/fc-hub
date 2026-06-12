@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/actions/user";
 import { revalidatePath } from "next/cache";
+import { PRODE } from "@/lib/constants";
 
 async function requireAdmin() {
   const user = await getCurrentUser();
@@ -133,7 +134,30 @@ export async function updateMatchScore(matchId: string, homeScore: number, awayS
     data: { homeScore, awayScore, status: "FINISHED" },
   });
 
+  // Recalculate points for all predictions on this match
+  const predictions = await prisma.prodePrediction.findMany({
+    where: { matchId },
+  });
+
+  const realOutcome = homeScore > awayScore ? "H" : homeScore < awayScore ? "A" : "D";
+
+  for (const pred of predictions) {
+    if (pred.homeScore == null || pred.awayScore == null) continue;
+    let points = 0;
+    if (pred.homeScore === homeScore && pred.awayScore === awayScore) {
+      points = PRODE.EXACT_RESULT;
+    } else {
+      const predOutcome = pred.homeScore > pred.awayScore ? "H" : pred.homeScore < pred.awayScore ? "A" : "D";
+      if (realOutcome === predOutcome) points = PRODE.CORRECT_WINNER;
+    }
+    await prisma.prodePrediction.update({
+      where: { id: pred.id },
+      data: { pointsEarned: points },
+    });
+  }
+
   revalidatePath("/admin/prode");
+  revalidatePath("/prode");
   return { success: true };
 }
 

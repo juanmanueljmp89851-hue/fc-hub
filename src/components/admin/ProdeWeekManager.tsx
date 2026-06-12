@@ -175,15 +175,13 @@ export function ProdeWeekManager({ weeks }: { weeks: Week[] }) {
                       <span className={`text-xs ${match.status === "FINISHED" ? "text-green-400" : "text-foreground/30"}`}>
                         {match.status === "FINISHED" ? "✓" : match.status === "IN_PROGRESS" ? "●" : "—"}
                       </span>
-                      {match.status !== "FINISHED" && (
-                        <button
-                          onClick={() => handleScoreSave(match.id)}
-                          disabled={loading === match.id}
-                          className="rounded bg-accent/20 px-2 py-0.5 text-xs text-accent hover:bg-accent/30"
-                        >
-                          {loading === match.id ? "..." : "Guardar"}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleScoreSave(match.id)}
+                        disabled={loading === match.id}
+                        className="rounded bg-accent/20 px-2 py-0.5 text-xs text-accent hover:bg-accent/30"
+                      >
+                        {loading === match.id ? "..." : "Guardar"}
+                      </button>
                     </div>
                   ))}
                 </div>

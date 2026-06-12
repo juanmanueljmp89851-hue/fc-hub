@@ -57,12 +57,12 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
 
   const { leaderboard, weeks } = data;
 
-  if (leaderboard.length === 0 || leaderboard.every((e) => e.totalPoints === 0)) {
+  if (leaderboard.length === 0) {
     return (
       <div className="rounded-xl border border-surface-light bg-surface/30 p-4">
         <h3 className="mb-2 text-sm font-bold">🏆 Tabla de posiciones</h3>
         <p className="text-sm text-foreground/50">
-          Se actualiza cuando se puntúen las fechas
+          Aún no hay participantes
         </p>
       </div>
     );
