@@ -111,18 +111,6 @@ export default async function ProdeDetailPage({ params }: PageProps) {
             <span>·</span>
             <span>{prode.participants.length} participantes</span>
           </div>
-
-          {/* Share code */}
-          <div className="mt-4">
-            <ShareCodeCopy shareCode={prode.shareCode} />
-          </div>
-
-          {/* Join requests panel (private prodes, creator/admin only) */}
-          {prode.visibility === "PRIVATE" && canEdit && (
-            <div className="mt-4">
-              <JoinRequestsPanel prodeId={prode.id} />
-            </div>
-          )}
         </div>
 
         {/* Prizes */}
@@ -242,6 +230,14 @@ export default async function ProdeDetailPage({ params }: PageProps) {
                 isCreator={!!isCreator}
               />
             </Card>
+
+            {/* Share code */}
+            <ShareCodeCopy shareCode={prode.shareCode} />
+
+            {/* Join requests (private prodes, creator/admin only) */}
+            {prode.visibility === "PRIVATE" && canEdit && (
+              <JoinRequestsPanel prodeId={prode.id} />
+            )}
           </div>
 
           {/* Right: Chat */}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { getProde, getProdeWeek, getUserPredictions } from "@/lib/actions/prode";
+import { getProde, getProdeWeek, getUserPredictions, getAllPredictionsForWeek } from "@/lib/actions/prode";
 import { PredictionForm } from "@/components/prode/PredictionForm";
 import Link from "next/link";
 
@@ -19,10 +19,11 @@ interface PageProps {
 }
 
 export default async function ProdeWeekPage({ params }: PageProps) {
-  const [prode, week, userPreds] = await Promise.all([
+  const [prode, week, userPreds, allPreds] = await Promise.all([
     getProde(params.id),
     getProdeWeek(params.weekId),
     getUserPredictions(params.id, params.weekId),
+    getAllPredictionsForWeek(params.id, params.weekId),
   ]);
 
   if (!prode || !week) {
@@ -31,6 +32,18 @@ export default async function ProdeWeekPage({ params }: PageProps) {
 
   // Merge user predictions with matches
   const predMap = new Map(userPreds.map((p) => [p.matchId, p]));
+
+  // Group all participants' predictions by matchId
+  const allPredsMap = new Map<string, { username: string; avatarUrl: string | null; predHomeScore: number; predAwayScore: number }[]>();
+  for (const p of allPreds) {
+    if (!allPredsMap.has(p.matchId)) allPredsMap.set(p.matchId, []);
+    allPredsMap.get(p.matchId)!.push({
+      username: p.user.username,
+      avatarUrl: p.user.avatarUrl,
+      predHomeScore: p.predHomeScore,
+      predAwayScore: p.predAwayScore,
+    });
+  }
 
   const serializedMatches = week.matches.map((m) => {
     const pred = predMap.get(m.id);
@@ -48,6 +61,7 @@ export default async function ProdeWeekPage({ params }: PageProps) {
       predictions: pred
         ? [{ predHomeScore: pred.predHomeScore, predAwayScore: pred.predAwayScore }]
         : undefined,
+      allPredictions: allPredsMap.get(m.id) ?? [],
     };
   });
 

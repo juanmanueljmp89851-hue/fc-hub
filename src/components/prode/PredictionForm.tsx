@@ -6,6 +6,13 @@ import { savePredictions } from "@/lib/actions/prode";
 import { getCurrentUser } from "@/lib/actions/user";
 import { TeamFlag } from "@/components/prode/TeamFlag";
 
+interface OtherPrediction {
+  username: string;
+  avatarUrl: string | null;
+  predHomeScore: number;
+  predAwayScore: number;
+}
+
 interface MatchWithPrediction {
   id: string;
   homeTeam: string;
@@ -18,6 +25,7 @@ interface MatchWithPrediction {
   awayScore: number | null;
   status: string;
   predictions?: { predHomeScore: number; predAwayScore: number }[];
+  allPredictions?: OtherPrediction[];
 }
 
 type SortMode = "group" | "date";
@@ -276,6 +284,15 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
                       {match.awayTeam}
                     </span>
                   </div>
+
+                  {/* Show all participants' predictions after match started */}
+                  {matchLocked && match.allPredictions && match.allPredictions.length > 0 && (
+                    <OtherPredictions
+                      predictions={match.allPredictions}
+                      realHome={match.homeScore}
+                      realAway={match.awayScore}
+                    />
+                  )}
                 </div>
               );
             })}
@@ -303,6 +320,55 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
               {message}
             </p>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OtherPredictions({
+  predictions,
+  realHome,
+  realAway,
+}: {
+  predictions: OtherPrediction[];
+  realHome: number | null;
+  realAway: number | null;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-2 border-t border-surface-light/50 pt-2">
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-xs text-foreground/40 hover:text-accent"
+      >
+        {open ? "▾" : "▸"} Predicciones ({predictions.length})
+      </button>
+      {open && (
+        <div className="mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-3">
+          {predictions.map((p) => {
+            let bg = "bg-surface/30";
+            if (realHome != null && realAway != null) {
+              const isExact = p.predHomeScore === realHome && p.predAwayScore === realAway;
+              const realOut = realHome > realAway ? "H" : realHome < realAway ? "A" : "D";
+              const predOut = p.predHomeScore > p.predAwayScore ? "H" : p.predHomeScore < p.predAwayScore ? "A" : "D";
+              if (isExact) bg = "bg-gold/10 border-gold/30";
+              else if (realOut === predOut) bg = "bg-accent/10 border-accent/30";
+              else bg = "bg-red-500/5 border-red-500/20";
+            }
+            return (
+              <div
+                key={p.username}
+                className={`rounded-lg border border-surface-light/50 px-2 py-1.5 text-xs ${bg}`}
+              >
+                <span className="font-medium text-foreground/70">{p.username}</span>
+                <span className="ml-1 font-bold">
+                  {p.predHomeScore}-{p.predAwayScore}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

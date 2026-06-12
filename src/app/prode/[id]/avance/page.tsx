@@ -9,6 +9,7 @@ import {
   getUserAdvancePredictions,
   getAdvanceRoundStatus,
   getAdvancedTeams,
+  getSimulatedGroupOrder,
 } from "@/lib/actions/prode";
 import { TEAM_CODES } from "@/lib/teamFlags";
 
@@ -62,16 +63,32 @@ export default function AvancePredictionPage() {
 
   useEffect(() => {
     async function load() {
-      const [existing, status, advanced] = await Promise.all([
+      const [existing, status, advanced, simulated] = await Promise.all([
         getUserAdvancePredictions(prodeId),
         getAdvanceRoundStatus(),
         getAdvancedTeams(),
+        getSimulatedGroupOrder(prodeId),
       ]);
 
       const preds: Record<string, string[]> = {};
       for (const round of ROUNDS) {
         const saved = existing.find((e) => e.round === round.key);
         preds[round.key] = saved?.teams ?? [];
+      }
+
+      // Auto-fill ROUND_32 from simulated group order if empty
+      if (simulated && preds.ROUND_32.length === 0) {
+        const qualifying: string[] = [];
+        const thirds: { team: string; pts: number; gd: number; gf: number }[] = [];
+        for (const [, order] of Object.entries(simulated)) {
+          qualifying.push(order.first, order.second);
+          // Track third place for best-third calculation
+          thirds.push({ team: order.third, pts: 0, gd: 0, gf: 0 });
+        }
+        // Add 8 best third-placed teams (simplified: just add them all since we have 12 groups)
+        const thirdTeams = thirds.map((t) => t.team).slice(0, 8);
+        qualifying.push(...thirdTeams);
+        preds.ROUND_32 = qualifying.slice(0, 32);
       }
 
       setPredictions(preds);

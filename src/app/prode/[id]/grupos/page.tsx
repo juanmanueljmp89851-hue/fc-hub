@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { saveGroupPredictions, getUserGroupPredictions } from "@/lib/actions/prode";
+import { saveGroupPredictions, getUserGroupPredictions, getSimulatedGroupOrder } from "@/lib/actions/prode";
 import { TEAM_CODES } from "@/lib/teamFlags";
 
 const WORLD_CUP_GROUPS: Record<string, string[]> = {
@@ -33,10 +33,14 @@ export default function GruposPredictionPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
+  const [simulatedOrder, setSimulatedOrder] = useState<Record<string, { first: string; second: string; third: string; fourth: string }> | null>(null);
 
   useEffect(() => {
     async function load() {
-      const existing = await getUserGroupPredictions(prodeId);
+      const [existing, simulated] = await Promise.all([
+        getUserGroupPredictions(prodeId),
+        getSimulatedGroupOrder(prodeId),
+      ]);
       const preds: typeof predictions = {};
 
       for (const [groupName, teams] of Object.entries(WORLD_CUP_GROUPS)) {
@@ -48,12 +52,15 @@ export default function GruposPredictionPage() {
             third: saved.third,
             fourth: saved.fourth,
           };
+        } else if (simulated && simulated[groupName]) {
+          preds[groupName] = simulated[groupName];
         } else {
           preds[groupName] = { first: teams[0], second: teams[1], third: teams[2], fourth: teams[3] };
         }
       }
 
       setPredictions(preds);
+      setSimulatedOrder(simulated);
       setInitialLoading(false);
     }
     load();
@@ -133,6 +140,26 @@ export default function GruposPredictionPage() {
           <span className="text-accent">+3</span> por 2 ·{" "}
           <span className="text-foreground/50">+1</span> por 1
         </p>
+
+        {simulatedOrder && Object.keys(simulatedOrder).length > 0 && (
+          <div className="mb-4">
+            <button
+              onClick={() => {
+                setPredictions((prev) => {
+                  const next = { ...prev };
+                  for (const [g, order] of Object.entries(simulatedOrder)) {
+                    next[g] = order;
+                  }
+                  return next;
+                });
+                setMessage("Orden auto-completado según tus predicciones de partidos");
+              }}
+              className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/20"
+            >
+              ⚡ Auto-completar según tus predicciones de partidos
+            </button>
+          </div>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Object.entries(WORLD_CUP_GROUPS).map(([groupName, teams]) => {

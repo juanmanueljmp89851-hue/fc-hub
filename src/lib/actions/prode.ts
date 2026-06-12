@@ -451,6 +451,30 @@ export async function getUserPredictions(prodeId: string, weekId: string) {
   });
 }
 
+export async function getAllPredictionsForWeek(prodeId: string, weekId: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return [];
+
+  // Verify caller is participant
+  const participant = await prisma.prodeParticipant.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+  });
+  if (!participant) return [];
+
+  return prisma.prodePrediction.findMany({
+    where: {
+      prodeId,
+      match: { weekId },
+    },
+    select: {
+      matchId: true,
+      predHomeScore: true,
+      predAwayScore: true,
+      user: { select: { id: true, username: true, avatarUrl: true } },
+    },
+  });
+}
+
 export async function savePredictions(
   prodeId: string,
   weekId: string,
@@ -594,6 +618,69 @@ export async function getUserGroupPredictions(prodeId: string) {
     where: { prodeId, userId },
     orderBy: { groupName: "asc" },
   });
+}
+
+export async function getSimulatedGroupOrder(prodeId: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return null;
+
+  // Get user's match predictions for group stage
+  const preds = await prisma.prodePrediction.findMany({
+    where: {
+      prodeId,
+      userId,
+      match: { group: { not: null } },
+    },
+    include: {
+      match: { select: { homeTeam: true, awayTeam: true, group: true } },
+    },
+  });
+
+  if (preds.length === 0) return null;
+
+  // Build simulated standings per group
+  const groups: Record<string, Record<string, { pts: number; gf: number; ga: number; gd: number }>> = {};
+
+  for (const pred of preds) {
+    const g = pred.match.group!;
+    if (!groups[g]) groups[g] = {};
+
+    const home = pred.match.homeTeam;
+    const away = pred.match.awayTeam;
+    if (!groups[g][home]) groups[g][home] = { pts: 0, gf: 0, ga: 0, gd: 0 };
+    if (!groups[g][away]) groups[g][away] = { pts: 0, gf: 0, ga: 0, gd: 0 };
+
+    const h = pred.predHomeScore;
+    const a = pred.predAwayScore;
+    groups[g][home].gf += h;
+    groups[g][home].ga += a;
+    groups[g][home].gd += h - a;
+    groups[g][away].gf += a;
+    groups[g][away].ga += h;
+    groups[g][away].gd += a - h;
+
+    if (h > a) {
+      groups[g][home].pts += 3;
+    } else if (h < a) {
+      groups[g][away].pts += 3;
+    } else {
+      groups[g][home].pts += 1;
+      groups[g][away].pts += 1;
+    }
+  }
+
+  // Sort each group: pts desc, gd desc, gf desc
+  const result: Record<string, { first: string; second: string; third: string; fourth: string }> = {};
+  for (const [g, teams] of Object.entries(groups)) {
+    const sorted = Object.entries(teams)
+      .sort(([, a], [, b]) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf)
+      .map(([name]) => name);
+    if (sorted.length >= 4) {
+      result[g] = { first: sorted[0], second: sorted[1], third: sorted[2], fourth: sorted[3] };
+    }
+  }
+
+  return result;
 }
 
 // ─── Advance predictions ────────────────────────────────────
