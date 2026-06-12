@@ -14,6 +14,7 @@ export type CardType =
   | "special"
   | "end_of_era"
   | "national_pride"
+  | "national_pride_red"
   | "path_to_glory";
 
 export type PositionCategory = "ATK" | "MID" | "DEF" | "GK";
@@ -209,6 +210,10 @@ export const CARD_COLORS: Record<CardType, {
   national_pride: {
     gradient: "linear-gradient(160deg, #1a0530 0%, #3a1060 20%, #6020a0 40%, #40b070 55%, #6020a0 70%, #3a1060 90%, #1a0530 100%)",
     text: "#b8f0c0", accent: "#60d080", statText: "#b8f0c0", nameBg: "rgba(26, 5, 48, 0.7)",
+  },
+  national_pride_red: {
+    gradient: "linear-gradient(160deg, #2a0510 0%, #5a1020 20%, #a02040 40%, #d04060 55%, #a02040 70%, #5a1020 90%, #2a0510 100%)",
+    text: "#ffc0c0", accent: "#ff6060", statText: "#ffc0c0", nameBg: "rgba(42, 5, 16, 0.7)",
   },
   path_to_glory: {
     gradient: "linear-gradient(160deg, #041a10 0%, #0a3520 20%, #106030 40%, #20a050 55%, #106030 70%, #0a3520 90%, #041a10 100%)",
