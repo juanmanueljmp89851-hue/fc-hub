@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ─── VPN (Virtual Pro Network) API Service ─────────────────
 // Fetches league data from virtualpronetwork.com API
 // Used for the /escena/vpn competitive scene page
