@@ -341,9 +341,9 @@ function OtherPredictions({
     <div className="mt-2 border-t border-surface-light/50 pt-2">
       <button
         onClick={() => setOpen(!open)}
-        className="text-xs text-foreground/40 hover:text-accent"
+        className="text-xs font-bold text-gold hover:text-gold/80"
       >
-        {open ? "▾" : "▸"} Predicciones ({predictions.length})
+        {open ? "▾" : "▸"} Predicciones de jugadores ({predictions.length})
       </button>
       {open && (
         <div className="mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-3">

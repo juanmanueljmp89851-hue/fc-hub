@@ -190,26 +190,6 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               )}
             </Card>
 
-            {/* Group + Advance predictions links */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Link href={`/prode/${prode.id}/grupos`}>
-                <Card className="h-full transition-colors hover:border-accent/50">
-                  <p className="text-lg font-bold">📊 Orden de Grupos</p>
-                  <p className="mt-1 text-sm text-foreground/60">
-                    Predecí el 1°, 2°, 3° y 4° de cada grupo
-                  </p>
-                </Card>
-              </Link>
-              <Link href={`/prode/${prode.id}/avance`}>
-                <Card className="h-full transition-colors hover:border-accent/50">
-                  <p className="text-lg font-bold">🔮 Equipos que avanzan</p>
-                  <p className="mt-1 text-sm text-foreground/60">
-                    Predecí qué equipos pasan cada ronda
-                  </p>
-                </Card>
-              </Link>
-            </div>
-
             {/* Leaderboard */}
             <ProdeLeaderboard prodeId={prode.id} />
 
