@@ -142,12 +142,12 @@ export async function updateMatchScore(matchId: string, homeScore: number, awayS
   const realOutcome = homeScore > awayScore ? "H" : homeScore < awayScore ? "A" : "D";
 
   for (const pred of predictions) {
-    if (pred.homeScore == null || pred.awayScore == null) continue;
+    if (pred.predHomeScore == null || pred.predAwayScore == null) continue;
     let points = 0;
-    if (pred.homeScore === homeScore && pred.awayScore === awayScore) {
+    if (pred.predHomeScore === homeScore && pred.predAwayScore === awayScore) {
       points = PRODE.EXACT_RESULT;
     } else {
-      const predOutcome = pred.homeScore > pred.awayScore ? "H" : pred.homeScore < pred.awayScore ? "A" : "D";
+      const predOutcome = pred.predHomeScore > pred.predAwayScore ? "H" : pred.predHomeScore < pred.predAwayScore ? "A" : "D";
       if (realOutcome === predOutcome) points = PRODE.CORRECT_WINNER;
     }
     await prisma.prodePrediction.update({

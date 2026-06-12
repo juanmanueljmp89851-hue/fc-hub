@@ -42,12 +42,12 @@ export async function GET(req: NextRequest) {
   let updated = 0;
 
   for (const pred of predictions) {
-    if (pred.homeScore == null || pred.awayScore == null) continue;
+    if (pred.predHomeScore == null || pred.predAwayScore == null) continue;
     let points = 0;
-    if (pred.homeScore === 2 && pred.awayScore === 0) {
+    if (pred.predHomeScore === 2 && pred.predAwayScore === 0) {
       points = PRODE.EXACT_RESULT;
     } else {
-      const predOutcome = pred.homeScore > pred.awayScore ? "H" : pred.homeScore < pred.awayScore ? "A" : "D";
+      const predOutcome = pred.predHomeScore > pred.predAwayScore ? "H" : pred.predHomeScore < pred.predAwayScore ? "A" : "D";
       if (realOutcome === predOutcome) points = PRODE.CORRECT_WINNER;
     }
     await prisma.prodePrediction.update({
