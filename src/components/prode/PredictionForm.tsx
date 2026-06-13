@@ -106,7 +106,12 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
     if (result.error) {
       setMessage(result.error);
     } else {
-      setMessage(`¡${preds.length} predicciones guardadas!`);
+      const saved = result.saved ?? preds.length;
+      const skipped = result.skipped ?? 0;
+      const msg = skipped > 0
+        ? `¡${saved} predicciones guardadas! (${skipped} partidos ya cerrados, no se modificaron)`
+        : `¡${saved} predicciones guardadas!`;
+      setMessage(msg);
       router.refresh();
     }
     setLoading(false);

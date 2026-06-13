@@ -508,7 +508,7 @@ export async function savePredictions(
     if (pred.predHomeScore > 20 || pred.predAwayScore > 20) return { error: "Resultado inválido" };
   }
 
-  // Verify matches belong to week + per-match time lock (1 min before kickoff)
+  // Verify matches belong to week + filter out locked matches
   const weekMatches = await prisma.prodeMatch.findMany({
     where: { weekId },
     select: { id: true, matchDate: true, status: true },
@@ -516,22 +516,22 @@ export async function savePredictions(
   const matchMap = new Map(weekMatches.map((m) => [m.id, m]));
   const now = new Date();
 
-  for (const pred of predictions) {
+  const validPredictions = predictions.filter((pred) => {
     const match = matchMap.get(pred.matchId);
-    if (!match) return { error: "Partido no pertenece a esta fecha" };
-
-    if (match.status === "FINISHED" || match.status === "IN_PROGRESS") {
-      return { error: "No podés predecir partidos que ya empezaron" };
-    }
+    if (!match) return false;
+    if (match.status === "FINISHED" || match.status === "IN_PROGRESS") return false;
     const cutoff = new Date(match.matchDate.getTime() - 60_000);
-    if (now >= cutoff) {
-      return { error: "Las predicciones cierran 1 minuto antes del partido" };
-    }
+    if (now >= cutoff) return false;
+    return true;
+  });
+
+  if (validPredictions.length === 0) {
+    return { error: "Todos los partidos ya empezaron o están cerrados" };
   }
 
-  // Upsert
+  // Upsert only valid predictions
   await prisma.$transaction(
-    predictions.map((pred) =>
+    validPredictions.map((pred) =>
       prisma.prodePrediction.upsert({
         where: {
           prodeId_userId_matchId: { prodeId, userId, matchId: pred.matchId },
@@ -551,8 +551,10 @@ export async function savePredictions(
     ),
   );
 
+  const skipped = predictions.length - validPredictions.length;
+
   revalidatePath(`/prode/${prodeId}`);
-  return { success: true };
+  return { success: true, saved: validPredictions.length, skipped };
 }
 
 // ─── Group predictions ──────────────────────────────────────
