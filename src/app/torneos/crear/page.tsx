@@ -65,6 +65,11 @@ export default function CrearTorneoPage() {
   const [playoffRule, setPlayoffRule] = useState<PlayoffRule>("PENALTIES");
   const [knockoutFormat, setKnockoutFormat] = useState<KnockoutFormat>("SINGLE_MATCH");
   const [requireProof, setRequireProof] = useState(false);
+  const [relegationCount, setRelegationCount] = useState(0);
+  const [cup1Name, setCup1Name] = useState("");
+  const [cup1Spots, setCup1Spots] = useState(0);
+  const [cup2Name, setCup2Name] = useState("");
+  const [cup2Spots, setCup2Spots] = useState(0);
 
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -122,6 +127,11 @@ export default function CrearTorneoPage() {
       playoffRule: hasElimination ? playoffRule : undefined,
       knockoutFormat: hasElimination ? knockoutFormat : undefined,
       requireProof,
+      relegationCount: isLeague && relegationCount > 0 ? relegationCount : undefined,
+      cup1Name: isLeague && cup1Name ? cup1Name : undefined,
+      cup1Spots: isLeague && cup1Spots > 0 ? cup1Spots : undefined,
+      cup2Name: isLeague && cup2Name ? cup2Name : undefined,
+      cup2Spots: isLeague && cup2Spots > 0 ? cup2Spots : undefined,
     });
 
     if (result.error) {
@@ -348,6 +358,94 @@ export default function CrearTorneoPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {isLeague && (
+                <div className="space-y-4 rounded-lg border border-surface-light bg-surface/30 p-4">
+                  <h4 className="text-sm font-bold text-foreground/70">Zonas de tabla (opcional)</h4>
+                  <p className="text-xs text-foreground/40">
+                    Configurá descensos y clasificación a copas, como las ligas europeas
+                  </p>
+
+                  {/* Relegation */}
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-foreground/70">
+                      Descensos
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={relegationCount}
+                      onChange={(e) => setRelegationCount(parseInt(e.target.value) || 0)}
+                      className={inputClass}
+                      placeholder="0 = sin descensos"
+                    />
+                    <p className="mt-1 text-xs text-foreground/40">Cantidad de últimos puestos que descienden</p>
+                  </div>
+
+                  {/* Cup 1 */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground/70">
+                        Copa 1 — Nombre
+                      </label>
+                      <input
+                        type="text"
+                        value={cup1Name}
+                        onChange={(e) => setCup1Name(e.target.value)}
+                        className={inputClass}
+                        placeholder="ej: Champions League"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground/70">
+                        Clasifican
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={20}
+                        value={cup1Spots}
+                        onChange={(e) => setCup1Spots(parseInt(e.target.value) || 0)}
+                        className={inputClass}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Cup 2 */}
+                  {cup1Name && cup1Spots > 0 && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-foreground/70">
+                          Copa 2 — Nombre
+                        </label>
+                        <input
+                          type="text"
+                          value={cup2Name}
+                          onChange={(e) => setCup2Name(e.target.value)}
+                          className={inputClass}
+                          placeholder="ej: Europa League"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-foreground/70">
+                          Clasifican
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={20}
+                          value={cup2Spots}
+                          onChange={(e) => setCup2Spots(parseInt(e.target.value) || 0)}
+                          className={inputClass}
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

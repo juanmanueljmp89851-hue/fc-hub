@@ -39,6 +39,11 @@ interface CreateTournamentInput {
   playoffRule?: PlayoffRule;
   knockoutFormat?: KnockoutFormat;
   requireProof?: boolean;
+  relegationCount?: number;
+  cup1Name?: string;
+  cup1Spots?: number;
+  cup2Name?: string;
+  cup2Spots?: number;
 }
 
 export async function createTournament(input: CreateTournamentInput) {
@@ -118,6 +123,11 @@ export async function createTournament(input: CreateTournamentInput) {
         playoffRule: input.playoffRule ?? "PENALTIES",
         knockoutFormat: input.knockoutFormat ?? "SINGLE_MATCH",
         requireProof: input.requireProof ?? false,
+        relegationCount: input.relegationCount ?? null,
+        cup1Name: input.cup1Name ?? null,
+        cup1Spots: input.cup1Spots ?? null,
+        cup2Name: input.cup2Name ?? null,
+        cup2Spots: input.cup2Spots ?? null,
         status: "REGISTRATION",
         createdById: dbUser.id,
       },
@@ -1866,10 +1876,136 @@ async function checkTournamentComplete(tournamentId: string) {
       where: { tournamentId, status: "FINISHED" },
     });
     if (matchCount > 0) {
+      const tournament = await prisma.tournament.findUnique({
+        where: { id: tournamentId },
+        select: { status: true, format: true, name: true, relegationCount: true, cup1Name: true, cup1Spots: true, cup2Name: true, cup2Spots: true },
+      });
+      if (!tournament || tournament.status === "FINISHED") return;
+
       await prisma.tournament.update({
         where: { id: tournamentId },
         data: { status: "FINISHED" },
       });
+
+      // League end-of-season notifications
+      if (tournament.format === "LEAGUE") {
+        const standings = await prisma.leagueStanding.findMany({
+          where: { tournamentId },
+          orderBy: [{ points: "desc" }, { goalsFor: "desc" }],
+          select: { userId: true },
+        });
+
+        if (standings.length === 0) return;
+        const total = standings.length;
+        const notifications: { userId: string; type: string; title: string; message: string; relatedId: string; linkUrl: string }[] = [];
+
+        // Top 3
+        if (standings[0]) {
+          notifications.push({
+            userId: standings[0].userId,
+            type: "TOURNAMENT_FINISHED",
+            title: "🏆 ¡Campeón!",
+            message: `¡Felicidades! Saliste campeón de ${tournament.name}.`,
+            relatedId: tournamentId,
+            linkUrl: `/torneos/${tournamentId}`,
+          });
+        }
+        if (standings[1]) {
+          notifications.push({
+            userId: standings[1].userId,
+            type: "TOURNAMENT_FINISHED",
+            title: "🥈 Subcampeón",
+            message: `Terminaste segundo en ${tournament.name}. ¡Gran torneo!`,
+            relatedId: tournamentId,
+            linkUrl: `/torneos/${tournamentId}`,
+          });
+        }
+        if (standings[2]) {
+          notifications.push({
+            userId: standings[2].userId,
+            type: "TOURNAMENT_FINISHED",
+            title: "🥉 Tercer puesto",
+            message: `Terminaste tercero en ${tournament.name}. ¡Bien jugado!`,
+            relatedId: tournamentId,
+            linkUrl: `/torneos/${tournamentId}`,
+          });
+        }
+
+        // Cup qualifications
+        const cup1Spots = tournament.cup1Spots ?? 0;
+        const cup2Spots = tournament.cup2Spots ?? 0;
+
+        if (cup1Spots > 0 && tournament.cup1Name) {
+          for (let i = 0; i < Math.min(cup1Spots, total); i++) {
+            if (i >= 3 && standings[i]) {
+              notifications.push({
+                userId: standings[i].userId,
+                type: "TOURNAMENT_FINISHED",
+                title: `⭐ ¡Clasificaste a ${tournament.cup1Name}!`,
+                message: `Terminaste puesto ${i + 1} en ${tournament.name} y clasificaste a ${tournament.cup1Name}.`,
+                relatedId: tournamentId,
+                linkUrl: `/torneos/${tournamentId}`,
+              });
+            }
+          }
+        }
+
+        if (cup2Spots > 0 && tournament.cup2Name) {
+          for (let i = cup1Spots; i < Math.min(cup1Spots + cup2Spots, total); i++) {
+            if (standings[i]) {
+              notifications.push({
+                userId: standings[i].userId,
+                type: "TOURNAMENT_FINISHED",
+                title: `⭐ ¡Clasificaste a ${tournament.cup2Name}!`,
+                message: `Terminaste puesto ${i + 1} en ${tournament.name} y clasificaste a ${tournament.cup2Name}.`,
+                relatedId: tournamentId,
+                linkUrl: `/torneos/${tournamentId}`,
+              });
+            }
+          }
+        }
+
+        // Relegation
+        const relegationCount = tournament.relegationCount ?? 0;
+        if (relegationCount > 0) {
+          for (let i = total - relegationCount; i < total; i++) {
+            if (i >= 0 && standings[i]) {
+              notifications.push({
+                userId: standings[i].userId,
+                type: "TOURNAMENT_FINISHED",
+                title: "📉 Descendiste",
+                message: `Terminaste puesto ${i + 1} en ${tournament.name}. Lo sentimos, descendiste.`,
+                relatedId: tournamentId,
+                linkUrl: `/torneos/${tournamentId}`,
+              });
+            }
+          }
+        }
+
+        // Remaining players (no special zone)
+        const notifiedIds = new Set(notifications.map((n) => n.userId));
+        for (const s of standings) {
+          if (!notifiedIds.has(s.userId)) {
+            notifications.push({
+              userId: s.userId,
+              type: "TOURNAMENT_FINISHED",
+              title: "Liga finalizada",
+              message: `${tournament.name} ha terminado. Revisá la tabla final.`,
+              relatedId: tournamentId,
+              linkUrl: `/torneos/${tournamentId}`,
+            });
+          }
+        }
+
+        if (notifications.length > 0) {
+          await prisma.notification.createMany({
+            data: notifications.map((n) => ({
+              ...n,
+              type: n.type as "TOURNAMENT_FINISHED",
+            })),
+          });
+        }
+      }
     }
   }
 }
@@ -2235,6 +2371,19 @@ export async function confirmTournamentResult(matchId: string) {
       confirmedAt: new Date(),
     },
   });
+
+  // Update league standings if league or group_knockout
+  if (
+    (match.tournament.format === "LEAGUE" || match.tournament.format === "GROUP_KNOCKOUT") &&
+    match.player1Id &&
+    match.player2Id
+  ) {
+    await updateLeagueStandings(match.tournamentId, match.player1Id, match.player2Id, resultP1, resultP2);
+
+    if (match.tournament.format === "GROUP_KNOCKOUT" && match.groupName) {
+      await checkGroupComplete(match.tournamentId, match.tournament.groupCount ?? 4, match.tournament.qualifyPerGroup ?? 2);
+    }
+  }
 
   const kf = match.tournament.knockoutFormat;
   const isSeriesMatch = match.seriesId && kf !== "SINGLE_MATCH";

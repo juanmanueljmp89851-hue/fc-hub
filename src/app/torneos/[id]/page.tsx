@@ -214,7 +214,15 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             </CardHeader>
             {isLeague ? (
               <div className="space-y-6">
-                <LeagueTable standings={tournament.standings} />
+                <LeagueTable
+                  standings={tournament.standings}
+                  relegationCount={tournament.relegationCount ?? 0}
+                  cup1Name={tournament.cup1Name ?? undefined}
+                  cup1Spots={tournament.cup1Spots ?? 0}
+                  cup2Name={tournament.cup2Name ?? undefined}
+                  cup2Spots={tournament.cup2Spots ?? 0}
+                  isFinished={tournament.status === "FINISHED"}
+                />
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-foreground/50">Fixture</h4>
                   {tournament.matches.map((match) => {
