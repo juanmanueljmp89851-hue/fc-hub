@@ -15,6 +15,7 @@ import { PendingParticipants } from "@/components/tournaments/PendingParticipant
 import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
 import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
 import { CollapsibleText } from "@/components/ui/CollapsibleText";
+import { ShareTournamentLink } from "@/components/tournaments/ShareTournamentLink";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -185,6 +186,11 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             {tournament.waitTimeMinutes && tournament.waitTimeMinutes > 0 && (
               <span>Espera: <span className="text-foreground">{tournament.waitTimeMinutes} min</span></span>
             )}
+          </div>
+
+          {/* Link compartir */}
+          <div className="mt-4">
+            <ShareTournamentLink tournamentId={tournament.id} />
           </div>
 
           {/* Botón inscripción */}
