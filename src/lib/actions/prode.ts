@@ -496,14 +496,10 @@ export async function savePredictions(
   });
   if (!week) return { error: "Fecha no encontrada" };
 
-  // Determine if this is a group stage week
-  const isGroupStage = week.title.toLowerCase().includes("fase de grupos");
-
-  // For group stage: allow editing until each match starts (per-match lock)
-  // For knockout: use traditional week status check
-  if (!isGroupStage) {
-    if (week.status !== "OPEN") return { error: "Las predicciones están cerradas para esta fecha" };
-    if (new Date() > week.deadline) return { error: "Se pasó la fecha límite" };
+  // Allow editing until each match starts (per-match lock for all weeks)
+  // Only block if week is fully scored
+  if (week.status === "SCORED") {
+    return { error: "Las predicciones están cerradas para esta fecha" };
   }
 
   // Validate scores
@@ -512,7 +508,7 @@ export async function savePredictions(
     if (pred.predHomeScore > 20 || pred.predAwayScore > 20) return { error: "Resultado inválido" };
   }
 
-  // Verify matches belong to week + per-match time check for group stage
+  // Verify matches belong to week + per-match time lock (1 min before kickoff)
   const weekMatches = await prisma.prodeMatch.findMany({
     where: { weekId },
     select: { id: true, matchDate: true, status: true },
@@ -524,15 +520,12 @@ export async function savePredictions(
     const match = matchMap.get(pred.matchId);
     if (!match) return { error: "Partido no pertenece a esta fecha" };
 
-    // For group stage: block 1 minute before match kickoff
-    if (isGroupStage) {
-      if (match.status === "FINISHED" || match.status === "IN_PROGRESS") {
-        return { error: "No podés predecir partidos que ya empezaron" };
-      }
-      const cutoff = new Date(match.matchDate.getTime() - 60_000); // 1 min before
-      if (now >= cutoff) {
-        return { error: "Las predicciones cierran 1 minuto antes del partido" };
-      }
+    if (match.status === "FINISHED" || match.status === "IN_PROGRESS") {
+      return { error: "No podés predecir partidos que ya empezaron" };
+    }
+    const cutoff = new Date(match.matchDate.getTime() - 60_000);
+    if (now >= cutoff) {
+      return { error: "Las predicciones cierran 1 minuto antes del partido" };
     }
   }
 

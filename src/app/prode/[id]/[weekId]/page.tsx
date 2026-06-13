@@ -105,7 +105,7 @@ export default async function ProdeWeekPage({ params }: PageProps) {
           prodeId={prode.id}
           weekId={week.id}
           weekStatus={week.status}
-          weekTitle={week.title}
+
           matches={serializedMatches}
         />
       </main>

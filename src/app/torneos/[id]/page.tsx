@@ -11,6 +11,7 @@ import { TournamentActions } from "@/components/tournaments/TournamentActions";
 import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
 import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
+import { PendingParticipants } from "@/components/tournaments/PendingParticipants";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -155,6 +156,15 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                  tournament.randomDrawUntil === "SEMIFINALS" ? "Hasta semis" : "Hasta cuartos"}
               </span></span>
             )}
+            {tournament.knockoutFormat && tournament.knockoutFormat !== "SINGLE_MATCH" && (
+              <span>Serie: <span className="text-foreground">
+                {tournament.knockoutFormat === "TWO_LEG" && "Ida y vuelta"}
+                {tournament.knockoutFormat === "TWO_LEG_PENALTIES" && "Ida y vuelta + penales"}
+                {tournament.knockoutFormat === "TWO_LEG_EXTRA_PENALTIES" && "Ida y vuelta + prórroga + penales"}
+                {tournament.knockoutFormat === "BEST_OF_3" && "Mejor de 3"}
+                {tournament.knockoutFormat === "BEST_OF_5" && "Mejor de 5"}
+              </span></span>
+            )}
             {tournament.hasLosersBracket && tournament.format !== "DOUBLE_ELIMINATION" && (
               <span className="text-gold">+ Llave de perdedores</span>
             )}
@@ -173,6 +183,27 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               maxPlayers={tournament.maxPlayers}
             />
           </div>
+
+          {/* Solicitudes pendientes (creador/admin) */}
+          {canEdit && (() => {
+            const pending = tournament.participants.filter((p) => p.status === "PENDING");
+            return pending.length > 0 ? (
+              <div className="mt-6">
+                <PendingParticipants
+                  tournamentId={tournament.id}
+                  participants={pending.map((p) => ({
+                    id: p.id,
+                    userId: p.userId,
+                    user: {
+                      username: p.user.username,
+                      avatarUrl: p.user.avatarUrl,
+                    },
+                    joinedAt: p.joinedAt.toISOString(),
+                  }))}
+                />
+              </div>
+            ) : null;
+          })()}
         </div>
 
         {/* Bracket o Liga */}
@@ -186,23 +217,43 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                 <LeagueTable standings={tournament.standings} />
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-foreground/50">Fixture</h4>
-                  {tournament.matches.map((match) => (
-                    <div
-                      key={match.id}
-                      className="flex items-center justify-between rounded-lg border border-surface-light p-3 text-sm"
-                    >
-                      <span className={match.winnerId === match.player1Id ? "font-bold text-accent" : "text-foreground/70"}>
-                        {match.player1?.username ?? "TBD"}
-                      </span>
-                      <span className="mx-4 text-foreground/40">
-                        {match.resultP1 !== null ? `${match.resultP1} - ${match.resultP2}` : "vs"}
-                      </span>
-                      <span className={match.winnerId === match.player2Id ? "font-bold text-accent" : "text-foreground/70"}>
-                        {match.player2?.username ?? "TBD"}
-                      </span>
-                      <span className="ml-4 text-xs text-foreground/40">{match.round}</span>
-                    </div>
-                  ))}
+                  {tournament.matches.map((match) => {
+                    const hasPlayers = match.player1Id && match.player2Id;
+                    const isPlayable = hasPlayers && match.status !== "FINISHED" && match.status !== "WALKOVER";
+                    const className = `flex items-center justify-between rounded-lg border p-3 text-sm transition-colors ${
+                      isPlayable
+                        ? "border-accent/30 bg-accent/5 hover:border-accent/60"
+                        : "border-surface-light"
+                    }`;
+                    const inner = (
+                      <>
+                        <span className={match.winnerId === match.player1Id ? "font-bold text-accent" : "text-foreground/70"}>
+                          {match.player1?.username ?? "TBD"}
+                        </span>
+                        <span className="mx-4 text-foreground/40">
+                          {match.resultP1 !== null ? `${match.resultP1} - ${match.resultP2}` : "vs"}
+                        </span>
+                        <span className={match.winnerId === match.player2Id ? "font-bold text-accent" : "text-foreground/70"}>
+                          {match.player2?.username ?? "TBD"}
+                        </span>
+                        <div className="ml-4 flex items-center gap-2">
+                          <span className="text-xs text-foreground/40">{match.round}</span>
+                          {isPlayable && (
+                            <span className="text-xs font-bold text-accent">🎮</span>
+                          )}
+                        </div>
+                      </>
+                    );
+                    return hasPlayers ? (
+                      <Link key={match.id} href={`/arena/${match.id}`} className={className}>
+                        {inner}
+                      </Link>
+                    ) : (
+                      <div key={match.id} className={className}>
+                        {inner}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (

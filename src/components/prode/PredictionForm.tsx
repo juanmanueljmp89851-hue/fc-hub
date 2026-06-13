@@ -34,11 +34,11 @@ interface PredictionFormProps {
   prodeId: string;
   weekId: string;
   weekStatus: string;
-  weekTitle: string;
+
   matches: MatchWithPrediction[];
 }
 
-export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches }: PredictionFormProps) {
+export function PredictionForm({ prodeId, weekId, weekStatus, matches }: PredictionFormProps) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<Record<string, { home: string; away: string }>>({});
@@ -46,8 +46,8 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
   const [message, setMessage] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("group");
 
-  // Group stage: all matches editable until each match starts
-  const isGroupStage = weekTitle.toLowerCase().includes("fase de grupos");
+  // All matches editable until 1 min before each match starts
+  const hasPerMatchLock = true;
 
   useEffect(() => {
     async function load() {
@@ -74,7 +74,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
     setPredictions(initial);
   }, [matches]);
 
-  const isOpen = weekStatus === "OPEN" || isGroupStage;
+  const isOpen = weekStatus === "OPEN" || hasPerMatchLock;
   const canPredict = isOpen && userId;
 
   function updateScore(matchId: string, side: "home" | "away", value: string) {
@@ -188,7 +188,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, weekTitle, matches
               const existingPred = match.predictions?.[0];
               // Per-match lock: for group stage, lock 1 minute before kickoff
               const cutoff = new Date(new Date(match.matchDate).getTime() - 60_000);
-              const matchStarted = isGroupStage && cutoff <= new Date();
+              const matchStarted = hasPerMatchLock && cutoff <= new Date();
               const matchLocked = isFinished || matchStarted;
 
               return (

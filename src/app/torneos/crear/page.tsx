@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { createTournament } from "@/lib/actions/tournament";
 import { uploadTournamentBanner } from "@/lib/actions/upload";
-import type { TournamentFormat, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule } from "@prisma/client";
+import type { TournamentFormat, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule, KnockoutFormat } from "@prisma/client";
 
 const FORMATS: { value: TournamentFormat; label: string; description: string }[] = [
   { value: "SINGLE_ELIMINATION", label: "Eliminación Simple", description: "El perdedor queda eliminado. Bracket tipo árbol." },
@@ -47,7 +47,7 @@ export default function CrearTorneoPage() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
   const [teamType, setTeamType] = useState<TeamType>("ULTIMATE_TEAM");
   const [visibility, setVisibility] = useState<TournamentVisibility>("PUBLIC");
-  const [requiresVerification, setRequiresVerification] = useState(false);
+  const [requiresVerification, setRequiresVerification] = useState(true);
   const [registrationOpen, setRegistrationOpen] = useState("");
   const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -63,6 +63,8 @@ export default function CrearTorneoPage() {
   const [hasLosersBracket, setHasLosersBracket] = useState(false);
   const [thirdPlaceMatch, setThirdPlaceMatch] = useState(false);
   const [playoffRule, setPlayoffRule] = useState<PlayoffRule>("PENALTIES");
+  const [knockoutFormat, setKnockoutFormat] = useState<KnockoutFormat>("SINGLE_MATCH");
+  const [requireProof, setRequireProof] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -118,6 +120,8 @@ export default function CrearTorneoPage() {
       hasLosersBracket: hasElimination ? hasLosersBracket : undefined,
       thirdPlaceMatch: hasElimination ? thirdPlaceMatch : undefined,
       playoffRule: hasElimination ? playoffRule : undefined,
+      knockoutFormat: hasElimination ? knockoutFormat : undefined,
+      requireProof,
     });
 
     if (result.error) {
@@ -515,6 +519,55 @@ export default function CrearTorneoPage() {
                   </div>
                 </div>
               )}
+
+              {/* Formato de serie (knockout) */}
+              {hasElimination && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground/70">
+                    Formato de serie (eliminación)
+                  </label>
+                  <div className="space-y-2">
+                    {([
+                      { value: "SINGLE_MATCH" as KnockoutFormat, label: "Partido único", desc: "Un solo partido define al ganador." },
+                      { value: "TWO_LEG" as KnockoutFormat, label: "Ida y vuelta", desc: "2 partidos. Gana el de mayor global. Si hay empate global, se necesita desempate." },
+                      { value: "TWO_LEG_PENALTIES" as KnockoutFormat, label: "Ida y vuelta + penales", desc: "2 partidos. Si empatan en global, penales en la vuelta." },
+                      { value: "TWO_LEG_EXTRA_PENALTIES" as KnockoutFormat, label: "Ida y vuelta + prórroga + penales", desc: "2 partidos. Si empatan en global, prórroga y luego penales." },
+                      { value: "BEST_OF_3" as KnockoutFormat, label: "Mejor de 3", desc: "El primero en ganar 2 partidos avanza." },
+                      { value: "BEST_OF_5" as KnockoutFormat, label: "Mejor de 5", desc: "El primero en ganar 3 partidos avanza." },
+                    ]).map((opt) => (
+                      <label key={opt.value} className="flex items-center gap-3 rounded-lg border border-surface-light p-3">
+                        <input
+                          type="radio"
+                          name="knockoutFormat"
+                          checked={knockoutFormat === opt.value}
+                          onChange={() => setKnockoutFormat(opt.value)}
+                          className="h-4 w-4 accent-accent"
+                        />
+                        <div>
+                          <p className="text-sm font-medium">{opt.label}</p>
+                          <p className="text-xs text-foreground/50">{opt.desc}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Require proof */}
+              <label className="flex items-center gap-3 rounded-lg border border-surface-light p-3">
+                <input
+                  type="checkbox"
+                  checked={requireProof}
+                  onChange={(e) => setRequireProof(e.target.checked)}
+                  className="h-4 w-4 accent-accent"
+                />
+                <div>
+                  <p className="text-sm font-medium">Fotos de prueba obligatorias</p>
+                  <p className="text-xs text-foreground/50">
+                    Los jugadores deben subir al menos 1 foto para certificar el resultado.
+                  </p>
+                </div>
+              </label>
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-foreground/70">

@@ -20,6 +20,7 @@ interface ArenaMatchActionsProps {
   currentUserId: string;
   disputeCountP1: number;
   disputeCountP2: number;
+  requireProof?: boolean;
 }
 
 export function ArenaMatchActions({
@@ -32,14 +33,15 @@ export function ArenaMatchActions({
   currentUserId,
   disputeCountP1,
   disputeCountP2,
+  requireProof = false,
 }: ArenaMatchActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [scoreA, setScoreA] = useState("");
   const [scoreB, setScoreB] = useState("");
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [proofFiles, setProofFiles] = useState<File[]>([]);
+  const [proofPreviews, setProofPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,21 +50,35 @@ export function ArenaMatchActions({
   const myDisputeCount = isP1 ? disputeCountP1 : disputeCountP2;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setMessage("Solo se permiten imágenes JPG, PNG o WebP.");
-      return;
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const remaining = 3 - proofFiles.length;
+    const toAdd = files.slice(0, remaining);
+    for (const file of toAdd) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        setMessage("Solo se permiten imágenes JPG, PNG o WebP.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage("La imagen no puede superar 5MB.");
+        return;
+      }
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage("La imagen no puede superar 5MB.");
-      return;
-    }
-    setProofFile(file);
     setMessage("");
-    const reader = new FileReader();
-    reader.onload = (ev) => setProofPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    const newFiles = [...proofFiles, ...toAdd];
+    setProofFiles(newFiles);
+    toAdd.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) =>
+        setProofPreviews((prev) => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(file);
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeProof(index: number) {
+    setProofFiles((prev) => prev.filter((_, i) => i !== index));
+    setProofPreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleReady() {
@@ -82,22 +98,26 @@ export function ArenaMatchActions({
       setMessage("Completá ambos resultados.");
       return;
     }
-    if (!proofFile) {
-      setMessage("La foto de prueba es obligatoria.");
+    if (requireProof && proofFiles.length === 0) {
+      setMessage("La foto de prueba es obligatoria en este torneo.");
       return;
     }
     setLoading(true);
     setUploading(true);
     setMessage("");
 
-    const formData = new FormData();
-    formData.set("file", proofFile);
-    const uploadResult = await uploadMatchProof(formData);
-    if (uploadResult.error) {
-      setMessage(uploadResult.error);
-      setLoading(false);
-      setUploading(false);
-      return;
+    const uploadedUrls: string[] = [];
+    for (const file of proofFiles) {
+      const formData = new FormData();
+      formData.set("file", file);
+      const uploadResult = await uploadMatchProof(formData);
+      if (uploadResult.error) {
+        setMessage(uploadResult.error);
+        setLoading(false);
+        setUploading(false);
+        return;
+      }
+      uploadedUrls.push(uploadResult.url!);
     }
     setUploading(false);
 
@@ -105,7 +125,8 @@ export function ArenaMatchActions({
       matchId,
       parseInt(scoreA) || 0,
       parseInt(scoreB) || 0,
-      uploadResult.url!,
+      uploadedUrls[0] ?? "",
+      uploadedUrls,
     );
     if (result.error) setMessage(result.error);
     else {
@@ -208,29 +229,43 @@ export function ArenaMatchActions({
           {/* Photo proof */}
           <div className="rounded-lg border border-dashed border-surface-light p-4">
             <p className="mb-2 text-xs font-medium text-foreground/60">
-              📷 Foto de prueba <span className="text-red-400">*obligatoria</span>
+              📷 Fotos de prueba (máx. 3)
+              {requireProof
+                ? <span className="text-red-400"> *obligatoria</span>
+                : <span className="text-foreground/40"> — opcional</span>
+              }
             </p>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={handleFileChange}
+              multiple
               className="hidden"
             />
-            {proofPreview ? (
-              <div className="relative">
-                <img src={proofPreview} alt="Preview" className="max-h-40 rounded-lg object-contain" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProofFile(null);
-                    setProofPreview(null);
-                    if (fileInputRef.current) fileInputRef.current.value = "";
-                  }}
-                  className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white"
-                >
-                  ✕
-                </button>
+            {proofPreviews.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {proofPreviews.map((preview, i) => (
+                  <div key={i} className="relative">
+                    <img src={preview} alt={`Proof ${i + 1}`} className="h-24 rounded-lg object-contain" />
+                    <button
+                      type="button"
+                      onClick={() => removeProof(i)}
+                      className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                {proofFiles.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-surface-light text-2xl text-foreground/30 transition-colors hover:border-accent hover:text-accent"
+                  >
+                    +
+                  </button>
+                )}
               </div>
             ) : (
               <button
@@ -245,10 +280,10 @@ export function ArenaMatchActions({
 
           <button
             onClick={handleSubmitResult}
-            disabled={loading || scoreA === "" || scoreB === "" || !proofFile}
+            disabled={loading || scoreA === "" || scoreB === "" || (requireProof && proofFiles.length === 0)}
             className="w-full rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {uploading ? "Subiendo foto..." : loading ? "Cargando..." : "Cargar resultado"}
+            {uploading ? "Subiendo fotos..." : loading ? "Cargando..." : "Cargar resultado"}
           </button>
         </div>
       )}

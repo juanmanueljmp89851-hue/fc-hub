@@ -54,6 +54,11 @@ export default async function ArenaMatchPage({ params }: PageProps) {
           {match.round && (
             <span className="ml-2 text-xs text-foreground/40">{match.round}</span>
           )}
+          {match.leg && (
+            <span className="ml-2 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+              Leg {match.leg}
+            </span>
+          )}
         </div>
 
         <Card>
@@ -145,15 +150,21 @@ export default async function ArenaMatchPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Proof image */}
-          {match.proofImageUrl && (
+          {/* Proof images */}
+          {(match.proofImageUrls?.length > 0 || match.proofImageUrl) && (
             <div className="mb-6 border-t border-surface-light pt-6">
-              <p className="mb-2 text-xs font-medium text-foreground/50">📷 Foto de prueba:</p>
-              <img
-                src={match.proofImageUrl}
-                alt="Prueba del resultado"
-                className="max-h-64 w-full rounded-lg object-contain border border-surface-light bg-background"
-              />
+              <p className="mb-2 text-xs font-medium text-foreground/50">📷 Fotos de prueba:</p>
+              <div className="flex flex-wrap gap-2">
+                {(match.proofImageUrls?.length > 0 ? match.proofImageUrls : [match.proofImageUrl]).filter((u): u is string => !!u).map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Prueba ${i + 1}`}
+                    className="max-h-48 rounded-lg object-contain border border-surface-light bg-background cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => window.open(url, "_blank")}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
@@ -170,6 +181,7 @@ export default async function ArenaMatchPage({ params }: PageProps) {
                 currentUserId={match.currentUserId}
                 disputeCountP1={match.disputeCountP1}
                 disputeCountP2={match.disputeCountP2}
+                requireProof={match.tournament.requireProof ?? false}
               />
             </div>
           )}

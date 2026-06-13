@@ -105,6 +105,8 @@ model Tournament {
   hasLosersBracket       Boolean             @default(false) @map("has_losers_bracket")
   thirdPlaceMatch        Boolean             @default(false) @map("third_place_match")
   playoffRule            PlayoffRule         @default(PENALTIES) @map("playoff_rule")
+  knockoutFormat         KnockoutFormat      @default(SINGLE_MATCH) @map("knockout_format")
+  requireProof           Boolean             @default(false) @map("require_proof")
   createdById            String              @map("created_by")
   cancelledAt            DateTime?           @map("cancelled_at")
   cancelReason           String?             @map("cancel_reason")
@@ -139,6 +141,15 @@ enum PlayoffRule {
   PENALTIES
   GOLDEN_GOAL
   EXTRA_TIME
+}
+
+enum KnockoutFormat {
+  SINGLE_MATCH
+  TWO_LEG
+  BEST_OF_3
+  BEST_OF_5
+  TWO_LEG_PENALTIES
+  TWO_LEG_EXTRA_PENALTIES
 }
 
 enum DrawUntilStage {
@@ -233,12 +244,14 @@ model TournamentMatch {
   round        String?
   bracket      BracketType?
   leg          Int?
+  seriesId     String?      @map("series_id")
   matchday     Int?
   groupName    String?      @map("group_name")
   status        MatchStatus  @default(SCHEDULED)
   deadline      DateTime?
   confirmedAt   DateTime?    @map("confirmed_at")
-  proofImageUrl String?      @map("proof_image_url")
+  proofImageUrl  String?      @map("proof_image_url")
+  proofImageUrls String[]     @map("proof_image_urls")
   disputeCountP1 Int         @default(0) @map("dispute_count_p1")
   disputeCountP2 Int         @default(0) @map("dispute_count_p2")
   createdAt     DateTime     @default(now()) @map("created_at")
@@ -793,6 +806,9 @@ model Notification {
 enum NotificationType {
   TOURNAMENT_INSCRIPTION
   TOURNAMENT_STARTING
+  TOURNAMENT_JOIN_REQUEST
+  TOURNAMENT_JOIN_ACCEPTED
+  TOURNAMENT_JOIN_REJECTED
   MATCH_ASSIGNED
   RESULT_LOADED
   RESULT_VALIDATED
