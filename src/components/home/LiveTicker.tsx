@@ -128,29 +128,33 @@ export function LiveTicker() {
           const matchUrl = getMatchUrl(match);
 
           const content = isPlaceholder ? (
-            <>
+            <div className="flex items-center gap-2">
               <span className="text-[11px]">😴</span>
               <span className="font-medium text-foreground/40">
                 Sin partidos de fútbol — jugate un fifita, tranqui
               </span>
-            </>
+            </div>
           ) : (
-            <>
-              <span className="text-[11px]">{match.leagueFlag}</span>
-              {match.league && (
-                <span className="font-medium text-foreground/40">{match.league}</span>
-              )}
-              <span className="font-bold text-foreground/80">{match.homeTeam}</span>
-              {match.homeScore !== null ? (
-                <span className={`font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
-                  {match.homeScore} - {match.awayScore}
-                </span>
-              ) : (
-                <span className="text-foreground/30">vs</span>
-              )}
-              <span className="font-bold text-foreground/80">{match.awayTeam}</span>
-              <StatusBadge match={match} />
-            </>
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px]">{match.leagueFlag}</span>
+                {match.league && (
+                  <span className="font-medium text-foreground/40">{match.league}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-foreground/80">{match.homeTeam}</span>
+                {match.homeScore !== null ? (
+                  <span className={`font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
+                    {match.homeScore} - {match.awayScore}
+                  </span>
+                ) : (
+                  <span className="text-foreground/30">vs</span>
+                )}
+                <span className="font-bold text-foreground/80">{match.awayTeam}</span>
+                <StatusBadge match={match} />
+              </div>
+            </div>
           );
 
           const className = `mx-2 inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs ${

@@ -244,12 +244,23 @@ export function Navbar() {
           <div className="mt-3 flex flex-col gap-2">
             {user ? (
               <>
+                {/* User info block (mobile) */}
                 <Link
                   href="/perfil"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg border border-surface-light px-4 py-2 text-center text-sm font-medium text-foreground/70"
+                  className="flex items-center gap-3 rounded-lg border border-surface-light px-4 py-3"
                 >
-                  Mi perfil
+                  <div className="relative h-10 w-10 overflow-hidden rounded-full bg-surface">
+                    {user.avatarUrl ? (
+                      <Image src={user.avatarUrl} alt={user.username} fill className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-lg text-foreground/40">👤</div>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-foreground/90">{user.username}</span>
+                    <span className="text-xs font-bold text-accent">{user.rankingPoints?.toLocaleString() ?? 0} pts</span>
+                  </div>
                 </Link>
                 {user.role === "ADMIN" && (
                   <Link
