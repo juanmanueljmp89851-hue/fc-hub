@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { listTournaments } from "@/lib/actions/tournament";
 import { TournamentFilters } from "@/components/tournaments/TournamentFilters";
+import { TournamentCardJoin } from "@/components/tournaments/TournamentCardJoin";
 
 export const metadata: Metadata = {
   title: "Arena",
@@ -214,12 +215,22 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                     </div>
 
                     <div className="mt-3 flex items-center justify-between">
-                      {torneo.prize && (
-                        <p className="text-xs text-gold">🏆 {torneo.prize}</p>
-                      )}
-                      <p className="text-xs text-foreground/40">
-                        por {torneo.createdBy.username}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        {torneo.prize && (
+                          <p className="text-xs text-gold">🏆 {torneo.prize}</p>
+                        )}
+                        <p className="text-xs text-foreground/40">
+                          por {torneo.createdBy.username}
+                        </p>
+                      </div>
+                      <TournamentCardJoin
+                        tournamentId={torneo.id}
+                        status={torneo.status}
+                        createdById={torneo.createdById}
+                        currentPlayers={torneo.currentPlayers}
+                        maxPlayers={torneo.maxPlayers}
+                        requiresVerification={torneo.requiresVerification}
+                      />
                     </div>
                     </div>{/* end padding wrapper */}
                   </Card>

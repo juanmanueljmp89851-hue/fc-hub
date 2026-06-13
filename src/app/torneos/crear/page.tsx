@@ -82,8 +82,6 @@ export default function CrearTorneoPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [createdId, setCreatedId] = useState("");
 
   const isLeague = format === "LEAGUE";
   const isGroupKnockout = format === "GROUP_KNOCKOUT";
@@ -148,9 +146,7 @@ export default function CrearTorneoPage() {
       return;
     }
 
-    setCreatedId(result.tournamentId!);
-    setSuccess(true);
-    setLoading(false);
+    router.push(`/torneos/${result.tournamentId}`);
   }
 
   const inputClass =
@@ -1024,32 +1020,6 @@ export default function CrearTorneoPage() {
           </button>
         </form>
 
-        {/* Success modal */}
-        {success && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <Card className="max-w-md text-center">
-              <span className="mb-4 block text-5xl">🏆</span>
-              <h2 className="mb-2 text-xl font-bold">¡Torneo creado!</h2>
-              <p className="mb-6 text-sm text-foreground/60">
-                Tu torneo fue creado exitosamente. Compartí el link para que se inscriban los jugadores.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => router.push(`/torneos/${createdId}`)}
-                  className="flex-1 rounded-lg bg-accent py-2.5 font-bold text-background"
-                >
-                  Ir al torneo
-                </button>
-                <button
-                  onClick={() => router.push("/torneos")}
-                  className="rounded-lg border border-surface-light px-4 py-2.5 text-sm text-foreground/70"
-                >
-                  Ver todos
-                </button>
-              </div>
-            </Card>
-          </div>
-        )}
       </main>
     </div>
   );

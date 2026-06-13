@@ -365,6 +365,8 @@ export async function listTournaments(input: ListTournamentsInput = {}) {
       prize: t.prize,
       visibility: t.visibility,
       createdBy: t.createdBy,
+      createdById: t.createdById,
+      requiresVerification: t.requiresVerification,
       createdAt: t.createdAt,
     })),
     total,

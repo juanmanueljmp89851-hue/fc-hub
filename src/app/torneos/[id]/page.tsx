@@ -14,6 +14,7 @@ import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamen
 import { PendingParticipants } from "@/components/tournaments/PendingParticipants";
 import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
 import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
+import { CollapsibleText } from "@/components/ui/CollapsibleText";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -136,7 +137,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             )}
           </div>
           {tournament.description && (
-            <p className="mt-2 text-foreground/60">{tournament.description}</p>
+            <CollapsibleText text={tournament.description} maxLines={3} className="mt-2 text-foreground/60" />
           )}
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-foreground/60">
             <span>Formato: <span className="text-foreground">{getFormatLabel(tournament.format)}</span></span>
@@ -303,7 +304,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               <CardHeader>
                 <CardTitle>Reglas</CardTitle>
               </CardHeader>
-              {tournament.rules && <p className="mb-4 text-sm text-foreground/70">{tournament.rules}</p>}
+              {tournament.rules && <CollapsibleText text={tournament.rules} maxLines={4} className="mb-4 text-sm text-foreground/70" />}
               <div className="space-y-1 text-sm text-foreground/60">
                 {tournament.matchTime && <p>Tiempo: <span className="text-foreground">{tournament.matchTime}</span></p>}
                 {tournament.difficulty && <p>Dificultad: <span className="text-foreground">{tournament.difficulty}</span></p>}
