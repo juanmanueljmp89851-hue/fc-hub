@@ -12,6 +12,8 @@ import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
 import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
 import { PendingParticipants } from "@/components/tournaments/PendingParticipants";
+import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
+import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -168,6 +170,20 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             {tournament.hasLosersBracket && tournament.format !== "DOUBLE_ELIMINATION" && (
               <span className="text-gold">+ Llave de perdedores</span>
             )}
+            {tournament.scheduleDays && tournament.scheduleDays.length > 0 && (
+              <span>Días: <span className="text-foreground">
+                {tournament.scheduleDays.map((d: string) => {
+                  const map: Record<string, string> = { MONDAY: "Lun", TUESDAY: "Mar", WEDNESDAY: "Mié", THURSDAY: "Jue", FRIDAY: "Vie", SATURDAY: "Sáb", SUNDAY: "Dom" };
+                  return map[d] ?? d;
+                }).join(", ")}
+              </span></span>
+            )}
+            {tournament.scheduleTime && (
+              <span>Horario: <span className="text-foreground">{tournament.scheduleTime}hs</span></span>
+            )}
+            {tournament.waitTimeMinutes && tournament.waitTimeMinutes > 0 && (
+              <span>Espera: <span className="text-foreground">{tournament.waitTimeMinutes} min</span></span>
+            )}
           </div>
 
           {/* Botón inscripción */}
@@ -249,6 +265,15 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                           {isPlayable && (
                             <span className="text-xs font-bold text-accent">🎮</span>
                           )}
+                          {canEdit && match.player1Id && match.player2Id && (
+                            <AdminMatchEdit
+                              matchId={match.id}
+                              player1Name={match.player1?.username ?? "?"}
+                              player2Name={match.player2?.username ?? "?"}
+                              currentP1={match.resultP1}
+                              currentP2={match.resultP2}
+                            />
+                          )}
                         </div>
                       </>
                     );
@@ -313,6 +338,15 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                     <span className="truncate text-sm text-foreground/70">{p.user.username}</span>
                     {p.status === "PENDING" && (
                       <span className="ml-auto text-xs text-gold">Pendiente</span>
+                    )}
+                    {canEdit && p.status === "CONFIRMED" && p.userId !== tournament.createdById && (
+                      <div className="ml-auto">
+                        <AdminPlayerActions
+                          tournamentId={tournament.id}
+                          userId={p.userId}
+                          username={p.user.username}
+                        />
+                      </div>
                     )}
                   </div>
                 ))}

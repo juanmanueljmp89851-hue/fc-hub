@@ -70,6 +70,10 @@ export default function CrearTorneoPage() {
   const [cup1Spots, setCup1Spots] = useState(0);
   const [cup2Name, setCup2Name] = useState("");
   const [cup2Spots, setCup2Spots] = useState(0);
+  const [scheduleDays, setScheduleDays] = useState<string[]>([]);
+  const [scheduleTimeMode, setScheduleTimeMode] = useState("NONE");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [waitTimeMinutes, setWaitTimeMinutes] = useState(0);
 
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -132,6 +136,10 @@ export default function CrearTorneoPage() {
       cup1Spots: isLeague && cup1Spots > 0 ? cup1Spots : undefined,
       cup2Name: isLeague && cup2Name ? cup2Name : undefined,
       cup2Spots: isLeague && cup2Spots > 0 ? cup2Spots : undefined,
+      scheduleDays: scheduleDays.length > 0 ? scheduleDays : undefined,
+      scheduleTimeMode: scheduleTimeMode !== "NONE" ? scheduleTimeMode : undefined,
+      scheduleTime: scheduleTimeMode === "SPECIFIC" && scheduleTime ? scheduleTime : undefined,
+      waitTimeMinutes: waitTimeMinutes > 0 ? waitTimeMinutes : undefined,
     });
 
     if (result.error) {
@@ -734,44 +742,147 @@ export default function CrearTorneoPage() {
             </div>
           </Card>
 
-          {/* Fechas */}
+          {/* Fechas y Horarios */}
           <Card>
             <CardHeader>
-              <CardTitle>Fechas</CardTitle>
+              <CardTitle>Fechas y Horarios</CardTitle>
             </CardHeader>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground/70">
-                  Apertura inscripciones
-                </label>
-                <input
-                  type="datetime-local"
-                  value={registrationOpen}
-                  onChange={(e) => setRegistrationOpen(e.target.value)}
-                  className={inputClass}
-                />
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground/70">
+                    Apertura inscripciones
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={registrationOpen}
+                    onChange={(e) => setRegistrationOpen(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground/70">
+                    Cierre inscripciones
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={registrationDeadline}
+                    onChange={(e) => setRegistrationDeadline(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground/70">
+                    Inicio del torneo
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground/70">
-                  Cierre inscripciones
-                </label>
-                <input
-                  type="datetime-local"
-                  value={registrationDeadline}
-                  onChange={(e) => setRegistrationDeadline(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground/70">
-                  Inicio del torneo
-                </label>
-                <input
-                  type="datetime-local"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className={inputClass}
-                />
+
+              {/* Días de juego */}
+              <div className="rounded-lg border border-surface-light bg-surface/30 p-4 space-y-4">
+                <h4 className="text-sm font-bold text-foreground/70">Días de juego (opcional)</h4>
+                <p className="text-xs text-foreground/40">Seleccioná los días en que se disputan los partidos</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: "MONDAY", label: "Lun" },
+                    { value: "TUESDAY", label: "Mar" },
+                    { value: "WEDNESDAY", label: "Mié" },
+                    { value: "THURSDAY", label: "Jue" },
+                    { value: "FRIDAY", label: "Vie" },
+                    { value: "SATURDAY", label: "Sáb" },
+                    { value: "SUNDAY", label: "Dom" },
+                  ].map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() =>
+                        setScheduleDays((prev) =>
+                          prev.includes(day.value)
+                            ? prev.filter((d) => d !== day.value)
+                            : [...prev, day.value]
+                        )
+                      }
+                      className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                        scheduleDays.includes(day.value)
+                          ? "border-accent bg-accent/10 text-accent"
+                          : "border-surface-light hover:border-accent"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Horario */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground/70">
+                    Horario de partidos
+                  </label>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setScheduleTimeMode("NONE")}
+                      className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                        scheduleTimeMode === "NONE"
+                          ? "border-accent text-accent"
+                          : "border-surface-light hover:border-accent"
+                      }`}
+                    >
+                      Sin horario específico
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScheduleTimeMode("SPECIFIC")}
+                      className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                        scheduleTimeMode === "SPECIFIC"
+                          ? "border-accent text-accent"
+                          : "border-surface-light hover:border-accent"
+                      }`}
+                    >
+                      Horario fijo
+                    </button>
+                  </div>
+                </div>
+
+                {scheduleTimeMode === "SPECIFIC" && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground/70">
+                        Hora de inicio
+                      </label>
+                      <input
+                        type="time"
+                        value={scheduleTime}
+                        onChange={(e) => setScheduleTime(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground/70">
+                        Tiempo de espera
+                      </label>
+                      <select
+                        value={waitTimeMinutes}
+                        onChange={(e) => setWaitTimeMinutes(parseInt(e.target.value))}
+                        className={inputClass}
+                      >
+                        <option value={0}>Sin límite</option>
+                        <option value={10}>10 minutos</option>
+                        <option value={15}>15 minutos</option>
+                        <option value={30}>30 minutos</option>
+                      </select>
+                      <p className="mt-1 text-xs text-foreground/40">
+                        Tiempo que los jugadores tienen para presentarse. El creador resuelve si no se presentan.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>

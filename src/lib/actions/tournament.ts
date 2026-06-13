@@ -45,6 +45,10 @@ interface CreateTournamentInput {
   cup1Spots?: number;
   cup2Name?: string;
   cup2Spots?: number;
+  scheduleDays?: string[];
+  scheduleTimeMode?: string;
+  scheduleTime?: string;
+  waitTimeMinutes?: number;
 }
 
 export async function createTournament(input: CreateTournamentInput) {
@@ -129,6 +133,10 @@ export async function createTournament(input: CreateTournamentInput) {
         cup1Spots: input.cup1Spots ?? null,
         cup2Name: input.cup2Name ?? null,
         cup2Spots: input.cup2Spots ?? null,
+        scheduleDays: input.scheduleDays ?? [],
+        scheduleTimeMode: input.scheduleTimeMode ?? null,
+        scheduleTime: input.scheduleTime ?? null,
+        waitTimeMinutes: input.waitTimeMinutes ?? null,
         status: "REGISTRATION",
         createdById: dbUser.id,
       },
@@ -2041,7 +2049,7 @@ export async function getTournamentMatchDetail(matchId: string) {
   const match = await prisma.tournamentMatch.findUnique({
     where: { id: matchId },
     include: {
-      tournament: { select: { id: true, name: true, createdById: true, playoffRule: true, requireProof: true, leagueLegs: true, knockoutFormat: true } },
+      tournament: { select: { id: true, name: true, createdById: true, playoffRule: true, requireProof: true, leagueLegs: true, knockoutFormat: true, waitTimeMinutes: true, scheduleTime: true } },
       player1: { select: { id: true, username: true, avatarUrl: true, rankingPoints: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
       player2: { select: { id: true, username: true, avatarUrl: true, rankingPoints: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
       winner: { select: { id: true, username: true } },
@@ -2237,16 +2245,22 @@ export async function submitTournamentResult(
     return { error: "Resultado inválido" };
   }
 
-  await prisma.tournamentMatch.update({
-    where: { id: matchId },
+  // Optimistic locking
+  const updated = await prisma.tournamentMatch.updateMany({
+    where: { id: matchId, version: match.version },
     data: {
       resultP1,
       resultP2,
       proofImageUrl: urls[0] ?? null,
       proofImageUrls: urls,
       status: "PENDING_CONFIRMATION",
+      version: { increment: 1 },
     },
   });
+
+  if (updated.count === 0) {
+    return { error: "El resultado ya fue cargado por otro jugador. Recargá la página." };
+  }
 
   // Notify the other player
   const otherPlayerId = match.player1Id === dbUser.id ? match.player2Id : match.player1Id;
@@ -2744,4 +2758,317 @@ export async function invokeArenaAdmin(matchId: string) {
 
   revalidatePath(`/arena/${matchId}`);
   return { success: true, message: "Admin y organizador notificados." };
+}
+
+// ─── ADMIN: EDITAR RESULTADO ──────────────────────────────
+
+export async function adminEditResult(
+  matchId: string,
+  newResultP1: number,
+  newResultP2: number,
+) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true, username: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const match = await prisma.tournamentMatch.findUnique({
+    where: { id: matchId },
+    include: { tournament: { select: { id: true, name: true, format: true, createdById: true } } },
+  });
+  if (!match) return { error: "Partido no encontrado" };
+
+  const isCreator = match.tournament.createdById === dbUser.id;
+  const isAdmin = dbUser.role === "ADMIN";
+  if (!isCreator && !isAdmin) return { error: "Solo el creador del torneo o un admin pueden editar resultados" };
+
+  if (!match.player1Id || !match.player2Id) return { error: "Partido sin jugadores asignados" };
+
+  const oldResultP1 = match.resultP1;
+  const oldResultP2 = match.resultP2;
+  const wasFinished = match.status === "FINISHED";
+
+  // Revert old ranking points if match was finished
+  if (wasFinished && oldResultP1 !== null && oldResultP2 !== null) {
+    const oldRankingRecords = await prisma.rankingHistory.findMany({
+      where: { tournamentMatchId: matchId },
+    });
+    for (const record of oldRankingRecords) {
+      await prisma.user.update({
+        where: { id: record.userId },
+        data: { rankingPoints: { decrement: record.pointsChange } },
+      });
+    }
+    await prisma.rankingHistory.deleteMany({ where: { tournamentMatchId: matchId } });
+
+    // Revert old league standings
+    if (match.tournament.format === "LEAGUE" || match.tournament.format === "GROUP_KNOCKOUT") {
+      await reverseLeagueStandings(match.tournament.id, match.player1Id, match.player2Id, oldResultP1, oldResultP2);
+    }
+  }
+
+  // Apply new result
+  const newWinnerId = newResultP1 > newResultP2 ? match.player1Id
+    : newResultP2 > newResultP1 ? match.player2Id
+    : null;
+
+  await prisma.tournamentMatch.update({
+    where: { id: matchId },
+    data: {
+      resultP1: newResultP1,
+      resultP2: newResultP2,
+      winnerId: newWinnerId,
+      status: "FINISHED",
+      confirmedAt: new Date(),
+    },
+  });
+
+  // Apply new ranking points
+  const p1Pts = newWinnerId === match.player1Id ? RANKING.WIN : newWinnerId === match.player2Id ? RANKING.LOSS : RANKING.DRAW;
+  const p2Pts = newWinnerId === match.player2Id ? RANKING.WIN : newWinnerId === match.player1Id ? RANKING.LOSS : RANKING.DRAW;
+
+  await prisma.user.update({ where: { id: match.player1Id }, data: { rankingPoints: { increment: p1Pts } } });
+  await prisma.rankingHistory.create({
+    data: { userId: match.player1Id, tournamentMatchId: matchId, pointsChange: p1Pts, reason: `Resultado editado por ${dbUser.username}` },
+  });
+  await prisma.user.update({ where: { id: match.player2Id }, data: { rankingPoints: { increment: p2Pts } } });
+  await prisma.rankingHistory.create({
+    data: { userId: match.player2Id, tournamentMatchId: matchId, pointsChange: p2Pts, reason: `Resultado editado por ${dbUser.username}` },
+  });
+
+  // Apply new league standings
+  if (match.tournament.format === "LEAGUE" || match.tournament.format === "GROUP_KNOCKOUT") {
+    await updateLeagueStandings(match.tournament.id, match.player1Id, match.player2Id, newResultP1, newResultP2);
+  }
+
+  // Audit log
+  await prisma.tournamentAuditLog.create({
+    data: {
+      tournamentId: match.tournament.id,
+      action: "RESULT_EDITED",
+      performedById: dbUser.id,
+      details: `Resultado editado: ${oldResultP1 ?? "?"}-${oldResultP2 ?? "?"} → ${newResultP1}-${newResultP2}`,
+    },
+  });
+
+  revalidatePath(`/torneos/${match.tournament.id}`);
+  revalidatePath(`/arena/${matchId}`);
+  return { success: true };
+}
+
+async function reverseLeagueStandings(
+  tournamentId: string,
+  player1Id: string,
+  player2Id: string,
+  resultP1: number,
+  resultP2: number,
+) {
+  const p1Won = resultP1 > resultP2;
+  const p2Won = resultP2 > resultP1;
+  const draw = resultP1 === resultP2;
+
+  await prisma.leagueStanding.update({
+    where: { tournamentId_userId: { tournamentId, userId: player1Id } },
+    data: {
+      played: { decrement: 1 },
+      won: p1Won ? { decrement: 1 } : undefined,
+      drawn: draw ? { decrement: 1 } : undefined,
+      lost: p2Won ? { decrement: 1 } : undefined,
+      goalsFor: { decrement: resultP1 },
+      goalsAgainst: { decrement: resultP2 },
+      points: { decrement: p1Won ? 3 : draw ? 1 : 0 },
+    },
+  });
+
+  await prisma.leagueStanding.update({
+    where: { tournamentId_userId: { tournamentId, userId: player2Id } },
+    data: {
+      played: { decrement: 1 },
+      won: p2Won ? { decrement: 1 } : undefined,
+      drawn: draw ? { decrement: 1 } : undefined,
+      lost: p1Won ? { decrement: 1 } : undefined,
+      goalsFor: { decrement: resultP2 },
+      goalsAgainst: { decrement: resultP1 },
+      points: { decrement: p2Won ? 3 : draw ? 1 : 0 },
+    },
+  });
+}
+
+// ─── ADMIN: VOID PLAYER ───────────────────────────────────
+
+export async function voidPlayer(
+  tournamentId: string,
+  targetUserId: string,
+  mode: "REMOVE_POINTS" | "NEVER_EXISTED",
+) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true, username: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { id: true, name: true, format: true, createdById: true },
+  });
+  if (!tournament) return { error: "Torneo no encontrado" };
+
+  const isCreator = tournament.createdById === dbUser.id;
+  const isAdmin = dbUser.role === "ADMIN";
+  if (!isCreator && !isAdmin) return { error: "Sin permisos" };
+
+  // Get all finished matches involving this player
+  const playerMatches = await prisma.tournamentMatch.findMany({
+    where: {
+      tournamentId,
+      status: "FINISHED",
+      OR: [{ player1Id: targetUserId }, { player2Id: targetUserId }],
+    },
+  });
+
+  if (mode === "REMOVE_POINTS") {
+    // Revert ranking points this player earned/caused in this tournament
+    const rankingRecords = await prisma.rankingHistory.findMany({
+      where: {
+        userId: targetUserId,
+        tournamentMatchId: { in: playerMatches.map((m) => m.id) },
+      },
+    });
+
+    let totalPoints = 0;
+    for (const record of rankingRecords) {
+      totalPoints += record.pointsChange;
+    }
+
+    if (totalPoints !== 0) {
+      await prisma.user.update({
+        where: { id: targetUserId },
+        data: { rankingPoints: { decrement: totalPoints } },
+      });
+    }
+
+    await prisma.rankingHistory.deleteMany({
+      where: {
+        userId: targetUserId,
+        tournamentMatchId: { in: playerMatches.map((m) => m.id) },
+      },
+    });
+
+    // Remove from participants
+    await prisma.tournamentParticipant.deleteMany({
+      where: { tournamentId, userId: targetUserId },
+    });
+
+    // Notify player
+    await prisma.notification.create({
+      data: {
+        userId: targetUserId,
+        type: "ADMIN_MESSAGE",
+        title: "Removido del torneo",
+        message: `Fuiste removido de ${tournament.name}. Se revirtieron ${totalPoints} puntos de ranking.`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      },
+    });
+  } else {
+    // NEVER_EXISTED — revert everything, void all matches
+    for (const match of playerMatches) {
+      const opponentId = match.player1Id === targetUserId ? match.player2Id : match.player1Id;
+
+      // Revert ranking for BOTH players in this match
+      const rankingRecords = await prisma.rankingHistory.findMany({
+        where: { tournamentMatchId: match.id },
+      });
+      for (const record of rankingRecords) {
+        await prisma.user.update({
+          where: { id: record.userId },
+          data: { rankingPoints: { decrement: record.pointsChange } },
+        });
+      }
+      await prisma.rankingHistory.deleteMany({ where: { tournamentMatchId: match.id } });
+
+      // Revert league standings for both players
+      if (
+        (tournament.format === "LEAGUE" || tournament.format === "GROUP_KNOCKOUT") &&
+        match.resultP1 !== null && match.resultP2 !== null &&
+        match.player1Id && match.player2Id
+      ) {
+        await reverseLeagueStandings(tournament.id, match.player1Id, match.player2Id, match.resultP1, match.resultP2);
+      }
+
+      // Void the match
+      await prisma.tournamentMatch.update({
+        where: { id: match.id },
+        data: { status: "CANCELLED", resultP1: null, resultP2: null, winnerId: null },
+      });
+
+      // Notify opponent
+      if (opponentId) {
+        await prisma.notification.create({
+          data: {
+            userId: opponentId,
+            type: "ADMIN_MESSAGE",
+            title: "Partido anulado",
+            message: `Tu partido en ${tournament.name} fue anulado. Se revirtieron los puntos.`,
+            relatedId: match.id,
+            linkUrl: `/torneos/${tournamentId}`,
+          },
+        });
+      }
+    }
+
+    // Cancel all pending/scheduled matches
+    await prisma.tournamentMatch.updateMany({
+      where: {
+        tournamentId,
+        status: { in: ["SCHEDULED", "READY_P1", "READY_P2", "IN_PROGRESS", "PENDING_CONFIRMATION"] },
+        OR: [{ player1Id: targetUserId }, { player2Id: targetUserId }],
+      },
+      data: { status: "CANCELLED" },
+    });
+
+    // Remove league standing
+    await prisma.leagueStanding.deleteMany({
+      where: { tournamentId, userId: targetUserId },
+    });
+
+    // Remove from participants
+    await prisma.tournamentParticipant.deleteMany({
+      where: { tournamentId, userId: targetUserId },
+    });
+
+    // Notify player
+    await prisma.notification.create({
+      data: {
+        userId: targetUserId,
+        type: "ADMIN_MESSAGE",
+        title: "Removido del torneo",
+        message: `Fuiste removido de ${tournament.name}. Todos tus partidos fueron anulados.`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      },
+    });
+  }
+
+  // Audit log
+  await prisma.tournamentAuditLog.create({
+    data: {
+      tournamentId,
+      action: mode === "REMOVE_POINTS" ? "PLAYER_REMOVED" : "PLAYER_VOIDED",
+      performedById: dbUser.id,
+      details: `Jugador ${targetUserId} ${mode === "REMOVE_POINTS" ? "removido (puntos revertidos)" : "anulado (nunca existió)"}`,
+    },
+  });
+
+  revalidatePath(`/torneos/${tournamentId}`);
+  return { success: true };
 }

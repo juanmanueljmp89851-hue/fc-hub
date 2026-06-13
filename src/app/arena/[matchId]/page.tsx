@@ -8,6 +8,8 @@ import { getTournamentMatchDetail } from "@/lib/actions/tournament";
 import { ArenaMatchActions } from "@/components/arena/ArenaMatchActions";
 import { ArenaChat } from "@/components/arena/ArenaChat";
 import { SiblingLegCard } from "@/components/arena/SiblingLegCard";
+import { WaitCountdown } from "@/components/arena/WaitCountdown";
+import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
 
 export const metadata: Metadata = {
   title: "Partido de Torneo",
@@ -69,6 +71,17 @@ export default async function ArenaMatchPage({ params }: PageProps) {
               {statusInfo.label}
             </span>
           </div>
+
+          {/* Wait countdown */}
+          {match.scheduledTime && match.tournament.waitTimeMinutes && match.tournament.waitTimeMinutes > 0 &&
+           match.status !== "FINISHED" && match.status !== "CANCELLED" && match.status !== "WALKOVER" && (
+            <div className="mb-6">
+              <WaitCountdown
+                scheduledTime={match.scheduledTime.toISOString()}
+                waitTimeMinutes={match.tournament.waitTimeMinutes}
+              />
+            </div>
+          )}
 
           {/* Playoff rule */}
           {match.tournament.playoffRule && (
@@ -219,6 +232,20 @@ export default async function ArenaMatchPage({ params }: PageProps) {
           {match.status === "FINISHED" && !match.winner && (
             <div className="border-t border-surface-light pt-6 text-center">
               <p className="text-lg font-bold text-foreground/50">Empate</p>
+            </div>
+          )}
+
+          {/* Admin edit result */}
+          {(match.isCreator || match.isAdmin) && match.player1Id && match.player2Id && (
+            <div className="border-t border-surface-light pt-4 text-center">
+              <AdminMatchEdit
+                matchId={match.id}
+                player1Name={match.player1?.username ?? "J1"}
+                player2Name={match.player2?.username ?? "J2"}
+                currentP1={match.resultP1}
+                currentP2={match.resultP2}
+              />
+              <span className="ml-2 text-xs text-foreground/40">Editar resultado (admin)</span>
             </div>
           )}
 
