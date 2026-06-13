@@ -544,15 +544,36 @@ export async function getRanking({ period = "all", page = 1, limit = 50 }: Ranki
           { played: number; won: number; drawn: number; lost: number; gf: number; gc: number }[]
         >`
           SELECT
-            COUNT(*)::int as played,
-            COUNT(*) FILTER (WHERE winner_id = ${user.id})::int as won,
-            COUNT(*) FILTER (WHERE winner_id IS NULL AND status = 'FINISHED')::int as drawn,
-            COUNT(*) FILTER (WHERE winner_id IS NOT NULL AND winner_id != ${user.id} AND status = 'FINISHED')::int as lost,
-            COALESCE(SUM(CASE WHEN challenger_id = ${user.id} THEN result_challenger ELSE result_challenged END), 0)::int as gf,
-            COALESCE(SUM(CASE WHEN challenger_id = ${user.id} THEN result_challenged ELSE result_challenger END), 0)::int as gc
-          FROM casual_matches
-          WHERE (challenger_id = ${user.id} OR challenged_id = ${user.id})
-            AND status = 'FINISHED'
+            COALESCE(c.played, 0) + COALESCE(t.played, 0) as played,
+            COALESCE(c.won, 0) + COALESCE(t.won, 0) as won,
+            COALESCE(c.drawn, 0) + COALESCE(t.drawn, 0) as drawn,
+            COALESCE(c.lost, 0) + COALESCE(t.lost, 0) as lost,
+            COALESCE(c.gf, 0) + COALESCE(t.gf, 0) as gf,
+            COALESCE(c.gc, 0) + COALESCE(t.gc, 0) as gc
+          FROM (
+            SELECT
+              COUNT(*)::int as played,
+              COUNT(*) FILTER (WHERE winner_id = ${user.id})::int as won,
+              COUNT(*) FILTER (WHERE winner_id IS NULL AND status = 'FINISHED')::int as drawn,
+              COUNT(*) FILTER (WHERE winner_id IS NOT NULL AND winner_id != ${user.id} AND status = 'FINISHED')::int as lost,
+              COALESCE(SUM(CASE WHEN challenger_id = ${user.id} THEN result_challenger ELSE result_challenged END), 0)::int as gf,
+              COALESCE(SUM(CASE WHEN challenger_id = ${user.id} THEN result_challenged ELSE result_challenger END), 0)::int as gc
+            FROM casual_matches
+            WHERE (challenger_id = ${user.id} OR challenged_id = ${user.id})
+              AND status = 'FINISHED'
+          ) c,
+          (
+            SELECT
+              COUNT(*)::int as played,
+              COUNT(*) FILTER (WHERE winner_id = ${user.id})::int as won,
+              COUNT(*) FILTER (WHERE winner_id IS NULL AND status = 'FINISHED')::int as drawn,
+              COUNT(*) FILTER (WHERE winner_id IS NOT NULL AND winner_id != ${user.id} AND status = 'FINISHED')::int as lost,
+              COALESCE(SUM(CASE WHEN player1_id = ${user.id} THEN result_p1 ELSE result_p2 END), 0)::int as gf,
+              COALESCE(SUM(CASE WHEN player1_id = ${user.id} THEN result_p2 ELSE result_p1 END), 0)::int as gc
+            FROM tournament_matches
+            WHERE (player1_id = ${user.id} OR player2_id = ${user.id})
+              AND status = 'FINISHED'
+          ) t
         `;
 
         return {

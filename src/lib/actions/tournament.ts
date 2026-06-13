@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { TournamentFormat, TournamentStatus, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule, KnockoutFormat } from "@prisma/client";
 import { randomUUID } from "crypto";
+import { RANKING } from "@/lib/constants";
 
 // ─── CREAR TORNEO ──────────────────────────────────────────
 
@@ -1108,6 +1109,18 @@ export async function confirmMatchResult(matchId: string) {
       confirmedAt: new Date(),
     },
   });
+
+  // Update ranking points
+  if (match.player1Id && match.player2Id && match.resultP1 !== null && match.resultP2 !== null) {
+    const winnerId = match.resultP1 > match.resultP2 ? match.player1Id : match.resultP2 > match.resultP1 ? match.player2Id : null;
+    const p1Pts = winnerId === match.player1Id ? RANKING.WIN : winnerId === match.player2Id ? RANKING.LOSS : RANKING.DRAW;
+    const p2Pts = winnerId === match.player2Id ? RANKING.WIN : winnerId === match.player1Id ? RANKING.LOSS : RANKING.DRAW;
+
+    await prisma.user.update({ where: { id: match.player1Id }, data: { rankingPoints: { increment: p1Pts } } });
+    await prisma.rankingHistory.create({ data: { userId: match.player1Id, tournamentMatchId: matchId, pointsChange: p1Pts, reason: p1Pts === RANKING.WIN ? "Victoria en torneo" : p1Pts === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo" } });
+    await prisma.user.update({ where: { id: match.player2Id }, data: { rankingPoints: { increment: p2Pts } } });
+    await prisma.rankingHistory.create({ data: { userId: match.player2Id, tournamentMatchId: matchId, pointsChange: p2Pts, reason: p2Pts === RANKING.WIN ? "Victoria en torneo" : p2Pts === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo" } });
+  }
 
   // Si es liga o grupo, actualizar standings
   if (
@@ -2383,6 +2396,38 @@ export async function confirmTournamentResult(matchId: string) {
     if (match.tournament.format === "GROUP_KNOCKOUT" && match.groupName) {
       await checkGroupComplete(match.tournamentId, match.tournament.groupCount ?? 4, match.tournament.qualifyPerGroup ?? 2);
     }
+  }
+
+  // Update ranking points for both players
+  if (match.player1Id && match.player2Id) {
+    const p1Points = matchWinnerId === match.player1Id ? RANKING.WIN : matchWinnerId === match.player2Id ? RANKING.LOSS : RANKING.DRAW;
+    const p2Points = matchWinnerId === match.player2Id ? RANKING.WIN : matchWinnerId === match.player1Id ? RANKING.LOSS : RANKING.DRAW;
+
+    await prisma.user.update({
+      where: { id: match.player1Id },
+      data: { rankingPoints: { increment: p1Points } },
+    });
+    await prisma.rankingHistory.create({
+      data: {
+        userId: match.player1Id,
+        tournamentMatchId: matchId,
+        pointsChange: p1Points,
+        reason: p1Points === RANKING.WIN ? "Victoria en torneo" : p1Points === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo",
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: match.player2Id },
+      data: { rankingPoints: { increment: p2Points } },
+    });
+    await prisma.rankingHistory.create({
+      data: {
+        userId: match.player2Id,
+        tournamentMatchId: matchId,
+        pointsChange: p2Points,
+        reason: p2Points === RANKING.WIN ? "Victoria en torneo" : p2Points === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo",
+      },
+    });
   }
 
   const kf = match.tournament.knockoutFormat;

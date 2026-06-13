@@ -265,8 +265,9 @@ model TournamentMatch {
   player1    User?               @relation("MatchPlayer1", fields: [player1Id], references: [id])
   player2    User?               @relation("MatchPlayer2", fields: [player2Id], references: [id])
   winner     User?               @relation("MatchWinner", fields: [winnerId], references: [id])
-  disputes   TournamentDispute[]
-  messages   MatchMessage[]      @relation("TournamentMatchMessages")
+  disputes       TournamentDispute[]
+  messages       MatchMessage[]      @relation("TournamentMatchMessages")
+  rankingHistory RankingHistory[]
 
   @@map("tournament_matches")
 }
@@ -428,15 +429,17 @@ enum CasualMatchStatus {
 // ─── RANKING HISTORIAL ──────────────────────────────────────
 
 model RankingHistory {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  casualMatchId String? @map("casual_match_id")
-  pointsChange Int      @map("points_change")
-  reason       String
-  createdAt    DateTime @default(now()) @map("created_at")
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  casualMatchId     String?  @map("casual_match_id")
+  tournamentMatchId String?  @map("tournament_match_id")
+  pointsChange      Int      @map("points_change")
+  reason            String
+  createdAt         DateTime @default(now()) @map("created_at")
 
-  user        User         @relation(fields: [userId], references: [id])
-  casualMatch CasualMatch? @relation(fields: [casualMatchId], references: [id])
+  user            User              @relation(fields: [userId], references: [id])
+  casualMatch     CasualMatch?      @relation(fields: [casualMatchId], references: [id])
+  tournamentMatch TournamentMatch?  @relation(fields: [tournamentMatchId], references: [id])
 
   @@map("ranking_history")
 }
