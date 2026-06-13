@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { getTournamentMatchDetail } from "@/lib/actions/tournament";
 import { ArenaMatchActions } from "@/components/arena/ArenaMatchActions";
 import { ArenaChat } from "@/components/arena/ArenaChat";
+import { SiblingLegCard } from "@/components/arena/SiblingLegCard";
 
 export const metadata: Metadata = {
   title: "Partido de Torneo",
@@ -166,6 +167,27 @@ export default async function ArenaMatchPage({ params }: PageProps) {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Sibling legs (ida/vuelta) */}
+          {match.siblingMatches.length > 0 && (
+            <SiblingLegCard
+              currentMatch={{
+                id: match.id,
+                leg: match.leg,
+                resultP1: match.resultP1,
+                resultP2: match.resultP2,
+                status: match.status,
+                player1Id: match.player1Id,
+                player2Id: match.player2Id,
+              }}
+              siblingMatches={match.siblingMatches}
+              player1Username={match.player1?.username ?? "J1"}
+              player2Username={match.player2?.username ?? "J2"}
+              currentUserId={match.currentUserId}
+              isPlayer={match.isPlayer}
+              requireProof={match.tournament.requireProof ?? false}
+            />
           )}
 
           {/* Actions */}

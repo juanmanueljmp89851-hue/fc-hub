@@ -1892,7 +1892,7 @@ export async function getTournamentMatchDetail(matchId: string) {
   const match = await prisma.tournamentMatch.findUnique({
     where: { id: matchId },
     include: {
-      tournament: { select: { id: true, name: true, createdById: true, playoffRule: true, requireProof: true } },
+      tournament: { select: { id: true, name: true, createdById: true, playoffRule: true, requireProof: true, leagueLegs: true, knockoutFormat: true } },
       player1: { select: { id: true, username: true, avatarUrl: true, rankingPoints: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
       player2: { select: { id: true, username: true, avatarUrl: true, rankingPoints: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
       winner: { select: { id: true, username: true } },
@@ -1911,7 +1911,51 @@ export async function getTournamentMatchDetail(matchId: string) {
   const isAdmin = dbUser.role === "ADMIN";
   if (!isPlayer && !isCreator && !isAdmin) return null;
 
-  return { ...match, currentUserId: dbUser.id, isPlayer, isCreator, isAdmin };
+  // Fetch sibling matches (same players, different leg — for ida/vuelta)
+  let siblingMatches: {
+    id: string;
+    leg: number | null;
+    status: string;
+    resultP1: number | null;
+    resultP2: number | null;
+    player1Id: string | null;
+    player2Id: string | null;
+    winnerId: string | null;
+    disputeCountP1: number;
+    disputeCountP2: number;
+    proofImageUrl: string | null;
+    proofImageUrls: string[];
+  }[] = [];
+
+  if (match.leg && match.player1Id && match.player2Id) {
+    siblingMatches = await prisma.tournamentMatch.findMany({
+      where: {
+        tournamentId: match.tournamentId,
+        id: { not: match.id },
+        OR: [
+          { player1Id: match.player1Id, player2Id: match.player2Id },
+          { player1Id: match.player2Id, player2Id: match.player1Id },
+        ],
+      },
+      select: {
+        id: true,
+        leg: true,
+        status: true,
+        resultP1: true,
+        resultP2: true,
+        player1Id: true,
+        player2Id: true,
+        winnerId: true,
+        disputeCountP1: true,
+        disputeCountP2: true,
+        proofImageUrl: true,
+        proofImageUrls: true,
+      },
+      orderBy: { leg: "asc" },
+    });
+  }
+
+  return { ...match, currentUserId: dbUser.id, isPlayer, isCreator, isAdmin, siblingMatches };
 }
 
 export async function readyToPlay(matchId: string) {
@@ -2065,6 +2109,84 @@ export async function submitTournamentResult(
         type: "RESULT_LOADED",
         title: "Resultado cargado",
         message: `${submitter?.username ?? "Tu rival"} cargó el resultado: ${resultP1}-${resultP2}. Confirmalo.`,
+        relatedId: matchId,
+        linkUrl: `/arena/${matchId}`,
+      },
+    });
+  }
+
+  revalidatePath(`/arena/${matchId}`);
+  return { success: true };
+}
+
+export async function submitSiblingResult(
+  matchId: string,
+  resultP1: number,
+  resultP2: number,
+  proofImageUrl: string,
+  proofImageUrls?: string[],
+) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const match = await prisma.tournamentMatch.findUnique({
+    where: { id: matchId },
+    include: { tournament: { select: { requireProof: true } } },
+  });
+  if (!match) return { error: "Partido no encontrado" };
+  if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
+    return { error: "No participás en este partido" };
+  }
+
+  if (match.status === "FINISHED" || match.status === "CANCELLED" || match.status === "WALKOVER") {
+    return { error: "Este partido ya terminó" };
+  }
+
+  const urls = (proofImageUrls ?? (proofImageUrl ? [proofImageUrl] : [])).slice(0, 3);
+  if (match.tournament.requireProof && urls.length === 0) {
+    return { error: "La foto de prueba es obligatoria en este torneo." };
+  }
+  if (resultP1 < 0 || resultP2 < 0 || resultP1 > 99 || resultP2 > 99) {
+    return { error: "Resultado inválido" };
+  }
+
+  // Auto-transition to IN_PROGRESS if needed (sibling loaded from main match arena)
+  if (match.status === "SCHEDULED" || match.status === "READY_P1" || match.status === "READY_P2") {
+    await prisma.tournamentMatch.update({
+      where: { id: matchId },
+      data: { status: "IN_PROGRESS" },
+    });
+  }
+
+  await prisma.tournamentMatch.update({
+    where: { id: matchId },
+    data: {
+      resultP1,
+      resultP2,
+      proofImageUrl: urls[0] ?? null,
+      proofImageUrls: urls,
+      status: "PENDING_CONFIRMATION",
+    },
+  });
+
+  const otherPlayerId = match.player1Id === dbUser.id ? match.player2Id : match.player1Id;
+  if (otherPlayerId) {
+    const submitter = await prisma.user.findUnique({ where: { id: dbUser.id }, select: { username: true } });
+    await prisma.notification.create({
+      data: {
+        userId: otherPlayerId,
+        type: "RESULT_LOADED",
+        title: "Resultado cargado",
+        message: `${submitter?.username ?? "Tu rival"} cargó el resultado de la ${match.leg === 1 ? "ida" : "vuelta"}: ${resultP1}-${resultP2}. Confirmalo.`,
         relatedId: matchId,
         linkUrl: `/arena/${matchId}`,
       },
