@@ -21,9 +21,11 @@ interface ArenaChatProps {
   messages: ChatMessage[];
   currentUserId: string;
   isPlayer: boolean;
+  player1Id?: string | null;
+  player2Id?: string | null;
 }
 
-export function ArenaChat({ matchId, messages, currentUserId, isPlayer }: ArenaChatProps) {
+export function ArenaChat({ matchId, messages, currentUserId, isPlayer, player1Id, player2Id }: ArenaChatProps) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -101,7 +103,8 @@ export function ArenaChat({ matchId, messages, currentUserId, isPlayer }: ArenaC
           <div className="space-y-2">
             {messages.map((msg) => {
               const isMe = msg.user.id === currentUserId;
-              const isAdmin = msg.user.role === "ADMIN";
+              const isMatchPlayer = msg.user.id === player1Id || msg.user.id === player2Id;
+              const isAdmin = msg.user.role === "ADMIN" && !isMatchPlayer;
               return (
                 <div
                   key={msg.id}

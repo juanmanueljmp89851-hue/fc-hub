@@ -207,6 +207,8 @@ export default async function ArenaMatchPage({ params }: PageProps) {
               messages={match.messages}
               currentUserId={match.currentUserId}
               isPlayer={match.isPlayer}
+              player1Id={match.player1Id}
+              player2Id={match.player2Id}
             />
           </div>
         </Card>
