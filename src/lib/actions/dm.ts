@@ -179,6 +179,27 @@ export async function getUnreadDmCount() {
   });
 }
 
+export async function searchUsersForDm(query: string) {
+  const dbUser = await getAuthUser();
+  if (!dbUser) return [];
+
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+
+  const users = await prisma.user.findMany({
+    where: {
+      username: { contains: trimmed, mode: "insensitive" },
+      id: { not: dbUser.id },
+      banned: false,
+    },
+    select: { id: true, username: true, avatarUrl: true },
+    take: 10,
+    orderBy: { username: "asc" },
+  });
+
+  return users;
+}
+
 // Admin: view all conversations
 export async function adminGetAllConversations() {
   const dbUser = await getAuthUser();
