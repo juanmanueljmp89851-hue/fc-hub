@@ -166,7 +166,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-surface-light bg-surface shadow-xl">
+        <div className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-surface-light bg-surface shadow-xl sm:w-96">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-surface-light px-4 py-3">
             <h3 className="text-sm font-bold">Notificaciones</h3>
@@ -181,7 +181,7 @@ export function NotificationBell() {
           </div>
 
           {/* List */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
@@ -213,14 +213,14 @@ export function NotificationBell() {
                   <span className="mt-0.5 text-base">{getNotifIcon(notif.type)}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold text-foreground/90">
+                      <span className="text-sm font-semibold text-foreground/90">
                         {notif.title}
                       </span>
                       {!notif.read && (
                         <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />
                       )}
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-foreground/50">
+                    <p className="mt-0.5 text-xs leading-relaxed text-foreground/50">
                       {notif.message}
                     </p>
                     <span className="mt-1 text-[10px] text-foreground/30">
