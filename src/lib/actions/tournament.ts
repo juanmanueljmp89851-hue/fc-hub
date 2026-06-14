@@ -162,6 +162,24 @@ export async function createTournament(input: CreateTournamentInput) {
       },
     });
 
+    // Notify all users about new tournament
+    const allUsers = await prisma.user.findMany({
+      where: { id: { not: dbUser.id } },
+      select: { id: true },
+    });
+    if (allUsers.length > 0) {
+      await prisma.notification.createMany({
+        data: allUsers.map((u) => ({
+          userId: u.id,
+          type: "NEW_TOURNAMENT",
+          title: `Nuevo torneo: ${tournament.name}`,
+          message: `${dbUser.username} creó un nuevo torneo. ¡Inscribite!`,
+          relatedId: tournament.id,
+          linkUrl: `/torneos/${tournament.id}`,
+        })),
+      });
+    }
+
     revalidatePath("/torneos");
     return { success: true, tournamentId: tournament.id };
   } catch (err) {
@@ -756,6 +774,20 @@ export async function startTournament(tournamentId: string) {
     },
   });
 
+  // Notify all participants
+  await prisma.notification.createMany({
+    data: confirmedPlayers
+      .filter((p) => p.userId !== dbUser.id)
+      .map((p) => ({
+        userId: p.userId,
+        type: "TOURNAMENT_STARTING",
+        title: `¡${tournament.name} arrancó!`,
+        message: `El torneo ya comenzó con ${confirmedPlayers.length} jugadores. Revisá tus partidos.`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      })),
+  });
+
   revalidatePath(`/torneos/${tournamentId}`);
   return { success: true };
 }
@@ -1163,6 +1195,30 @@ export async function confirmMatchResult(matchId: string) {
     if (match.tournament.format === "DOUBLE_ELIMINATION" && match.player1Id && match.player2Id) {
       const loserId = match.winnerId === match.player1Id ? match.player2Id : match.player1Id;
       await sendToLosers(match.tournamentId, match.round, loserId);
+    }
+  }
+
+  // Notify both players result confirmed
+  if (match.player1Id && match.player2Id && match.resultP1 !== null && match.resultP2 !== null) {
+    const p1 = await prisma.user.findUnique({ where: { id: match.player1Id }, select: { username: true } });
+    const p2 = await prisma.user.findUnique({ where: { id: match.player2Id }, select: { username: true } });
+    const scoreText = `${match.resultP1}-${match.resultP2}`;
+    const winnerId = match.resultP1 > match.resultP2 ? match.player1Id : match.resultP2 > match.resultP1 ? match.player2Id : null;
+
+    for (const playerId of [match.player1Id, match.player2Id]) {
+      const isWinner = winnerId === playerId;
+      const isDraw = !winnerId;
+      const rivalName = playerId === match.player1Id ? p2?.username : p1?.username;
+      await prisma.notification.create({
+        data: {
+          userId: playerId,
+          type: "RESULT_CONFIRMED",
+          title: isDraw ? `Empate ${scoreText}` : isWinner ? `¡Ganaste ${scoreText}!` : `Perdiste ${scoreText}`,
+          message: `Resultado confirmado vs ${rivalName ?? "rival"} en ${match.tournament.name}.`,
+          relatedId: match.tournamentId,
+          linkUrl: `/torneos/${match.tournamentId}`,
+        },
+      });
     }
   }
 
@@ -3082,6 +3138,65 @@ export async function voidPlayer(
   return { success: true };
 }
 
+export async function remindPendingMatches(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { id: true, name: true, createdById: true },
+  });
+  if (!tournament) return { error: "Torneo no encontrado" };
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "Solo el organizador puede enviar recordatorios" };
+  }
+
+  const pendingMatches = await prisma.tournamentMatch.findMany({
+    where: {
+      tournamentId,
+      status: { in: ["IN_PROGRESS", "SCHEDULED"] },
+      player1Id: { not: null },
+      player2Id: { not: null },
+    },
+    include: {
+      player1: { select: { username: true } },
+      player2: { select: { username: true } },
+    },
+  });
+
+  if (pendingMatches.length === 0) return { error: "No hay partidos pendientes" };
+
+  const notifications = pendingMatches.flatMap((match) => {
+    const players = [match.player1Id!, match.player2Id!];
+    return players.map((playerId) => {
+      const rivalName = playerId === match.player1Id
+        ? match.player2?.username ?? "rival"
+        : match.player1?.username ?? "rival";
+      return {
+        userId: playerId,
+        type: "MATCH_REMINDER" as const,
+        title: `Partido pendiente en ${tournament.name}`,
+        message: `Tenés un partido pendiente contra ${rivalName}. ¡Coordiná y jugá!`,
+        relatedId: match.id,
+        linkUrl: `/arena/${match.id}`,
+      };
+    });
+  });
+
+  await prisma.notification.createMany({ data: notifications });
+
+  return { success: true, count: pendingMatches.length };
+}
+
 export async function sendTournamentChatMessage(tournamentId: string, text: string) {
   const supabase = createClient();
   const {
@@ -3100,7 +3215,7 @@ export async function sendTournamentChatMessage(tournamentId: string, text: stri
 
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
-    select: { id: true, createdById: true },
+    select: { id: true, name: true, createdById: true },
   });
   if (!tournament) return { error: "Torneo no encontrado" };
 
@@ -3118,6 +3233,39 @@ export async function sendTournamentChatMessage(tournamentId: string, text: stri
       text: trimmed,
     },
   });
+
+  const senderUser = await prisma.user.findUnique({
+    where: { id: dbUser.id },
+    select: { username: true },
+  });
+
+  const participants = await prisma.tournamentParticipant.findMany({
+    where: { tournamentId, status: "CONFIRMED", userId: { not: dbUser.id } },
+    select: { userId: true },
+  });
+  const notifyIds = new Set(participants.map((p) => p.userId));
+  if (tournament.createdById !== dbUser.id) notifyIds.add(tournament.createdById);
+
+  const recentNotif = await prisma.notification.findFirst({
+    where: {
+      type: "TOURNAMENT_CHAT",
+      relatedId: tournamentId,
+      createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+    },
+  });
+
+  if (!recentNotif && notifyIds.size > 0) {
+    await prisma.notification.createMany({
+      data: Array.from(notifyIds).map((userId) => ({
+        userId,
+        type: "TOURNAMENT_CHAT",
+        title: `Nuevo mensaje en ${tournament.name}`,
+        message: `${senderUser?.username ?? "Alguien"}: ${trimmed.slice(0, 100)}`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      })),
+    });
+  }
 
   revalidatePath(`/torneos/${tournamentId}`);
   return { success: true };

@@ -34,6 +34,20 @@ function getNotifIcon(type: string) {
       return "📢";
     case "SANCTION":
       return "🚫";
+    case "TOURNAMENT_CHAT":
+      return "💬";
+    case "MATCH_REMINDER":
+      return "⏰";
+    case "RESULT_CONFIRMED":
+      return "✅";
+    case "NEW_TOURNAMENT":
+      return "🆕";
+    case "TOURNAMENT_JOIN_REQUEST":
+      return "📩";
+    case "TOURNAMENT_JOIN_ACCEPTED":
+      return "✅";
+    case "TOURNAMENT_JOIN_REJECTED":
+      return "❌";
     default:
       return "🔔";
   }

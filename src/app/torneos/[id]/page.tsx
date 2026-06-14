@@ -17,6 +17,7 @@ import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions"
 import { CollapsibleText } from "@/components/ui/CollapsibleText";
 import { ShareTournamentLink } from "@/components/tournaments/ShareTournamentLink";
 import { TournamentChat } from "@/components/tournaments/TournamentChat";
+import { RemindPendingButton } from "@/components/tournaments/RemindPendingButton";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -163,6 +164,9 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                   Editar
                 </Link>
                 <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
+                {tournament.status === "IN_PROGRESS" && (
+                  <RemindPendingButton tournamentId={tournament.id} />
+                )}
               </>
             )}
           </div>

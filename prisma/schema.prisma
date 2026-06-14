@@ -855,6 +855,10 @@ enum NotificationType {
   PRODE_JOIN_REJECTED
   SANCTION
   ADMIN_MESSAGE
+  TOURNAMENT_CHAT
+  MATCH_REMINDER
+  RESULT_CONFIRMED
+  NEW_TOURNAMENT
 }
 
 // ─── LOBBY CHAT ─────────────────────────────────────────────
