@@ -153,7 +153,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                 <Image src={tournament.logoUrl} alt="" fill className="object-cover" />
               </div>
             )}
-            <h1 className="text-3xl font-bold">{tournament.name}</h1>
+            <h1 className="text-xl font-bold sm:text-3xl">{tournament.name}</h1>
             {canEdit && (
               <>
                 <Link
