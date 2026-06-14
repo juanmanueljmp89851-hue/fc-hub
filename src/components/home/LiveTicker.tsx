@@ -15,7 +15,6 @@ interface TickerMatch {
   type: "real" | "fc26";
 }
 
-// No real match placeholder
 const NO_REAL_MATCHES_PLACEHOLDER: TickerMatch = {
   id: "no-real",
   league: "",
@@ -32,22 +31,21 @@ const NO_REAL_MATCHES_PLACEHOLDER: TickerMatch = {
 function StatusBadge({ match }: { match: TickerMatch }) {
   if (match.status === "live") {
     return (
-      <span className="flex items-center gap-1 text-[10px] font-bold text-accent">
+      <span className="flex items-center gap-1 text-[9px] font-bold text-accent">
         <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
         {match.minute ?? "VIVO"}
       </span>
     );
   }
   if (match.status === "finished") {
-    return <span className="text-[10px] font-medium text-foreground/30">FT</span>;
+    return <span className="text-[9px] font-medium text-foreground/30">FT</span>;
   }
-  return <span className="text-[10px] font-medium text-foreground/30">PRÓ</span>;
+  return <span className="text-[9px] font-medium text-foreground/30">PRÓ</span>;
 }
 
 function getMatchUrl(match: TickerMatch): string | null {
   if (match.id === "no-real") return null;
-  if (match.type === "fc26") return null; // No external link for FC26 matches
-  // Google search with team names → shows live match card with events
+  if (match.type === "fc26") return null;
   const q = encodeURIComponent(`${match.homeTeam} vs ${match.awayTeam} resultado`);
   return `https://www.google.com/search?q=${q}`;
 }
@@ -64,7 +62,6 @@ export function LiveTicker() {
       const realMatches = data.filter((m) => m.type === "real");
       const fc26Matches = data.filter((m) => m.type === "fc26");
 
-      // If no real football matches, add placeholder
       const finalMatches =
         realMatches.length > 0
           ? [...realMatches, ...fc26Matches]
@@ -80,84 +77,75 @@ export function LiveTicker() {
 
   useEffect(() => {
     fetchTicker();
-    const interval = setInterval(fetchTicker, 10 * 60 * 1000); // 10 min — aligned with API cache
+    const interval = setInterval(fetchTicker, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchTicker]);
 
-  // Don't render until data loads
   if (!loaded) {
     return (
-      <div className="border-y border-surface-light bg-surface/50 py-2">
+      <div className="border-y border-surface-light bg-surface/50 py-1.5">
         <div className="flex items-center justify-center">
-          <span className="text-xs text-foreground/30 animate-pulse">Cargando resultados...</span>
+          <span className="animate-pulse text-[10px] text-foreground/30">Cargando resultados...</span>
         </div>
       </div>
     );
   }
 
-  // Duplicate for seamless loop
   const tickerItems = [...matches, ...matches];
-  // Faster: ~2s per item instead of 4s
   const duration = Math.max(matches.length * 2, 15);
 
   return (
     <div className="group/ticker relative overflow-hidden border-y border-surface-light bg-surface/50 touch-manipulation">
-      {/* Fixed "Resultados en vivo" label — solid bg, no overlap */}
-      <div className="absolute left-0 top-0 z-20 flex h-full items-center pl-2 pr-1 sm:pl-3 sm:pr-2" style={{ background: "var(--background, #0a0a0a)" }}>
-        <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-red-500 sm:gap-1.5 sm:text-xs">
-          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500 sm:h-2 sm:w-2" />
-          <span className="hidden sm:inline">Resultados en vivo</span>
-          <span className="sm:hidden">EN VIVO</span>
+      {/* Fixed label */}
+      <div className="absolute left-0 top-0 z-20 flex h-full items-center border-r border-surface-light bg-background pl-2 pr-2 sm:pl-3 sm:pr-3">
+        <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wide text-red-500 sm:gap-1.5 sm:text-[10px]">
+          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500 sm:h-1.5 sm:w-1.5" />
+          <span className="hidden sm:inline">EN VIVO</span>
+          <span className="sm:hidden">LIVE</span>
         </span>
       </div>
-      {/* Fade between label and scrolling content */}
-      <div className="pointer-events-none absolute left-[75px] top-0 z-10 h-full w-4 bg-gradient-to-r from-[var(--background,#0a0a0a)] to-transparent sm:left-[170px] sm:w-6" />
 
-      {/* Right fade edge */}
-      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-12 bg-gradient-to-l from-background to-transparent" />
+      {/* Right fade */}
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-background to-transparent" />
 
       <div
-        className="flex whitespace-nowrap py-2 pl-[90px] sm:pl-[195px] animate-[ticker_var(--ticker-duration)_linear_infinite] group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]"
+        className="flex whitespace-nowrap py-1.5 pl-[68px] sm:pl-[95px] animate-[ticker_var(--ticker-duration)_linear_infinite] group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]"
         style={{
           "--ticker-duration": `${duration}s`,
         } as React.CSSProperties}
       >
         {tickerItems.map((match, i) => {
-          // Placeholder message (no score, special render)
           const isPlaceholder = match.id === "no-real";
           const matchUrl = getMatchUrl(match);
 
           const content = isPlaceholder ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px]">😴</span>
-              <span className="font-medium text-foreground/40">
-                Sin partidos de fútbol — jugate un fifita, tranqui
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px]">😴</span>
+              <span className="text-[10px] font-medium text-foreground/40">
+                Sin partidos — jugate un fifita
               </span>
             </div>
           ) : (
-            <div className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px]">{match.leagueFlag}</span>
-                {match.league && (
-                  <span className="font-medium text-foreground/40">{match.league}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-foreground/80">{match.homeTeam}</span>
-                {match.homeScore !== null ? (
-                  <span className={`font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
-                    {match.homeScore} - {match.awayScore}
-                  </span>
-                ) : (
-                  <span className="text-foreground/30">vs</span>
-                )}
-                <span className="font-bold text-foreground/80">{match.awayTeam}</span>
-                <StatusBadge match={match} />
-              </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px]">{match.leagueFlag}</span>
+              {match.league && (
+                <span className="text-[10px] font-medium text-foreground/40">{match.league}</span>
+              )}
+              <span className="text-foreground/20">|</span>
+              <span className="text-[10px] font-bold text-foreground/80">{match.homeTeam}</span>
+              {match.homeScore !== null ? (
+                <span className={`text-[10px] font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
+                  {match.homeScore}-{match.awayScore}
+                </span>
+              ) : (
+                <span className="text-[10px] text-foreground/30">vs</span>
+              )}
+              <span className="text-[10px] font-bold text-foreground/80">{match.awayTeam}</span>
+              <StatusBadge match={match} />
             </div>
           );
 
-          const className = `mx-2 inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs ${
+          const itemClass = `mx-1.5 inline-flex shrink-0 items-center rounded-md px-2 py-1 ${
             isPlaceholder
               ? "border border-surface-light/50 bg-surface/50"
               : match.type === "fc26"
@@ -172,7 +160,7 @@ export function LiveTicker() {
                 href={matchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${className} cursor-pointer transition-colors hover:border-accent hover:bg-accent/10`}
+                className={`${itemClass} cursor-pointer transition-colors hover:border-accent hover:bg-accent/10`}
               >
                 {content}
               </a>
@@ -180,7 +168,7 @@ export function LiveTicker() {
           }
 
           return (
-            <div key={`${match.id}-${i}`} className={className}>
+            <div key={`${match.id}-${i}`} className={itemClass}>
               {content}
             </div>
           );
