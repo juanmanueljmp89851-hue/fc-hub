@@ -80,22 +80,25 @@ const DAY_LABELS: Record<string, string> = {
   SUNDAY: "Domingo", MONDAY: "Lunes", TUESDAY: "Martes", WEDNESDAY: "Miércoles", THURSDAY: "Jueves", FRIDAY: "Viernes", SATURDAY: "Sábado",
 };
 
-function getNextScheduleDates(scheduleDays: string[], count: number): string[] {
-  if (!scheduleDays.length) return [];
+function getScheduleDateForRound(scheduleDays: string[], roundIndex: number, startDate?: Date | null): string {
+  if (!scheduleDays.length) return "";
   const dayNumbers = scheduleDays.map((d) => DAY_MAP[d]).filter((n) => n !== undefined).sort((a, b) => a - b);
-  if (!dayNumbers.length) return [];
-  const dates: string[] = [];
-  const now = new Date();
-  const current = new Date(now);
-  for (let i = 0; i < 60 && dates.length < count; i++) {
+  if (!dayNumbers.length) return "";
+  const base = startDate ? new Date(startDate) : new Date();
+  const current = new Date(base);
+  let found = 0;
+  for (let i = 0; i < 365; i++) {
     if (dayNumbers.includes(current.getDay())) {
-      const dayName = Object.entries(DAY_MAP).find(([, v]) => v === current.getDay())?.[0];
-      const label = dayName ? DAY_LABELS[dayName] : "";
-      dates.push(`${label} ${current.getDate().toString().padStart(2, "0")}/${(current.getMonth() + 1).toString().padStart(2, "0")}`);
+      if (found === roundIndex) {
+        const dayName = Object.entries(DAY_MAP).find(([, v]) => v === current.getDay())?.[0];
+        const label = dayName ? DAY_LABELS[dayName] : "";
+        return `${label} ${current.getDate().toString().padStart(2, "0")}/${(current.getMonth() + 1).toString().padStart(2, "0")}`;
+      }
+      found++;
     }
     current.setDate(current.getDate() + 1);
   }
-  return dates;
+  return "";
 }
 
 interface PageProps {
@@ -257,8 +260,8 @@ export default async function TorneoDetailPage({ params }: PageProps) {
 
         {/* Tabla/Bracket + Chat */}
         {hasMatches && (
-          <div className="mb-8 grid gap-6 md:grid-cols-3">
-            <Card className="overflow-x-auto md:col-span-2">
+          <div className="mb-8 grid gap-6 md:grid-cols-2">
+            <Card className="overflow-x-auto">
               <CardHeader>
                 <CardTitle>{isLeague ? "Posiciones" : "Bracket"}</CardTitle>
               </CardHeader>
@@ -301,77 +304,89 @@ export default async function TorneoDetailPage({ params }: PageProps) {
         )}
 
         {/* Fixture */}
-        {hasMatches && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Fixture</CardTitle>
-              {tournament.scheduleDays && tournament.scheduleDays.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {getNextScheduleDates(tournament.scheduleDays, 3).map((d) => (
-                    <span key={d} className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-                      {d}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </CardHeader>
-            <div className="space-y-2">
-              {tournament.matches.map((match) => {
-                const hasPlayers = match.player1Id && match.player2Id;
-                const isPlayable = hasPlayers && match.status !== "FINISHED" && match.status !== "WALKOVER";
-                const isFinished = match.status === "FINISHED" || match.status === "WALKOVER";
-                return (
-                  <div
-                    key={match.id}
-                    className={`flex items-center justify-between rounded-lg border p-3 text-sm transition-colors ${
-                      isPlayable ? "border-accent/30 bg-accent/5" : "border-surface-light"
-                    }`}
-                  >
-                    <div className="flex flex-1 items-center gap-2">
-                      <span className={match.winnerId === match.player1Id ? "font-bold text-accent" : "text-foreground/70"}>
-                        {match.player1?.username ?? "TBD"}
-                      </span>
-                      <span className="mx-2 text-foreground/40">
-                        {match.resultP1 !== null ? `${match.resultP1} - ${match.resultP2}` : "vs"}
-                      </span>
-                      <span className={match.winnerId === match.player2Id ? "font-bold text-accent" : "text-foreground/70"}>
-                        {match.player2?.username ?? "TBD"}
-                      </span>
+        {hasMatches && (() => {
+          const rounds = Array.from(new Set(tournament.matches.map((m) => m.round))).sort();
+          const hasDays = tournament.scheduleDays && tournament.scheduleDays.length > 0;
+          return (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Fixture</CardTitle>
+              </CardHeader>
+              <div className="space-y-4">
+                {rounds.map((round, roundIdx) => {
+                  const roundMatches = tournament.matches.filter((m) => m.round === round);
+                  const dateLabel = hasDays ? getScheduleDateForRound(tournament.scheduleDays, roundIdx, tournament.startDate) : "";
+                  return (
+                    <div key={round}>
+                      <div className="mb-2 flex items-center gap-3">
+                        <h4 className="text-sm font-semibold text-foreground/60">{round}</h4>
+                        {dateLabel && (
+                          <span className="rounded-full bg-accent/10 px-3 py-0.5 text-xs font-medium text-accent">
+                            {dateLabel}
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        {roundMatches.map((match) => {
+                          const hasPlayers = match.player1Id && match.player2Id;
+                          const isPlayable = hasPlayers && match.status !== "FINISHED" && match.status !== "WALKOVER";
+                          const isFinished = match.status === "FINISHED" || match.status === "WALKOVER";
+                          return (
+                            <div
+                              key={match.id}
+                              className={`flex items-center justify-between rounded-lg border p-3 text-sm transition-colors ${
+                                isPlayable ? "border-accent/30 bg-accent/5" : "border-surface-light"
+                              }`}
+                            >
+                              <div className="flex flex-1 items-center gap-2">
+                                <span className={match.winnerId === match.player1Id ? "font-bold text-accent" : "text-foreground/70"}>
+                                  {match.player1?.username ?? "TBD"}
+                                </span>
+                                <span className="mx-2 text-foreground/40">
+                                  {match.resultP1 !== null ? `${match.resultP1} - ${match.resultP2}` : "vs"}
+                                </span>
+                                <span className={match.winnerId === match.player2Id ? "font-bold text-accent" : "text-foreground/70"}>
+                                  {match.player2?.username ?? "TBD"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {canEdit && match.player1Id && match.player2Id && (
+                                  <AdminMatchEdit
+                                    matchId={match.id}
+                                    player1Name={match.player1?.username ?? "?"}
+                                    player2Name={match.player2?.username ?? "?"}
+                                    currentP1={match.resultP1}
+                                    currentP2={match.resultP2}
+                                  />
+                                )}
+                                {hasPlayers && !isFinished && (
+                                  <Link
+                                    href={`/arena/${match.id}`}
+                                    className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90"
+                                  >
+                                    Ir al duelo
+                                  </Link>
+                                )}
+                                {isFinished && (
+                                  <Link
+                                    href={`/arena/${match.id}`}
+                                    className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/50 transition-colors hover:border-accent hover:text-accent"
+                                  >
+                                    Ver
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-foreground/40">{match.round}</span>
-                      {canEdit && match.player1Id && match.player2Id && (
-                        <AdminMatchEdit
-                          matchId={match.id}
-                          player1Name={match.player1?.username ?? "?"}
-                          player2Name={match.player2?.username ?? "?"}
-                          currentP1={match.resultP1}
-                          currentP2={match.resultP2}
-                        />
-                      )}
-                      {hasPlayers && !isFinished && (
-                        <Link
-                          href={`/arena/${match.id}`}
-                          className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90"
-                        >
-                          Ir al duelo
-                        </Link>
-                      )}
-                      {isFinished && (
-                        <Link
-                          href={`/arena/${match.id}`}
-                          className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/50 transition-colors hover:border-accent hover:text-accent"
-                        >
-                          Ver
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        )}
+                  );
+                })}
+              </div>
+            </Card>
+          );
+        })()}
 
         {/* Info y Participantes */}
         <div className="grid gap-6 md:grid-cols-2">
