@@ -62,6 +62,7 @@ model User {
   prodeJoinRequests     ProdeJoinRequest[]  @relation("ProdeJoinRequester")
   prodeJoinResolutions  ProdeJoinRequest[]  @relation("ProdeJoinResolver")
   prodeMessages         ProdeMessage[]
+  tournamentMessages    TournamentMessage[]
 
   @@map("users")
 }
@@ -130,6 +131,7 @@ model Tournament {
   standings     LeagueStanding[]
   disputes      TournamentDispute[]
   auditLog      TournamentAuditLog[]
+  chatMessages  TournamentMessage[]
 
   @@map("tournaments")
 }
@@ -645,6 +647,20 @@ model ProdeMessage {
 
   @@index([prodeId, createdAt])
   @@map("prode_messages")
+}
+
+model TournamentMessage {
+  id           String     @id @default(uuid())
+  tournamentId String     @map("tournament_id")
+  userId       String     @map("user_id")
+  text         String
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@index([tournamentId, createdAt])
+  @@map("tournament_messages")
 }
 
 // ─── ESCENA COMPETITIVA (LIGAS EXTERNAS) ────────────────────

@@ -16,6 +16,7 @@ import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
 import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
 import { CollapsibleText } from "@/components/ui/CollapsibleText";
 import { ShareTournamentLink } from "@/components/tournaments/ShareTournamentLink";
+import { TournamentChat } from "@/components/tournaments/TournamentChat";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -70,6 +71,31 @@ function getVerificationBadge(level: string) {
       return <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-bold text-blue-400">Verificado</span>;
     default: return null;
   }
+}
+
+const DAY_MAP: Record<string, number> = {
+  SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6,
+};
+const DAY_LABELS: Record<string, string> = {
+  SUNDAY: "Domingo", MONDAY: "Lunes", TUESDAY: "Martes", WEDNESDAY: "Miércoles", THURSDAY: "Jueves", FRIDAY: "Viernes", SATURDAY: "Sábado",
+};
+
+function getNextScheduleDates(scheduleDays: string[], count: number): string[] {
+  if (!scheduleDays.length) return [];
+  const dayNumbers = scheduleDays.map((d) => DAY_MAP[d]).filter((n) => n !== undefined).sort((a, b) => a - b);
+  if (!dayNumbers.length) return [];
+  const dates: string[] = [];
+  const now = new Date();
+  const current = new Date(now);
+  for (let i = 0; i < 60 && dates.length < count; i++) {
+    if (dayNumbers.includes(current.getDay())) {
+      const dayName = Object.entries(DAY_MAP).find(([, v]) => v === current.getDay())?.[0];
+      const label = dayName ? DAY_LABELS[dayName] : "";
+      dates.push(`${label} ${current.getDate().toString().padStart(2, "0")}/${(current.getMonth() + 1).toString().padStart(2, "0")}`);
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  return dates;
 }
 
 interface PageProps {
@@ -229,14 +255,14 @@ export default async function TorneoDetailPage({ params }: PageProps) {
           })()}
         </div>
 
-        {/* Bracket o Liga */}
+        {/* Tabla/Bracket + Chat */}
         {hasMatches && (
-          <Card className="mb-8 overflow-x-auto">
-            <CardHeader>
-              <CardTitle>{isLeague ? "Partidos" : "Bracket"}</CardTitle>
-            </CardHeader>
-            {isLeague ? (
-              <div className="space-y-6">
+          <div className="mb-8 grid gap-6 md:grid-cols-3">
+            <Card className="overflow-x-auto md:col-span-2">
+              <CardHeader>
+                <CardTitle>{isLeague ? "Posiciones" : "Bracket"}</CardTitle>
+              </CardHeader>
+              {isLeague ? (
                 <LeagueTable
                   standings={tournament.standings}
                   relegationCount={tournament.relegationCount ?? 0}
@@ -246,59 +272,104 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                   cup2Spots={tournament.cup2Spots ?? 0}
                   isFinished={tournament.status === "FINISHED"}
                 />
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-foreground/50">Fixture</h4>
-                  {tournament.matches.map((match) => {
-                    const hasPlayers = match.player1Id && match.player2Id;
-                    const isPlayable = hasPlayers && match.status !== "FINISHED" && match.status !== "WALKOVER";
-                    const className = `flex items-center justify-between rounded-lg border p-3 text-sm transition-colors ${
-                      isPlayable
-                        ? "border-accent/30 bg-accent/5 hover:border-accent/60"
-                        : "border-surface-light"
-                    }`;
-                    const inner = (
-                      <>
-                        <span className={match.winnerId === match.player1Id ? "font-bold text-accent" : "text-foreground/70"}>
-                          {match.player1?.username ?? "TBD"}
-                        </span>
-                        <span className="mx-4 text-foreground/40">
-                          {match.resultP1 !== null ? `${match.resultP1} - ${match.resultP2}` : "vs"}
-                        </span>
-                        <span className={match.winnerId === match.player2Id ? "font-bold text-accent" : "text-foreground/70"}>
-                          {match.player2?.username ?? "TBD"}
-                        </span>
-                        <div className="ml-4 flex items-center gap-2">
-                          <span className="text-xs text-foreground/40">{match.round}</span>
-                          {isPlayable && (
-                            <span className="text-xs font-bold text-accent">🎮</span>
-                          )}
-                          {canEdit && match.player1Id && match.player2Id && (
-                            <AdminMatchEdit
-                              matchId={match.id}
-                              player1Name={match.player1?.username ?? "?"}
-                              player2Name={match.player2?.username ?? "?"}
-                              currentP1={match.resultP1}
-                              currentP2={match.resultP2}
-                            />
-                          )}
-                        </div>
-                      </>
-                    );
-                    return hasPlayers ? (
-                      <Link key={match.id} href={`/arena/${match.id}`} className={className}>
-                        {inner}
-                      </Link>
-                    ) : (
-                      <div key={match.id} className={className}>
-                        {inner}
-                      </div>
-                    );
-                  })}
+              ) : (
+                <TournamentBracket matches={tournament.matches} />
+              )}
+            </Card>
+
+            <Card>
+              <TournamentChat
+                tournamentId={tournament.id}
+                messages={tournament.chatMessages}
+                currentUserId={currentUser?.id ?? ""}
+                creatorId={tournament.createdById}
+              />
+            </Card>
+          </div>
+        )}
+
+        {/* Chat sin partidos (pre-torneo) */}
+        {!hasMatches && (
+          <Card className="mb-8">
+            <TournamentChat
+              tournamentId={tournament.id}
+              messages={tournament.chatMessages}
+              currentUserId={currentUser?.id ?? ""}
+              creatorId={tournament.createdById}
+            />
+          </Card>
+        )}
+
+        {/* Fixture */}
+        {hasMatches && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Fixture</CardTitle>
+              {tournament.scheduleDays && tournament.scheduleDays.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {getNextScheduleDates(tournament.scheduleDays, 3).map((d) => (
+                    <span key={d} className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
+                      {d}
+                    </span>
+                  ))}
                 </div>
-              </div>
-            ) : (
-              <TournamentBracket matches={tournament.matches} />
-            )}
+              )}
+            </CardHeader>
+            <div className="space-y-2">
+              {tournament.matches.map((match) => {
+                const hasPlayers = match.player1Id && match.player2Id;
+                const isPlayable = hasPlayers && match.status !== "FINISHED" && match.status !== "WALKOVER";
+                const isFinished = match.status === "FINISHED" || match.status === "WALKOVER";
+                return (
+                  <div
+                    key={match.id}
+                    className={`flex items-center justify-between rounded-lg border p-3 text-sm transition-colors ${
+                      isPlayable ? "border-accent/30 bg-accent/5" : "border-surface-light"
+                    }`}
+                  >
+                    <div className="flex flex-1 items-center gap-2">
+                      <span className={match.winnerId === match.player1Id ? "font-bold text-accent" : "text-foreground/70"}>
+                        {match.player1?.username ?? "TBD"}
+                      </span>
+                      <span className="mx-2 text-foreground/40">
+                        {match.resultP1 !== null ? `${match.resultP1} - ${match.resultP2}` : "vs"}
+                      </span>
+                      <span className={match.winnerId === match.player2Id ? "font-bold text-accent" : "text-foreground/70"}>
+                        {match.player2?.username ?? "TBD"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-foreground/40">{match.round}</span>
+                      {canEdit && match.player1Id && match.player2Id && (
+                        <AdminMatchEdit
+                          matchId={match.id}
+                          player1Name={match.player1?.username ?? "?"}
+                          player2Name={match.player2?.username ?? "?"}
+                          currentP1={match.resultP1}
+                          currentP2={match.resultP2}
+                        />
+                      )}
+                      {hasPlayers && !isFinished && (
+                        <Link
+                          href={`/arena/${match.id}`}
+                          className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90"
+                        >
+                          Ir al duelo
+                        </Link>
+                      )}
+                      {isFinished && (
+                        <Link
+                          href={`/arena/${match.id}`}
+                          className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/50 transition-colors hover:border-accent hover:text-accent"
+                        >
+                          Ver
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </Card>
         )}
 

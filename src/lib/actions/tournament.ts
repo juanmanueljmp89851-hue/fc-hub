@@ -406,6 +406,13 @@ export async function getTournament(id: string) {
         },
         orderBy: [{ points: "desc" }, { goalsFor: "desc" }],
       },
+      chatMessages: {
+        include: {
+          user: { select: { id: true, username: true, avatarUrl: true, role: true } },
+        },
+        orderBy: { createdAt: "asc" },
+        take: 100,
+      },
     },
   });
 
@@ -3068,6 +3075,47 @@ export async function voidPlayer(
       action: mode === "REMOVE_POINTS" ? "PLAYER_REMOVED" : "PLAYER_VOIDED",
       performedById: dbUser.id,
       details: `Jugador ${targetUserId} ${mode === "REMOVE_POINTS" ? "removido (puntos revertidos)" : "anulado (nunca existió)"}`,
+    },
+  });
+
+  revalidatePath(`/torneos/${tournamentId}`);
+  return { success: true };
+}
+
+export async function sendTournamentChatMessage(tournamentId: string, text: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.length > 500) return { error: "Mensaje inválido" };
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { id: true, createdById: true },
+  });
+  if (!tournament) return { error: "Torneo no encontrado" };
+
+  const isParticipant = await prisma.tournamentParticipant.findFirst({
+    where: { tournamentId, userId: dbUser.id, status: "CONFIRMED" },
+  });
+  const isCreator = tournament.createdById === dbUser.id;
+  const isAdmin = dbUser.role === "ADMIN";
+  if (!isParticipant && !isCreator && !isAdmin) return { error: "No tenés acceso a este chat" };
+
+  await prisma.tournamentMessage.create({
+    data: {
+      tournamentId,
+      userId: dbUser.id,
+      text: trimmed,
     },
   });
 
