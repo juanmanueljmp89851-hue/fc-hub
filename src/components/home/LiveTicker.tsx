@@ -126,22 +126,25 @@ export function LiveTicker() {
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px]">{match.leagueFlag}</span>
-              {match.league && (
-                <span className="text-[10px] font-medium text-foreground/40">{match.league}</span>
-              )}
-              <span className="text-foreground/20">|</span>
-              <span className="text-[10px] font-bold text-foreground/80">{match.homeTeam}</span>
-              {match.homeScore !== null ? (
-                <span className={`text-[10px] font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
-                  {match.homeScore}-{match.awayScore}
-                </span>
-              ) : (
-                <span className="text-[10px] text-foreground/30">vs</span>
-              )}
-              <span className="text-[10px] font-bold text-foreground/80">{match.awayTeam}</span>
-              <StatusBadge match={match} />
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <span className="text-[10px]">{match.leagueFlag}</span>
+                {match.league && (
+                  <span className="text-[10px] font-medium text-foreground/40">{match.league}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-foreground/80">{match.homeTeam}</span>
+                {match.homeScore !== null ? (
+                  <span className={`text-[10px] font-black ${match.status === "live" ? "text-accent" : "text-foreground"}`}>
+                    {match.homeScore}-{match.awayScore}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-foreground/30">vs</span>
+                )}
+                <span className="text-[10px] font-bold text-foreground/80">{match.awayTeam}</span>
+                <StatusBadge match={match} />
+              </div>
             </div>
           );
 
