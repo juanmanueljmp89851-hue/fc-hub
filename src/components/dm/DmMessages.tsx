@@ -15,11 +15,13 @@ interface Message {
 }
 
 export function DmMessages({ messages, currentUserId }: { messages: Message[]; currentUserId: string }) {
-  const endRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }, [messages.length]);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function DmMessages({ messages, currentUserId }: { messages: Message[]; c
   }, [router]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div ref={containerRef} className="flex-1 overflow-y-auto p-4">
       {messages.length === 0 ? (
         <p className="py-12 text-center text-sm text-foreground/30">Empezá la conversación</p>
       ) : (
@@ -50,7 +52,6 @@ export function DmMessages({ messages, currentUserId }: { messages: Message[]; c
               </div>
             );
           })}
-          <div ref={endRef} />
         </div>
       )}
     </div>
