@@ -63,6 +63,8 @@ model User {
   prodeJoinResolutions  ProdeJoinRequest[]  @relation("ProdeJoinResolver")
   prodeMessages         ProdeMessage[]
   tournamentMessages    TournamentMessage[]
+  dmSent                DirectMessage[]      @relation("dm_sent")
+  dmReceived            DirectMessage[]      @relation("dm_received")
 
   @@map("users")
 }
@@ -859,6 +861,25 @@ enum NotificationType {
   MATCH_REMINDER
   RESULT_CONFIRMED
   NEW_TOURNAMENT
+  DIRECT_MESSAGE
+}
+
+// ─── MENSAJES DIRECTOS ─────────────────────────────────────
+
+model DirectMessage {
+  id         String   @id @default(uuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  text       String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  sender   User @relation("dm_sent", fields: [senderId], references: [id])
+  receiver User @relation("dm_received", fields: [receiverId], references: [id])
+
+  @@index([senderId, receiverId, createdAt])
+  @@index([receiverId, read])
+  @@map("direct_messages")
 }
 
 // ─── LOBBY CHAT ─────────────────────────────────────────────

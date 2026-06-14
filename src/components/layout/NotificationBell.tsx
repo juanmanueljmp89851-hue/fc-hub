@@ -48,6 +48,8 @@ function getNotifIcon(type: string) {
       return "✅";
     case "TOURNAMENT_JOIN_REJECTED":
       return "❌";
+    case "DIRECT_MESSAGE":
+      return "✉️";
     default:
       return "🔔";
   }

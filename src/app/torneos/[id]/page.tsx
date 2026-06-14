@@ -18,6 +18,7 @@ import { CollapsibleText } from "@/components/ui/CollapsibleText";
 import { ShareTournamentLink } from "@/components/tournaments/ShareTournamentLink";
 import { TournamentChat } from "@/components/tournaments/TournamentChat";
 import { RemindPendingButton } from "@/components/tournaments/RemindPendingButton";
+import { SendDmButton } from "@/components/dm/SendDmButton";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -436,15 +437,18 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                     {p.status === "PENDING" && (
                       <span className="ml-auto text-xs text-gold">Pendiente</span>
                     )}
-                    {canEdit && p.status === "CONFIRMED" && p.userId !== tournament.createdById && (
-                      <div className="ml-auto">
+                    <div className="ml-auto flex items-center gap-1">
+                      {currentUser && p.userId !== currentUser.id && p.status === "CONFIRMED" && (
+                        <SendDmButton userId={p.userId} username={p.user.username} />
+                      )}
+                      {canEdit && p.status === "CONFIRMED" && p.userId !== tournament.createdById && (
                         <AdminPlayerActions
                           tournamentId={tournament.id}
                           userId={p.userId}
                           username={p.user.username}
                         />
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
