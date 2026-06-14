@@ -18,7 +18,7 @@ export async function getMyNotifications(limit = 20) {
   if (!dbUser) return [];
 
   return prisma.notification.findMany({
-    where: { userId: dbUser.id },
+    where: { userId: dbUser.id, type: { not: "DIRECT_MESSAGE" } },
     orderBy: { createdAt: "desc" },
     take: limit,
   });
@@ -38,7 +38,7 @@ export async function getUnreadCount() {
   if (!dbUser) return 0;
 
   return prisma.notification.count({
-    where: { userId: dbUser.id, read: false },
+    where: { userId: dbUser.id, read: false, type: { not: "DIRECT_MESSAGE" } },
   });
 }
 

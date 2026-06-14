@@ -57,29 +57,6 @@ export async function sendDirectMessage(receiverId: string, text: string) {
     },
   });
 
-  // Notify receiver (throttle: 1 per conversation per 5 min)
-  const recentNotif = await prisma.notification.findFirst({
-    where: {
-      userId: receiverId,
-      type: "DIRECT_MESSAGE",
-      relatedId: dbUser.id,
-      createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
-    },
-  });
-
-  if (!recentNotif) {
-    await prisma.notification.create({
-      data: {
-        userId: receiverId,
-        type: "DIRECT_MESSAGE",
-        title: `Mensaje de ${dbUser.username}`,
-        message: trimmed.slice(0, 100),
-        relatedId: dbUser.id,
-        linkUrl: `/mensajes/${dbUser.id}`,
-      },
-    });
-  }
-
   revalidatePath(`/mensajes/${receiverId}`);
   return { success: true };
 }
