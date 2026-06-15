@@ -144,13 +144,15 @@ export default async function ProdePage() {
                   const statusInfo = getStatusInfo(prode.status);
                   return (
                     <Link key={prode.id} href={`/prode/${prode.id}`}>
-                      <Card className="h-full overflow-hidden p-0 transition-colors hover:border-accent/50">
-                        {prode.bannerUrl && (
-                          <div className="relative h-28 w-full overflow-hidden">
+                      <Card className="flex h-full flex-col overflow-hidden p-0 transition-colors hover:border-accent/50">
+                        <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
+                          {prode.bannerUrl ? (
                             <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
-                          </div>
-                        )}
-                        <div className={prode.bannerUrl ? "p-4" : "p-5"}>
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-4xl opacity-20">⚽</div>
+                          )}
+                        </div>
+                        <div className="flex flex-1 flex-col p-4">
                           <div className="mb-2 flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
                               <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
@@ -165,26 +167,24 @@ export default async function ProdePage() {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {prode.imageUrl && (
-                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-light">
+                              {prode.imageUrl ? (
                                 <Image src={prode.imageUrl} alt="" fill className="object-cover" />
-                              </div>
-                            )}
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-lg">🏆</div>
+                              )}
+                            </div>
                             <h3 className="text-lg font-bold">{prode.name}</h3>
                           </div>
                           <p className="mt-1 text-xs text-foreground/50">
                             Creado por {prode.createdBy.username}
                           </p>
-                          {prode.description && (
-                            <p className="mt-1.5 line-clamp-2 text-xs text-foreground/40">
-                              {prode.description}
-                            </p>
-                          )}
-                          {prode.prizeGeneral && (
-                            <p className="mt-2 text-sm text-gold">
-                              🏆 {prode.prizeGeneral}
-                            </p>
-                          )}
+                          <p className="mt-1.5 line-clamp-2 text-xs text-foreground/40">
+                            {prode.description || "Sin descripción"}
+                          </p>
+                          <p className="mt-auto pt-2 text-sm text-gold">
+                            🏆 {prode.prizeGeneral || "Premio a definir"}
+                          </p>
                         </div>
                       </Card>
                     </Link>
@@ -225,13 +225,15 @@ export default async function ProdePage() {
             {allProdes.map((prode) => {
               const statusInfo = getStatusInfo(prode.status);
               return (
-                <Card key={prode.id} className="h-full overflow-hidden p-0">
-                  {prode.bannerUrl && (
-                    <div className="relative h-28 w-full overflow-hidden">
+                <Card key={prode.id} className="flex h-full flex-col overflow-hidden p-0">
+                  <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
+                    {prode.bannerUrl ? (
                       <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
-                    </div>
-                  )}
-                  <div className={prode.bannerUrl ? "p-4" : "p-5"}>
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-4xl opacity-20">⚽</div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusInfo.color}`}>
@@ -246,26 +248,24 @@ export default async function ProdePage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {prode.imageUrl && (
-                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-light">
+                        {prode.imageUrl ? (
                           <Image src={prode.imageUrl} alt="" fill className="object-cover" />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-lg">🏆</div>
+                        )}
+                      </div>
                       <h3 className="text-lg font-bold">{prode.name}</h3>
                     </div>
                     <p className="mt-1 text-xs text-foreground/50">
                       Creado por {prode.createdBy.username}
                     </p>
-                    {prode.description && (
-                      <p className="mt-1.5 line-clamp-2 text-xs text-foreground/40">
-                        {prode.description}
-                      </p>
-                    )}
-                    {prode.prizeGeneral && (
-                      <p className="mt-2 text-sm text-gold">
-                        🏆 {prode.prizeGeneral}
-                      </p>
-                    )}
+                    <p className="mt-1.5 line-clamp-2 text-xs text-foreground/40">
+                      {prode.description || "Sin descripción"}
+                    </p>
+                    <p className="mt-auto pt-2 text-sm text-gold">
+                      🏆 {prode.prizeGeneral || "Premio a definir"}
+                    </p>
                     <div className="mt-3">
                       <JoinProdeButton
                         prodeId={prode.id}
