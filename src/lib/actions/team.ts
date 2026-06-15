@@ -96,6 +96,11 @@ export async function addTeamMember(teamId: string, username: string, position?:
   });
   if (existing) return { error: `${username} ya está en el equipo` };
 
+  const inOtherTeam = await prisma.teamMember.findFirst({
+    where: { userId: targetUser.id, team: { mode: team.mode } },
+  });
+  if (inOtherTeam) return { error: `${username} ya pertenece a otro equipo de ${team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}` };
+
   await prisma.teamMember.create({
     data: {
       teamId,
@@ -328,6 +333,11 @@ export async function respondTeamInvite(inviteId: string, accept: boolean) {
       return { error: "Plantilla completa, no se puede aceptar" };
     }
 
+    const inOtherTeam = await prisma.teamMember.findFirst({
+      where: { userId: dbUser.id, team: { mode: invite.team.mode } },
+    });
+    if (inOtherTeam) return { error: `Ya pertenecés a otro equipo de ${invite.team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}` };
+
     await prisma.$transaction([
       prisma.teamInvite.update({
         where: { id: inviteId },
@@ -416,6 +426,286 @@ export async function getTeamInvites(teamId: string) {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+// ─── SOLICITAR UNIRSE ─────────────────────────────────────
+
+export async function requestJoinTeam(teamId: string, message?: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: { _count: { select: { members: true } } },
+  });
+  if (!team) return { error: "Equipo no encontrado" };
+
+  const alreadyMember = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId: dbUser.id } },
+  });
+  if (alreadyMember) return { error: "Ya sos miembro de este equipo" };
+
+  const inOtherTeam = await prisma.teamMember.findFirst({
+    where: { userId: dbUser.id, team: { mode: team.mode } },
+  });
+  if (inOtherTeam) return { error: `Ya pertenecés a otro equipo de ${team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}` };
+
+  const existing = await prisma.teamJoinRequest.findUnique({
+    where: { teamId_requesterId: { teamId, requesterId: dbUser.id } },
+  });
+  if (existing?.status === "PENDING") return { error: "Ya tenés una solicitud pendiente" };
+
+  if (existing) {
+    await prisma.teamJoinRequest.update({
+      where: { id: existing.id },
+      data: { status: "PENDING", message: message || null, respondedAt: null },
+    });
+  } else {
+    await prisma.teamJoinRequest.create({
+      data: { teamId, requesterId: dbUser.id, message: message || null },
+    });
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: team.managerId,
+      type: "TEAM_JOIN_REQUEST",
+      title: "Solicitud de unión",
+      message: `${dbUser.username} quiere unirse a ${team.name}`,
+      relatedId: teamId,
+      linkUrl: `/equipos/${teamId}/gestionar`,
+    },
+  });
+
+  return { success: true };
+}
+
+// ─── RESPONDER SOLICITUD DE UNIÓN ─────────────────────────
+
+export async function respondJoinRequest(requestId: string, accept: boolean) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const request = await prisma.teamJoinRequest.findUnique({
+    where: { id: requestId },
+    include: { team: true, requester: true },
+  });
+  if (!request) return { error: "Solicitud no encontrada" };
+  if (request.team.managerId !== dbUser.id && dbUser.role !== "ADMIN") return { error: "Sin permisos" };
+  if (request.status !== "PENDING") return { error: "Solicitud ya respondida" };
+
+  if (accept) {
+    const maxMembers = request.team.mode === "CLUBS_PRO" ? 31 : 11;
+    const memberCount = await prisma.teamMember.count({ where: { teamId: request.teamId } });
+    if (memberCount >= maxMembers) return { error: "Plantilla completa" };
+
+    const inOtherTeam = await prisma.teamMember.findFirst({
+      where: { userId: request.requesterId, team: { mode: request.team.mode } },
+    });
+    if (inOtherTeam) return { error: `${request.requester.username} ya pertenece a otro equipo de ${request.team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}` };
+
+    await prisma.$transaction([
+      prisma.teamJoinRequest.update({
+        where: { id: requestId },
+        data: { status: "ACCEPTED", respondedAt: new Date() },
+      }),
+      prisma.teamMember.create({
+        data: { teamId: request.teamId, userId: request.requesterId },
+      }),
+      prisma.notification.create({
+        data: {
+          userId: request.requesterId,
+          type: "TEAM_JOIN_ACCEPTED",
+          title: "Solicitud aceptada",
+          message: `Tu solicitud para unirte a ${request.team.name} fue aceptada`,
+          relatedId: request.teamId,
+          linkUrl: `/equipos/${request.teamId}`,
+        },
+      }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.teamJoinRequest.update({
+        where: { id: requestId },
+        data: { status: "REJECTED", respondedAt: new Date() },
+      }),
+      prisma.notification.create({
+        data: {
+          userId: request.requesterId,
+          type: "TEAM_JOIN_REJECTED",
+          title: "Solicitud rechazada",
+          message: `Tu solicitud para unirte a ${request.team.name} fue rechazada`,
+          relatedId: request.teamId,
+          linkUrl: `/equipos`,
+        },
+      }),
+    ]);
+  }
+
+  revalidatePath(`/equipos/${request.teamId}/gestionar`);
+  return { success: true };
+}
+
+// ─── OBTENER SOLICITUDES DEL EQUIPO ───────────────────────
+
+export async function getTeamJoinRequests(teamId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return [];
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return [];
+
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  if (!team) return [];
+  if (team.managerId !== dbUser.id && dbUser.role !== "ADMIN") return [];
+
+  return prisma.teamJoinRequest.findMany({
+    where: { teamId, status: "PENDING" },
+    include: {
+      requester: {
+        select: { id: true, username: true, avatarUrl: true, psnUsername: true, xboxUsername: true, pcUsername: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+// ─── ABANDONAR EQUIPO ─────────────────────────────────────
+
+export async function leaveTeam(teamId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const membership = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId: dbUser.id } },
+    include: { team: true },
+  });
+  if (!membership) return { error: "No sos miembro de este equipo" };
+  if (membership.role === "MANAGER") return { error: "El DT no puede abandonar el equipo. Contactá al administrador." };
+
+  await prisma.teamMember.delete({
+    where: { id: membership.id },
+  });
+
+  await prisma.notification.create({
+    data: {
+      userId: membership.team.managerId,
+      type: "TEAM_PLAYER_LEFT",
+      title: "Jugador abandonó el equipo",
+      message: `${dbUser.username} abandonó ${membership.team.name}`,
+      relatedId: teamId,
+      linkUrl: `/equipos/${teamId}/gestionar`,
+    },
+  });
+
+  revalidatePath(`/equipos/${teamId}`);
+  return { success: true };
+}
+
+// ─── ADMIN: SACAR JUGADOR ─────────────────────────────────
+
+export async function adminRemoveMember(teamId: string, userId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  if (dbUser.role !== "ADMIN") return { error: "Solo admin puede realizar esta acción" };
+
+  const member = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId } },
+    include: { user: true, team: true },
+  });
+  if (!member) return { error: "No es miembro del equipo" };
+
+  if (member.role === "MANAGER") {
+    await prisma.team.update({
+      where: { id: teamId },
+      data: { managerId: dbUser.id },
+    });
+  }
+
+  await prisma.teamMember.delete({ where: { id: member.id } });
+
+  revalidatePath(`/equipos/${teamId}`);
+  return { success: true, message: `${member.user.username} removido de ${member.team.name}` };
+}
+
+// ─── ADMIN: DESIGNAR DT ──────────────────────────────────
+
+export async function adminSetManager(teamId: string, userId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  if (dbUser.role !== "ADMIN") return { error: "Solo admin puede realizar esta acción" };
+
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  if (!team) return { error: "Equipo no encontrado" };
+
+  const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!targetUser) return { error: "Usuario no encontrado" };
+
+  const membership = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId } },
+  });
+
+  await prisma.$transaction([
+    prisma.teamMember.updateMany({
+      where: { teamId, role: "MANAGER" },
+      data: { role: "PLAYER" },
+    }),
+    ...(membership
+      ? [prisma.teamMember.update({ where: { id: membership.id }, data: { role: "MANAGER" } })]
+      : [prisma.teamMember.create({ data: { teamId, userId, role: "MANAGER" } })]
+    ),
+    prisma.team.update({
+      where: { id: teamId },
+      data: { managerId: userId },
+    }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { isDT: true },
+    }),
+  ]);
+
+  revalidatePath(`/equipos/${teamId}`);
+  return { success: true, message: `${targetUser.username} designado como DT de ${team.name}` };
+}
+
+// ─── CHECK MEMBERSHIP ─────────────────────────────────────
+
+export async function isTeamMember(teamId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return false;
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return false;
+  if (dbUser.role === "ADMIN") return true;
+
+  const member = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId: dbUser.id } },
+  });
+  return !!member;
 }
 
 // ─── HELPERS ───────────────────────────────────────────────

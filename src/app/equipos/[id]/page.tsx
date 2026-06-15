@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getTeam } from "@/lib/actions/team";
 import { getCurrentUser } from "@/lib/actions/user";
 import { TeamRoster } from "@/components/teams/TeamRoster";
+import { LeaveTeamButton } from "@/components/teams/LeaveTeamButton";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const team = await getTeam(params.id);
@@ -19,11 +20,18 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
   if (!team) notFound();
 
   const currentUser = await getCurrentUser();
-  const isManager = currentUser?.id === team.managerId;
-  const isAdmin = currentUser?.role === "ADMIN";
-  const canManage = isManager || isAdmin;
-  const maxMembers = team.mode === "CLUBS_PRO" ? 31 : 11;
+  if (!currentUser) redirect("/auth/login");
 
+  const isManager = currentUser.id === team.managerId;
+  const isAdmin = currentUser.role === "ADMIN";
+  const isMember = team.members.some((m) => m.user.id === currentUser.id);
+  const canManage = isManager || isAdmin;
+
+  if (!isMember && !isAdmin) {
+    redirect("/equipos");
+  }
+
+  const maxMembers = team.mode === "CLUBS_PRO" ? 31 : 11;
   const gamertagField = team.platform === "PS5" ? "psnUsername" : team.platform === "XBOX" ? "xboxUsername" : "pcUsername";
   const gamertagLabel = team.platform === "PS5" ? "PSN" : team.platform === "XBOX" ? "Xbox GT" : "EA ID";
 
@@ -49,7 +57,7 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
               <div className="flex h-full w-full items-center justify-center text-2xl">🛡️</div>
             )}
           </div>
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{team.name}</h1>
               {team.tag && <span className="rounded bg-surface-light px-2 py-0.5 text-sm font-bold text-foreground/40">[{team.tag}]</span>}
@@ -64,14 +72,19 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
               <span>DT: <span className="text-accent">{team.manager.username}</span></span>
             </div>
           </div>
-          {canManage && (
-            <Link
-              href={`/equipos/${team.id}/gestionar`}
-              className="shrink-0 rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
-            >
-              ⚙️ Gestionar
-            </Link>
-          )}
+          <div className="flex shrink-0 gap-2">
+            {canManage && (
+              <Link
+                href={`/equipos/${team.id}/gestionar`}
+                className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
+              >
+                ⚙️ Gestionar
+              </Link>
+            )}
+            {isMember && !isManager && (
+              <LeaveTeamButton teamId={team.id} teamName={team.name} />
+            )}
+          </div>
         </div>
 
         {/* Lista de buena fe */}
@@ -92,7 +105,6 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
             <span className="col-span-3">{gamertagLabel}</span>
             <span className="col-span-2">Posición</span>
             <span className="col-span-2">Rol</span>
-            {canManage && <span className="col-span-1"></span>}
           </div>
 
           <div className="space-y-1">

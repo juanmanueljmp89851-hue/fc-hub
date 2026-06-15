@@ -4,9 +4,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { getTeam, getTeamInvites } from "@/lib/actions/team";
+import { getTeam, getTeamInvites, getTeamJoinRequests } from "@/lib/actions/team";
 import { getCurrentUser } from "@/lib/actions/user";
 import { PlayerSearch } from "@/components/teams/PlayerSearch";
+import { JoinRequestActions } from "@/components/teams/JoinRequestActions";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const team = await getTeam(params.id);
@@ -26,6 +27,7 @@ export default async function GestionarEquipoPage({ params }: { params: { id: st
   if (!isManager && !isAdmin) redirect(`/equipos/${params.id}`);
 
   const invites = await getTeamInvites(params.id);
+  const joinRequests = await getTeamJoinRequests(params.id);
   const maxMembers = team.mode === "CLUBS_PRO" ? 31 : 11;
   const gamertagField = team.platform === "PS5" ? "psnUsername" : team.platform === "XBOX" ? "xboxUsername" : "pcUsername";
   const gamertagLabel = team.platform === "PS5" ? "PSN" : team.platform === "XBOX" ? "Xbox GT" : "EA ID";
@@ -90,6 +92,40 @@ export default async function GestionarEquipoPage({ params }: { params: { id: st
             </div>
           )}
         </Card>
+
+        {/* Solicitudes de unión */}
+        {joinRequests.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Solicitudes de unión ({joinRequests.length})</CardTitle>
+            </CardHeader>
+            <div className="space-y-2">
+              {joinRequests.map((req) => {
+                const gt = req.requester[gamertagField as keyof typeof req.requester] as string | null;
+                return (
+                  <div key={req.id} className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-surface-light">
+                        {req.requester.avatarUrl ? (
+                          <Image src={req.requester.avatarUrl} alt="" fill className="object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs">👤</div>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">{req.requester.username}</span>
+                        <span className="ml-2 text-xs text-foreground/40">
+                          {gt ? `${gamertagLabel}: ${gt}` : `Sin ${gamertagLabel}`}
+                        </span>
+                      </div>
+                    </div>
+                    <JoinRequestActions requestId={req.id} />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
 
         {/* Lista de buena fe */}
         <Card className="mb-6">

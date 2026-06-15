@@ -74,6 +74,7 @@ model User {
   managedTeams          Team[]               @relation("TeamManager")
   teamMemberships       TeamMember[]
   teamInvitesReceived   TeamInvite[]         @relation("InvitedPlayer")
+  teamJoinRequests      TeamJoinRequest[]    @relation("JoinRequester")
 
   @@map("users")
 }
@@ -876,6 +877,10 @@ enum NotificationType {
   TEAM_INVITE
   TEAM_INVITE_ACCEPTED
   TEAM_INVITE_REJECTED
+  TEAM_JOIN_REQUEST
+  TEAM_JOIN_ACCEPTED
+  TEAM_JOIN_REJECTED
+  TEAM_PLAYER_LEFT
 }
 
 // ─── MENSAJES DIRECTOS ─────────────────────────────────────
@@ -1060,8 +1065,9 @@ model Team {
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
   manager     User       @relation("TeamManager", fields: [managerId], references: [id])
-  members     TeamMember[]
-  invites     TeamInvite[]
+  members      TeamMember[]
+  invites      TeamInvite[]
+  joinRequests TeamJoinRequest[]
 
   @@map("teams")
 }
@@ -1106,6 +1112,22 @@ model TeamInvite {
 
   @@unique([teamId, invitedId])
   @@map("team_invites")
+}
+
+model TeamJoinRequest {
+  id          String           @id @default(uuid())
+  teamId      String           @map("team_id")
+  requesterId String           @map("requester_id")
+  status      InviteStatus     @default(PENDING)
+  message     String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  respondedAt DateTime?        @map("responded_at")
+
+  team        Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  requester   User             @relation("JoinRequester", fields: [requesterId], references: [id])
+
+  @@unique([teamId, requesterId])
+  @@map("team_join_requests")
 }
 
 enum InviteStatus {
