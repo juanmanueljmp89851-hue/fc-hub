@@ -97,6 +97,7 @@ export async function updateProfile(formData: FormData) {
   const nationality = formData.get("nationality") as string | null;
   const phone = formData.get("phone") as string | null;
   const location = formData.get("location") as string | null;
+  const isDT = formData.get("isDT") === "true";
 
   // Validar username
   if (!username || username.length < 3) {
@@ -133,6 +134,7 @@ export async function updateProfile(formData: FormData) {
       nationality: nationality || null,
       phone: phone || null,
       location: location || null,
+      isDT,
       profileCompleted: true,
     },
   });

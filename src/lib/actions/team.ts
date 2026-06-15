@@ -24,6 +24,10 @@ export async function createTeam(input: CreateTeamInput) {
   const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
   if (!dbUser) return { error: "Usuario no encontrado" };
 
+  if (!dbUser.isDT && dbUser.role !== "ADMIN") {
+    return { error: "Debés activar el rol de DT en tu perfil para crear un equipo" };
+  }
+
   const gamertagForPlatform = getGamertag(dbUser, input.platform);
   if (!gamertagForPlatform) {
     return { error: `Necesitás configurar tu gamertag de ${input.platform} en tu perfil antes de crear un equipo` };
@@ -214,6 +218,202 @@ export async function updateTeam(teamId: string, data: { name?: string; tag?: st
 
   revalidatePath(`/equipos/${teamId}`);
   return { success: true };
+}
+
+// ─── BUSCAR USUARIOS ──────────────────────────────────────
+
+export async function searchUsers(query: string) {
+  if (!query || query.length < 2) return [];
+
+  return prisma.user.findMany({
+    where: {
+      username: { contains: query, mode: "insensitive" },
+      banned: false,
+    },
+    select: {
+      id: true,
+      username: true,
+      avatarUrl: true,
+      psnUsername: true,
+      xboxUsername: true,
+      pcUsername: true,
+    },
+    take: 10,
+  });
+}
+
+// ─── INVITAR JUGADOR ──────────────────────────────────────
+
+export async function sendTeamInvite(teamId: string, invitedUserId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: { _count: { select: { members: true } } },
+  });
+  if (!team) return { error: "Equipo no encontrado" };
+  if (team.managerId !== dbUser.id && dbUser.role !== "ADMIN") return { error: "Solo el DT puede invitar jugadores" };
+
+  const maxMembers = team.mode === "CLUBS_PRO" ? 31 : 11;
+  if (team._count.members >= maxMembers) return { error: "Plantilla completa" };
+
+  const invitedUser = await prisma.user.findUnique({ where: { id: invitedUserId } });
+  if (!invitedUser) return { error: "Usuario no encontrado" };
+
+  const existingMember = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId: invitedUserId } },
+  });
+  if (existingMember) return { error: "Ya es miembro del equipo" };
+
+  const existingInvite = await prisma.teamInvite.findUnique({
+    where: { teamId_invitedId: { teamId, invitedId: invitedUserId } },
+  });
+  if (existingInvite?.status === "PENDING") return { error: "Ya tiene una invitación pendiente" };
+
+  if (existingInvite) {
+    await prisma.teamInvite.update({
+      where: { id: existingInvite.id },
+      data: { status: "PENDING", respondedAt: null },
+    });
+  } else {
+    await prisma.teamInvite.create({
+      data: { teamId, invitedId: invitedUserId },
+    });
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: invitedUserId,
+      type: "TEAM_INVITE",
+      title: "Invitación de equipo",
+      message: `${dbUser.username} te invitó a unirte a ${team.name} (${team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"})`,
+      relatedId: teamId,
+      linkUrl: `/equipos/invitaciones`,
+    },
+  });
+
+  revalidatePath(`/equipos/${teamId}`);
+  return { success: true };
+}
+
+// ─── RESPONDER INVITACIÓN ─────────────────────────────────
+
+export async function respondTeamInvite(inviteId: string, accept: boolean) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const invite = await prisma.teamInvite.findUnique({
+    where: { id: inviteId },
+    include: { team: true },
+  });
+  if (!invite) return { error: "Invitación no encontrada" };
+  if (invite.invitedId !== dbUser.id) return { error: "Esta invitación no es tuya" };
+  if (invite.status !== "PENDING") return { error: "Invitación ya respondida" };
+
+  if (accept) {
+    const maxMembers = invite.team.mode === "CLUBS_PRO" ? 31 : 11;
+    const memberCount = await prisma.teamMember.count({ where: { teamId: invite.teamId } });
+    if (memberCount >= maxMembers) {
+      return { error: "Plantilla completa, no se puede aceptar" };
+    }
+
+    await prisma.$transaction([
+      prisma.teamInvite.update({
+        where: { id: inviteId },
+        data: { status: "ACCEPTED", respondedAt: new Date() },
+      }),
+      prisma.teamMember.create({
+        data: { teamId: invite.teamId, userId: dbUser.id },
+      }),
+      prisma.notification.create({
+        data: {
+          userId: invite.team.managerId,
+          type: "TEAM_INVITE_ACCEPTED",
+          title: "Invitación aceptada",
+          message: `${dbUser.username} aceptó unirse a ${invite.team.name}`,
+          relatedId: invite.teamId,
+          linkUrl: `/equipos/${invite.teamId}`,
+        },
+      }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.teamInvite.update({
+        where: { id: inviteId },
+        data: { status: "REJECTED", respondedAt: new Date() },
+      }),
+      prisma.notification.create({
+        data: {
+          userId: invite.team.managerId,
+          type: "TEAM_INVITE_REJECTED",
+          title: "Invitación rechazada",
+          message: `${dbUser.username} rechazó unirse a ${invite.team.name}`,
+          relatedId: invite.teamId,
+          linkUrl: `/equipos/${invite.teamId}`,
+        },
+      }),
+    ]);
+  }
+
+  revalidatePath("/equipos/invitaciones");
+  revalidatePath(`/equipos/${invite.teamId}`);
+  return { success: true };
+}
+
+// ─── MIS INVITACIONES ─────────────────────────────────────
+
+export async function getMyInvites() {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return [];
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return [];
+
+  return prisma.teamInvite.findMany({
+    where: { invitedId: dbUser.id, status: "PENDING" },
+    include: {
+      team: {
+        include: {
+          manager: { select: { id: true, username: true, avatarUrl: true } },
+          _count: { select: { members: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+// ─── INVITACIONES DEL EQUIPO ──────────────────────────────
+
+export async function getTeamInvites(teamId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return [];
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return [];
+
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  if (!team) return [];
+  if (team.managerId !== dbUser.id && dbUser.role !== "ADMIN") return [];
+
+  return prisma.teamInvite.findMany({
+    where: { teamId },
+    include: {
+      invited: { select: { id: true, username: true, avatarUrl: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 }
 
 // ─── HELPERS ───────────────────────────────────────────────

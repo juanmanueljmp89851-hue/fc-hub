@@ -70,8 +70,10 @@ model User {
   reportsMade           UserReport[]         @relation("reporter")
   reportsReceived       UserReport[]         @relation("reported")
   reportsResolved       UserReport[]         @relation("report_resolver")
+  isDT                  Boolean  @default(false) @map("is_dt")
   managedTeams          Team[]               @relation("TeamManager")
   teamMemberships       TeamMember[]
+  teamInvitesReceived   TeamInvite[]         @relation("InvitedPlayer")
 
   @@map("users")
 }
@@ -871,6 +873,9 @@ enum NotificationType {
   RESULT_CONFIRMED
   NEW_TOURNAMENT
   DIRECT_MESSAGE
+  TEAM_INVITE
+  TEAM_INVITE_ACCEPTED
+  TEAM_INVITE_REJECTED
 }
 
 // ─── MENSAJES DIRECTOS ─────────────────────────────────────
@@ -1056,6 +1061,7 @@ model Team {
 
   manager     User       @relation("TeamManager", fields: [managerId], references: [id])
   members     TeamMember[]
+  invites     TeamInvite[]
 
   @@map("teams")
 }
@@ -1084,4 +1090,26 @@ enum TeamMode {
 enum TeamMemberRole {
   MANAGER
   PLAYER
+}
+
+model TeamInvite {
+  id          String           @id @default(uuid())
+  teamId      String           @map("team_id")
+  invitedId   String           @map("invited_id")
+  status      InviteStatus     @default(PENDING)
+  message     String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  respondedAt DateTime?        @map("responded_at")
+
+  team        Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  invited     User             @relation("InvitedPlayer", fields: [invitedId], references: [id])
+
+  @@unique([teamId, invitedId])
+  @@map("team_invites")
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }

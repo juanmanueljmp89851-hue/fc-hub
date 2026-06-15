@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -63,6 +64,14 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
               <span>DT: <span className="text-accent">{team.manager.username}</span></span>
             </div>
           </div>
+          {canManage && (
+            <Link
+              href={`/equipos/${team.id}/gestionar`}
+              className="shrink-0 rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
+            >
+              ⚙️ Gestionar
+            </Link>
+          )}
         </div>
 
         {/* Lista de buena fe */}

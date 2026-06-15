@@ -30,6 +30,7 @@ function EditProfileContent() {
   const [nationality, setNationality] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
+  const [isDT, setIsDT] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -48,6 +49,7 @@ function EditProfileContent() {
       setNationality(dbUser.nationality ?? "");
       setPhone(dbUser.phone ?? "");
       setLocation(dbUser.location ?? "");
+      setIsDT(dbUser.isDT ?? false);
       setLoading(false);
     }
     loadUser();
@@ -69,6 +71,7 @@ function EditProfileContent() {
     formData.set("nationality", nationality);
     formData.set("phone", phone);
     formData.set("location", location);
+    formData.set("isDT", isDT.toString());
 
     const result = await updateProfile(formData);
 
@@ -307,6 +310,41 @@ function EditProfileContent() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* DT / Representante */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground/50">
+              Director Técnico / Representante
+            </h3>
+            <div className="flex items-center justify-between rounded-lg border border-surface-light bg-background/50 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium">Soy DT o representante de equipo</p>
+                <p className="text-xs text-foreground/40">
+                  Activá esto para poder crear y gestionar equipos de Clubes Pro y/o Rush
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDT(!isDT)}
+                className={`relative h-6 w-11 rounded-full transition-colors ${
+                  isDT ? "bg-accent" : "bg-surface-light"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                    isDT ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+            {isDT && (
+              <div className="rounded-lg border border-accent/20 bg-accent/5 px-4 py-3">
+                <p className="text-xs text-accent">
+                  ✓ Como DT podés crear equipos desde la sección Arena → Equipos y enviar invitaciones a jugadores registrados.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Botones */}
