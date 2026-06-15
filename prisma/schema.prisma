@@ -120,6 +120,7 @@ model Tournament {
   playoffRule            PlayoffRule         @default(PENALTIES) @map("playoff_rule")
   knockoutFormat         KnockoutFormat      @default(SINGLE_MATCH) @map("knockout_format")
   requireProof           Boolean             @default(false) @map("require_proof")
+  requiresRoster         Boolean             @default(true) @map("requires_roster")
   scheduleDays           String[]            @map("schedule_days")
   scheduleTimeMode       String?             @map("schedule_time_mode")
   scheduleTime           String?             @map("schedule_time")

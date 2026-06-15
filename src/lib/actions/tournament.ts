@@ -40,6 +40,7 @@ interface CreateTournamentInput {
   playoffRule?: PlayoffRule;
   knockoutFormat?: KnockoutFormat;
   requireProof?: boolean;
+  requiresRoster?: boolean;
   relegationCount?: number;
   cup1Name?: string;
   cup1Spots?: number;
@@ -128,6 +129,7 @@ export async function createTournament(input: CreateTournamentInput) {
         playoffRule: input.playoffRule ?? "PENALTIES",
         knockoutFormat: input.knockoutFormat ?? "SINGLE_MATCH",
         requireProof: input.requireProof ?? false,
+        requiresRoster: input.requiresRoster ?? true,
         relegationCount: input.relegationCount ?? null,
         cup1Name: input.cup1Name ?? null,
         cup1Spots: input.cup1Spots ?? null,
@@ -3323,6 +3325,7 @@ export async function duplicateTournament(tournamentId: string) {
       playoffRule: original.playoffRule,
       knockoutFormat: original.knockoutFormat,
       requireProof: original.requireProof,
+      requiresRoster: original.requiresRoster,
       scheduleDays: original.scheduleDays,
       scheduleTimeMode: original.scheduleTimeMode,
       scheduleTime: original.scheduleTime,

@@ -25,6 +25,8 @@ const TEAM_TYPES: { value: TeamType; label: string; description: string }[] = [
   { value: "ULTIMATE_TEAM", label: "Ultimate Team", description: "Equipos armados en UT" },
   { value: "REAL_TEAMS", label: "Equipos reales", description: "Selecciones o clubes del juego" },
   { value: "FUT_CHAMPIONS", label: "Alineación FUT Champions", description: "Alineación tipo FUT Champions" },
+  { value: "CLUBS_PRO", label: "Clubes Pro (11v11)", description: "Equipos de Clubes Pro registrados" },
+  { value: "RUSH", label: "Rush (5v5)", description: "Equipos de Rush registrados" },
 ];
 
 const VISIBILITY_OPTIONS: { value: TournamentVisibility; label: string; description: string }[] = [
@@ -74,6 +76,7 @@ export default function CrearTorneoPage() {
   const [scheduleTimeMode, setScheduleTimeMode] = useState("NONE");
   const [scheduleTime, setScheduleTime] = useState("");
   const [waitTimeMinutes, setWaitTimeMinutes] = useState(0);
+  const [requiresRoster, setRequiresRoster] = useState(true);
 
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -83,6 +86,7 @@ export default function CrearTorneoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const isTeamMode = teamType === "CLUBS_PRO" || teamType === "RUSH";
   const isLeague = format === "LEAGUE";
   const isGroupKnockout = format === "GROUP_KNOCKOUT";
   const hasElimination = format !== "LEAGUE";
@@ -129,6 +133,7 @@ export default function CrearTorneoPage() {
       playoffRule: hasElimination ? playoffRule : undefined,
       knockoutFormat: hasElimination ? knockoutFormat : undefined,
       requireProof,
+      requiresRoster: isTeamMode ? requiresRoster : undefined,
       relegationCount: isLeague && relegationCount > 0 ? relegationCount : undefined,
       cup1Name: isLeague && cup1Name ? cup1Name : undefined,
       cup1Spots: isLeague && cup1Spots > 0 ? cup1Spots : undefined,
@@ -735,6 +740,33 @@ export default function CrearTorneoPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Requires Roster toggle - solo para Clubes Pro / Rush */}
+              {isTeamMode && (
+                <div className="mt-4 flex items-center justify-between rounded-lg border border-surface-light bg-background/50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium">Exigir lista de buena fe</p>
+                    <p className="text-xs text-foreground/40">
+                      {requiresRoster
+                        ? "Los equipos deben tener su plantilla registrada y fija"
+                        : "Torneo informal: los equipos pueden cambiar jugadores libremente"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRequiresRoster(!requiresRoster)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      requiresRoster ? "bg-accent" : "bg-surface-light"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        requiresRoster ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
             </div>
           </Card>
 

@@ -50,6 +50,18 @@ function getNotifIcon(type: string) {
       return "❌";
     case "DIRECT_MESSAGE":
       return "✉️";
+    case "TEAM_INVITE":
+      return "🛡️";
+    case "TEAM_INVITE_ACCEPTED":
+    case "TEAM_JOIN_ACCEPTED":
+      return "✅";
+    case "TEAM_INVITE_REJECTED":
+    case "TEAM_JOIN_REJECTED":
+      return "❌";
+    case "TEAM_JOIN_REQUEST":
+      return "📩";
+    case "TEAM_PLAYER_LEFT":
+      return "🚪";
     default:
       return "🔔";
   }
@@ -84,6 +96,15 @@ function getNotifLink(notif: Notification & { linkUrl?: string | null }): string
     case "ELIMINATED":
     case "TOURNAMENT_FINISHED":
       return `/torneos/${notif.relatedId}`;
+    case "TEAM_INVITE":
+      return "/equipos/invitaciones";
+    case "TEAM_INVITE_ACCEPTED":
+    case "TEAM_INVITE_REJECTED":
+    case "TEAM_JOIN_REQUEST":
+    case "TEAM_JOIN_ACCEPTED":
+    case "TEAM_JOIN_REJECTED":
+    case "TEAM_PLAYER_LEFT":
+      return notif.relatedId ? `/equipos/${notif.relatedId}` : null;
     default:
       return null;
   }
