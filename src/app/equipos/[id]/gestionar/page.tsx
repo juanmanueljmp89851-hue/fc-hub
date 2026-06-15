@@ -8,6 +8,7 @@ import { getTeam, getTeamInvites, getTeamJoinRequests } from "@/lib/actions/team
 import { getCurrentUser } from "@/lib/actions/user";
 import { PlayerSearch } from "@/components/teams/PlayerSearch";
 import { JoinRequestActions } from "@/components/teams/JoinRequestActions";
+import { TeamLogoUpload } from "@/components/teams/TeamLogoUpload";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const team = await getTeam(params.id);
@@ -47,6 +48,14 @@ export default async function GestionarEquipoPage({ params }: { params: { id: st
             </p>
           </div>
         </div>
+
+        {/* Logo del equipo */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Escudo del equipo</CardTitle>
+          </CardHeader>
+          <TeamLogoUpload teamId={team.id} currentUrl={team.logoUrl ?? null} />
+        </Card>
 
         {/* Invitar jugador */}
         <Card className="mb-6">
