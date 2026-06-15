@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /** Routes that require authentication — redirect to /auth/login if no session */
 const PROTECTED_ROUTES = [
+  "/actualidad",
+  "/jugadores",
   "/jugar",
   "/prode/crear",
   "/torneos/crear",

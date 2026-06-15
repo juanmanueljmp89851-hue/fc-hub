@@ -115,12 +115,20 @@ export default async function TorneosPage({ searchParams }: PageProps) {
               Torneos, copas y eventos de la comunidad
             </p>
           </div>
-          <Link
-            href="/torneos/crear"
-            className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
-          >
-            + Crear Torneo
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/equipos"
+              className="rounded-lg border border-surface-light px-5 py-2.5 font-bold text-foreground/70 transition-colors hover:border-accent/50 hover:text-accent"
+            >
+              ⚽ Equipos
+            </Link>
+            <Link
+              href="/torneos/crear"
+              className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
+            >
+              + Crear Torneo
+            </Link>
+          </div>
         </div>
 
         {/* Filtros */}
