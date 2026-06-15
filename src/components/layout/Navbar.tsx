@@ -154,7 +154,7 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-surface-light bg-background/80 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           <Image src="/logo.svg" alt="Modo Fosa" width={36} height={36} className="h-9 w-9" />
           <div className="flex flex-col leading-none">
             <div className="flex items-baseline gap-0.5">
@@ -166,7 +166,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-6 md:flex">
+        <div className="hidden items-center gap-3 md:flex lg:gap-5">
           {navLinks.map((link) => (
             <Link
               key={link.href}
