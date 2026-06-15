@@ -819,7 +819,7 @@ export async function startTournament(tournamentId: string) {
     include: {
       participants: {
         where: { status: "CONFIRMED" },
-        include: { user: true },
+        include: { user: true, team: true },
       },
     },
   });
@@ -833,8 +833,14 @@ export async function startTournament(tournamentId: string) {
     return { error: "Se necesitan al menos 2 participantes confirmados" };
   }
 
+  const isTeamTournament = tournament.teamType === "CLUBS_PRO" || tournament.teamType === "RUSH";
+
   // Generar bracket según formato
-  const players = confirmedPlayers.map((p) => p.user);
+  const players: PlayerInfo[] = confirmedPlayers.map((p) => ({
+    id: p.user.id,
+    username: isTeamTournament && p.team ? p.team.name : p.user.username,
+    teamId: p.teamId,
+  }));
   const withLosers = tournament.hasLosersBracket || tournament.format === "DOUBLE_ELIMINATION";
 
   if (tournament.format === "SINGLE_ELIMINATION") {
@@ -895,6 +901,7 @@ export async function startTournament(tournamentId: string) {
 interface PlayerInfo {
   id: string;
   username: string;
+  teamId?: string | null;
 }
 
 // ─── SERIES HELPERS (ida/vuelta, best-of-N) ──────────────
@@ -1063,10 +1070,13 @@ async function generateSingleEliminationBracket(
         tournamentId,
         player1Id: p1?.id ?? null,
         player2Id: p2?.id ?? null,
+        team1Id: p1?.teamId ?? null,
+        team2Id: p2?.teamId ?? null,
         round: `W-R1-${i + 1}`,
         bracket: "WINNERS",
         status: isBye ? "WALKOVER" : "SCHEDULED",
         winnerId: winner?.id ?? null,
+        winnerTeamId: isBye ? (winner?.teamId ?? null) : null,
       },
     });
   }
@@ -1094,7 +1104,7 @@ async function generateSingleEliminationBracket(
   });
   for (const bye of byeMatches) {
     if (bye.winnerId && bye.round) {
-      await advanceWinner(tournamentId, bye.round, bye.winnerId, "SINGLE_ELIMINATION");
+      await advanceWinner(tournamentId, bye.round, bye.winnerId, "SINGLE_ELIMINATION", bye.winnerTeamId);
     }
   }
 
@@ -1132,11 +1142,15 @@ async function generateLeagueMatches(
     for (let i = 0; i < players.length; i++) {
       for (let j = i + 1; j < players.length; j++) {
         const isHome = leg === 1;
+        const home = isHome ? players[i] : players[j];
+        const away = isHome ? players[j] : players[i];
         await prisma.tournamentMatch.create({
           data: {
             tournamentId,
-            player1Id: isHome ? players[i].id : players[j].id,
-            player2Id: isHome ? players[j].id : players[i].id,
+            player1Id: home.id,
+            player2Id: away.id,
+            team1Id: home.teamId ?? null,
+            team2Id: away.teamId ?? null,
             round: `Jornada ${matchday}`,
             leg,
             matchday,
@@ -1267,6 +1281,11 @@ export async function confirmMatchResult(matchId: string) {
     await prisma.rankingHistory.create({ data: { userId: match.player1Id, tournamentMatchId: matchId, pointsChange: p1Pts, reason: p1Pts === RANKING.WIN ? "Victoria en torneo" : p1Pts === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo" } });
     await prisma.user.update({ where: { id: match.player2Id }, data: { rankingPoints: { increment: p2Pts } } });
     await prisma.rankingHistory.create({ data: { userId: match.player2Id, tournamentMatchId: matchId, pointsChange: p2Pts, reason: p2Pts === RANKING.WIN ? "Victoria en torneo" : p2Pts === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo" } });
+
+    // Update team stats if team tournament
+    if (match.team1Id && match.team2Id) {
+      await updateTeamStats(match.team1Id, match.team2Id, match.resultP1, match.resultP2);
+    }
   }
 
   // Si es liga o grupo, actualizar standings
@@ -1289,10 +1308,12 @@ export async function confirmMatchResult(matchId: string) {
     match.winnerId &&
     match.round
   ) {
-    await advanceWinner(match.tournamentId, match.round, match.winnerId, match.tournament.format);
+    const winTeamId = match.winnerId === match.player1Id ? match.team1Id : match.team2Id;
+    await advanceWinner(match.tournamentId, match.round, match.winnerId, match.tournament.format, winTeamId);
     if (match.tournament.format === "DOUBLE_ELIMINATION" && match.player1Id && match.player2Id) {
       const loserId = match.winnerId === match.player1Id ? match.player2Id : match.player1Id;
-      await sendToLosers(match.tournamentId, match.round, loserId);
+      const loserTeamId = match.winnerId === match.player1Id ? match.team2Id : match.team1Id;
+      await sendToLosers(match.tournamentId, match.round, loserId, loserTeamId);
     }
   }
 
@@ -1367,6 +1388,43 @@ async function updateLeagueStandings(
   });
 }
 
+// ─── ACTUALIZAR STATS DE EQUIPO ──────────────────────────────
+
+async function updateTeamStats(
+  team1Id: string,
+  team2Id: string,
+  resultP1: number,
+  resultP2: number,
+) {
+  const t1Won = resultP1 > resultP2;
+  const t2Won = resultP2 > resultP1;
+  const draw = resultP1 === resultP2;
+
+  await prisma.team.update({
+    where: { id: team1Id },
+    data: {
+      won: t1Won ? { increment: 1 } : undefined,
+      drawn: draw ? { increment: 1 } : undefined,
+      lost: t2Won ? { increment: 1 } : undefined,
+      goalsFor: { increment: resultP1 },
+      goalsAgainst: { increment: resultP2 },
+      rankingPoints: { increment: t1Won ? RANKING.WIN : draw ? RANKING.DRAW : RANKING.LOSS },
+    },
+  });
+
+  await prisma.team.update({
+    where: { id: team2Id },
+    data: {
+      won: t2Won ? { increment: 1 } : undefined,
+      drawn: draw ? { increment: 1 } : undefined,
+      lost: t1Won ? { increment: 1 } : undefined,
+      goalsFor: { increment: resultP2 },
+      goalsAgainst: { increment: resultP1 },
+      rankingPoints: { increment: t2Won ? RANKING.WIN : draw ? RANKING.DRAW : RANKING.LOSS },
+    },
+  });
+}
+
 // ─── DOBLE ELIMINACIÓN ────────────────────────────────────────
 
 async function generateDoubleEliminationBracket(
@@ -1390,10 +1448,13 @@ async function generateDoubleEliminationBracket(
         tournamentId,
         player1Id: p1?.id ?? null,
         player2Id: p2?.id ?? null,
+        team1Id: p1?.teamId ?? null,
+        team2Id: p2?.teamId ?? null,
         round: `W-R1-${i + 1}`,
         bracket: "WINNERS",
         status: isBye ? "WALKOVER" : "SCHEDULED",
         winnerId: winner?.id ?? null,
+        winnerTeamId: isBye ? (winner?.teamId ?? null) : null,
       },
     });
   }
@@ -1452,7 +1513,7 @@ async function generateDoubleEliminationBracket(
 
   for (const bye of byeMatches) {
     if (bye.winnerId && bye.round) {
-      await advanceWinner(tournamentId, bye.round, bye.winnerId, "DOUBLE_ELIMINATION");
+      await advanceWinner(tournamentId, bye.round, bye.winnerId, "DOUBLE_ELIMINATION", bye.winnerTeamId);
     }
   }
 
@@ -1509,6 +1570,8 @@ async function generateGroupKnockoutBracket(
             tournamentId,
             player1Id: group[i].id,
             player2Id: group[j].id,
+            team1Id: group[i].teamId ?? null,
+            team2Id: group[j].teamId ?? null,
             round: `Grupo ${label}`,
             bracket: "WINNERS",
             groupName: label,
@@ -1597,6 +1660,7 @@ async function advanceWinner(
   roundCode: string,
   winnerId: string,
   format: string,
+  winnerTeamId?: string | null,
 ) {
   const parts = roundCode.split("-");
   if (parts.length < 3) return;
@@ -1645,7 +1709,9 @@ async function advanceWinner(
     if (nextMatch) {
       await prisma.tournamentMatch.update({
         where: { id: nextMatch.id },
-        data: isSlot1 ? { player1Id: winnerId } : { player2Id: winnerId },
+        data: isSlot1
+          ? { player1Id: winnerId, team1Id: winnerTeamId ?? undefined }
+          : { player2Id: winnerId, team2Id: winnerTeamId ?? undefined },
       });
       await notifyNextMatchReady(nextMatch.id, tournamentId);
     } else if (format === "DOUBLE_ELIMINATION" && bracket === "W") {
@@ -1655,7 +1721,7 @@ async function advanceWinner(
       if (gf) {
         await prisma.tournamentMatch.update({
           where: { id: gf.id },
-          data: { player1Id: winnerId },
+          data: { player1Id: winnerId, team1Id: winnerTeamId ?? undefined },
         });
         await notifyNextMatchReady(gf.id, tournamentId);
       }
@@ -1674,7 +1740,9 @@ async function advanceWinner(
     if (nextMatch) {
       await prisma.tournamentMatch.update({
         where: { id: nextMatch.id },
-        data: isSlot1 ? { player1Id: winnerId } : { player2Id: winnerId },
+        data: isSlot1
+          ? { player1Id: winnerId, team1Id: winnerTeamId ?? undefined }
+          : { player2Id: winnerId, team2Id: winnerTeamId ?? undefined },
       });
       await notifyNextMatchReady(nextMatch.id, tournamentId);
     } else {
@@ -1685,7 +1753,7 @@ async function advanceWinner(
       if (gf) {
         await prisma.tournamentMatch.update({
           where: { id: gf.id },
-          data: { player2Id: winnerId },
+          data: { player2Id: winnerId, team2Id: winnerTeamId ?? undefined },
         });
         await notifyNextMatchReady(gf.id, tournamentId);
       }
@@ -1755,14 +1823,14 @@ async function tryRedrawRound(
 
   // Collect unique winners (for series, same winnerId appears per leg — deduplicate by seriesId)
   const seenSeries = new Set<string>();
-  const winners: string[] = [];
+  const winners: { id: string; teamId: string | null }[] = [];
   for (const m of finishedMatches) {
     if (!m.winnerId) continue;
     if (m.seriesId) {
       if (seenSeries.has(m.seriesId)) continue;
       seenSeries.add(m.seriesId);
     }
-    winners.push(m.winnerId);
+    winners.push({ id: m.winnerId, teamId: m.winnerTeamId });
   }
 
   // Shuffle winners for new draw
@@ -1781,7 +1849,12 @@ async function tryRedrawRound(
     const p2 = shuffled[i * 2 + 1] ?? null;
     await prisma.tournamentMatch.update({
       where: { id: nextMatches[i].id },
-      data: { player1Id: p1, player2Id: p2 },
+      data: {
+        player1Id: p1?.id ?? null,
+        player2Id: p2?.id ?? null,
+        team1Id: p1?.teamId ?? null,
+        team2Id: p2?.teamId ?? null,
+      },
     });
     if (p1 && p2) {
       await notifyNextMatchReady(nextMatches[i].id, tournamentId);
@@ -1793,6 +1866,7 @@ async function sendToLosers(
   tournamentId: string,
   roundCode: string,
   loserId: string,
+  loserTeamId?: string | null,
 ) {
   const parts = roundCode.split("-");
   if (parts.length < 3 || parts[0] !== "W") return;
@@ -1814,7 +1888,9 @@ async function sendToLosers(
   if (losersMatch) {
     await prisma.tournamentMatch.update({
       where: { id: losersMatch.id },
-      data: isSlot1 ? { player1Id: loserId } : { player2Id: loserId },
+      data: isSlot1
+        ? { player1Id: loserId, team1Id: loserTeamId ?? undefined }
+        : { player2Id: loserId, team2Id: loserTeamId ?? undefined },
     });
     await notifyNextMatchReady(losersMatch.id, tournamentId);
   }
@@ -1850,48 +1926,51 @@ async function checkGroupComplete(
   // Get all group matches to determine which group each player belongs to
   const groupMatches = await prisma.tournamentMatch.findMany({
     where: { tournamentId, groupName: { not: null } },
-    select: { player1Id: true, player2Id: true, groupName: true },
+    select: { player1Id: true, player2Id: true, team1Id: true, team2Id: true, groupName: true },
   });
 
-  // Build player → group map
+  // Build player → group map and player → teamId map
   const playerGroup = new Map<string, string>();
+  const playerTeam = new Map<string, string | null>();
   for (const m of groupMatches) {
-    if (m.player1Id && m.groupName) playerGroup.set(m.player1Id, m.groupName);
-    if (m.player2Id && m.groupName) playerGroup.set(m.player2Id, m.groupName);
+    if (m.player1Id && m.groupName) {
+      playerGroup.set(m.player1Id, m.groupName);
+      if (m.team1Id) playerTeam.set(m.player1Id, m.team1Id);
+    }
+    if (m.player2Id && m.groupName) {
+      playerGroup.set(m.player2Id, m.groupName);
+      if (m.team2Id) playerTeam.set(m.player2Id, m.team2Id);
+    }
   }
 
   // Group standings by group label, get qualified per group
   const groupLabels = "ABCDEFGHIJKLMNOP";
-  const qualifiedByGroup: string[][] = [];
+  type QPlayer = { id: string; teamId: string | null };
+  const qualifiedByGroup: QPlayer[][] = [];
 
   for (let g = 0; g < groupCount; g++) {
     const label = groupLabels[g];
     const groupStandings = standings.filter((s) => playerGroup.get(s.userId) === label);
-    qualifiedByGroup.push(groupStandings.slice(0, qualifyPerGroup).map((s) => s.userId));
+    qualifiedByGroup.push(
+      groupStandings.slice(0, qualifyPerGroup).map((s) => ({
+        id: s.userId,
+        teamId: playerTeam.get(s.userId) ?? null,
+      }))
+    );
   }
 
   // Build knockout seeding based on mode
-  let seededPlayers: string[];
+  let seededPlayers: QPlayer[];
 
   if (tournament.knockoutSeeding === "TRADITIONAL") {
-    // Traditional: 1ro A vs 2do B, 1ro B vs 2do A, 1ro C vs 2do D, etc.
-    // Interleave: [1A, 2B, 1C, 2D, 1B, 2A, 1D, 2C, ...]
     seededPlayers = [];
-    for (let pos = 0; pos < qualifyPerGroup; pos++) {
-      for (let g = 0; g < groupCount; g++) {
-        seededPlayers.push(qualifiedByGroup[g][pos]);
-      }
-    }
-    // Re-arrange for traditional bracket: 1A vs last qualifier, etc.
-    // Standard: pair 1st of group with 2nd of opposite group
-    const paired: string[] = [];
+    const paired: QPlayer[] = [];
     const firsts = qualifiedByGroup.map((g) => g[0]);
     const seconds = qualifiedByGroup.map((g) => g[1]).reverse();
     for (let i = 0; i < firsts.length; i++) {
       paired.push(firsts[i]);
       paired.push(seconds[i] ?? firsts[i]);
     }
-    // Add remaining qualifiers if qualifyPerGroup > 2
     for (let pos = 2; pos < qualifyPerGroup; pos++) {
       for (let g = 0; g < groupCount; g++) {
         if (qualifiedByGroup[g][pos]) paired.push(qualifiedByGroup[g][pos]);
@@ -1899,7 +1978,6 @@ async function checkGroupComplete(
     }
     seededPlayers = paired;
   } else {
-    // RANDOM: shuffle all qualified players
     seededPlayers = qualifiedByGroup.flat().sort(() => Math.random() - 0.5);
   }
 
@@ -1919,7 +1997,12 @@ async function checkGroupComplete(
     if (p1 || p2) {
       await prisma.tournamentMatch.update({
         where: { id: knockoutMatches[i].id },
-        data: { player1Id: p1, player2Id: p2 },
+        data: {
+          player1Id: p1?.id ?? null,
+          player2Id: p2?.id ?? null,
+          team1Id: p1?.teamId ?? undefined,
+          team2Id: p2?.teamId ?? undefined,
+        },
       });
     }
   }
@@ -2549,15 +2632,22 @@ export async function confirmTournamentResult(matchId: string) {
   const resultP1 = match.resultP1!;
   const resultP2 = match.resultP2!;
   let matchWinnerId: string | null = null;
+  let matchWinnerTeamId: string | null = null;
 
-  if (resultP1 > resultP2) matchWinnerId = match.player1Id;
-  else if (resultP2 > resultP1) matchWinnerId = match.player2Id;
+  if (resultP1 > resultP2) {
+    matchWinnerId = match.player1Id;
+    matchWinnerTeamId = match.team1Id;
+  } else if (resultP2 > resultP1) {
+    matchWinnerId = match.player2Id;
+    matchWinnerTeamId = match.team2Id;
+  }
 
   await prisma.tournamentMatch.update({
     where: { id: matchId },
     data: {
       status: "FINISHED",
       winnerId: matchWinnerId,
+      winnerTeamId: matchWinnerTeamId,
       confirmedAt: new Date(),
     },
   });
@@ -2605,6 +2695,11 @@ export async function confirmTournamentResult(matchId: string) {
         reason: p2Points === RANKING.WIN ? "Victoria en torneo" : p2Points === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo",
       },
     });
+
+    // Update team stats if team tournament
+    if (match.team1Id && match.team2Id) {
+      await updateTeamStats(match.team1Id, match.team2Id, resultP1, resultP2);
+    }
   }
 
   const kf = match.tournament.knockoutFormat;
@@ -2625,6 +2720,8 @@ export async function confirmTournamentResult(matchId: string) {
             tournamentId: match.tournament.id,
             player1Id: leg1.player1Id,
             player2Id: leg1.player2Id,
+            team1Id: leg1.team1Id,
+            team2Id: leg1.team2Id,
             round: match.round,
             bracket: match.bracket,
             seriesId: match.seriesId,
@@ -2653,11 +2750,13 @@ export async function confirmTournamentResult(matchId: string) {
 
       const seriesWinnerId = seriesResult.winnerId;
       const seriesLoserId = seriesWinnerId === match.player1Id ? match.player2Id : match.player1Id;
+      const seriesWinnerTeamId = seriesWinnerId === match.player1Id ? match.team1Id : match.team2Id;
+      const seriesLoserTeamId = seriesWinnerId === match.player1Id ? match.team2Id : match.team1Id;
 
       if (match.round) {
-        await advanceWinner(match.tournament.id, match.round, seriesWinnerId, match.tournament.format);
+        await advanceWinner(match.tournament.id, match.round, seriesWinnerId, match.tournament.format, seriesWinnerTeamId);
         if (match.tournament.hasLosersBracket && match.bracket === "WINNERS" && seriesLoserId) {
-          await sendToLosers(match.tournament.id, match.round, seriesLoserId);
+          await sendToLosers(match.tournament.id, match.round, seriesLoserId, seriesLoserTeamId);
         }
       }
 
@@ -2694,10 +2793,12 @@ export async function confirmTournamentResult(matchId: string) {
   } else {
     // ── Single match logic (original) ──
     if (matchWinnerId && match.round) {
-      await advanceWinner(match.tournament.id, match.round, matchWinnerId, match.tournament.format);
+      const winTeamId = matchWinnerId === match.player1Id ? match.team1Id : match.team2Id;
+      await advanceWinner(match.tournament.id, match.round, matchWinnerId, match.tournament.format, winTeamId);
       if (match.tournament.hasLosersBracket && match.bracket === "WINNERS") {
         const loserId = matchWinnerId === match.player1Id ? match.player2Id : match.player1Id;
-        if (loserId) await sendToLosers(match.tournament.id, match.round, loserId);
+        const loseTeamId = matchWinnerId === match.player1Id ? match.team2Id : match.team1Id;
+        if (loserId) await sendToLosers(match.tournament.id, match.round, loserId, loseTeamId);
       }
     }
 
