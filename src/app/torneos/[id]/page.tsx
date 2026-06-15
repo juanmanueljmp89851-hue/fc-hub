@@ -290,7 +290,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                   isFinished={tournament.status === "FINISHED"}
                 />
               ) : (
-                <TournamentBracket matches={tournament.matches} />
+                <TournamentBracket matches={tournament.matches} isTeamTournament={isTeamTournament} />
               )}
             </Card>
 
@@ -436,7 +436,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                     className="flex items-center gap-2 rounded-lg bg-background/50 px-3 py-2"
                   >
                     {isTeamTournament && p.team ? (
-                      <>
+                      <Link href={`/equipos/${p.team.id}`} className="flex items-center gap-2 min-w-0 flex-1 hover:opacity-80 transition-opacity">
                         <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-surface">
                           {p.team.logoUrl ? (
                             <Image src={p.team.logoUrl} alt="" fill className="object-contain p-0.5" />
@@ -448,7 +448,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                           <span className="block truncate text-sm font-medium">{p.team.name}</span>
                           {p.team.tag && <span className="text-xs text-foreground/40">[{p.team.tag}]</span>}
                         </div>
-                      </>
+                      </Link>
                     ) : (
                       <>
                         <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">

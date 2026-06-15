@@ -136,11 +136,11 @@ export default async function RankingPage({ searchParams }: PageProps) {
                       {period === "all" && (
                         <>
                           <th className="px-4 py-3 font-medium text-center">PJ</th>
-                          <th className="px-4 py-3 font-medium text-center">PG</th>
-                          <th className="px-4 py-3 font-medium text-center">PE</th>
-                          <th className="px-4 py-3 font-medium text-center">PP</th>
-                          <th className="px-4 py-3 font-medium text-center">GF</th>
-                          <th className="px-4 py-3 font-medium text-center">GC</th>
+                          <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">PG</th>
+                          <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">PE</th>
+                          <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">PP</th>
+                          <th className="hidden md:table-cell px-4 py-3 font-medium text-center">GF</th>
+                          <th className="hidden md:table-cell px-4 py-3 font-medium text-center">GC</th>
                           <th className="px-4 py-3 font-medium text-center">DIF</th>
                         </>
                       )}
@@ -179,11 +179,11 @@ export default async function RankingPage({ searchParams }: PageProps) {
                           {period === "all" && (
                             <>
                               <td className="px-4 py-3 text-center text-foreground/70">{entry!.played}</td>
-                              <td className="px-4 py-3 text-center text-green-400">{entry!.won}</td>
-                              <td className="px-4 py-3 text-center text-foreground/70">{entry!.drawn}</td>
-                              <td className="px-4 py-3 text-center text-red-400">{entry!.lost}</td>
-                              <td className="px-4 py-3 text-center text-foreground/70">{entry!.goalsFor}</td>
-                              <td className="px-4 py-3 text-center text-foreground/70">{entry!.goalsAgainst}</td>
+                              <td className="hidden sm:table-cell px-4 py-3 text-center text-green-400">{entry!.won}</td>
+                              <td className="hidden sm:table-cell px-4 py-3 text-center text-foreground/70">{entry!.drawn}</td>
+                              <td className="hidden sm:table-cell px-4 py-3 text-center text-red-400">{entry!.lost}</td>
+                              <td className="hidden md:table-cell px-4 py-3 text-center text-foreground/70">{entry!.goalsFor}</td>
+                              <td className="hidden md:table-cell px-4 py-3 text-center text-foreground/70">{entry!.goalsAgainst}</td>
                               <td className="px-4 py-3 text-center font-medium">
                                 <span className={diff > 0 ? "text-accent" : diff < 0 ? "text-red-400" : "text-foreground/70"}>
                                   {diff > 0 ? "+" : ""}{diff}
@@ -261,13 +261,13 @@ export default async function RankingPage({ searchParams }: PageProps) {
                     <tr className="border-b border-surface-light text-left text-foreground/50">
                       <th className="px-4 py-3 font-medium">#</th>
                       <th className="px-4 py-3 font-medium">Equipo</th>
-                      <th className="px-4 py-3 font-medium text-center">Modo</th>
+                      <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">Modo</th>
                       <th className="px-4 py-3 font-medium text-center">PJ</th>
-                      <th className="px-4 py-3 font-medium text-center">PG</th>
-                      <th className="px-4 py-3 font-medium text-center">PE</th>
-                      <th className="px-4 py-3 font-medium text-center">PP</th>
-                      <th className="px-4 py-3 font-medium text-center">GF</th>
-                      <th className="px-4 py-3 font-medium text-center">GC</th>
+                      <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">PG</th>
+                      <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">PE</th>
+                      <th className="hidden sm:table-cell px-4 py-3 font-medium text-center">PP</th>
+                      <th className="hidden md:table-cell px-4 py-3 font-medium text-center">GF</th>
+                      <th className="hidden md:table-cell px-4 py-3 font-medium text-center">GC</th>
                       <th className="px-4 py-3 font-medium text-center">DIF</th>
                       <th className="px-4 py-3 font-medium text-center">PTS</th>
                     </tr>
@@ -302,17 +302,17 @@ export default async function RankingPage({ searchParams }: PageProps) {
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="hidden sm:table-cell px-4 py-3 text-center">
                             <span className="rounded bg-surface-light px-1.5 py-0.5 text-xs">
                               {team.mode === "CLUBS_PRO" ? "Pro" : "Rush"}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center text-foreground/70">{played}</td>
-                          <td className="px-4 py-3 text-center text-green-400">{team.won}</td>
-                          <td className="px-4 py-3 text-center text-foreground/70">{team.drawn}</td>
-                          <td className="px-4 py-3 text-center text-red-400">{team.lost}</td>
-                          <td className="px-4 py-3 text-center text-foreground/70">{team.goalsFor}</td>
-                          <td className="px-4 py-3 text-center text-foreground/70">{team.goalsAgainst}</td>
+                          <td className="hidden sm:table-cell px-4 py-3 text-center text-green-400">{team.won}</td>
+                          <td className="hidden sm:table-cell px-4 py-3 text-center text-foreground/70">{team.drawn}</td>
+                          <td className="hidden sm:table-cell px-4 py-3 text-center text-red-400">{team.lost}</td>
+                          <td className="hidden md:table-cell px-4 py-3 text-center text-foreground/70">{team.goalsFor}</td>
+                          <td className="hidden md:table-cell px-4 py-3 text-center text-foreground/70">{team.goalsAgainst}</td>
                           <td className="px-4 py-3 text-center font-medium">
                             <span className={diff > 0 ? "text-accent" : diff < 0 ? "text-red-400" : "text-foreground/70"}>
                               {diff > 0 ? "+" : ""}{diff}

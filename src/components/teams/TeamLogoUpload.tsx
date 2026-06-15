@@ -15,6 +15,33 @@ export function TeamLogoUpload({ teamId, currentUrl }: TeamLogoUploadProps) {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  function resizeImage(file: File, maxSize: number): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = document.createElement("img");
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxSize || h > maxSize) {
+          const ratio = Math.min(maxSize / w, maxSize / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
+          "image/webp",
+          0.85,
+        );
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -23,21 +50,21 @@ export function TeamLogoUpload({ teamId, currentUrl }: TeamLogoUploadProps) {
       alert("Solo se permiten imágenes");
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      alert("La imagen no puede superar 2MB");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("La imagen no puede superar 5MB");
       return;
     }
 
     setUploading(true);
 
     try {
+      const resized = await resizeImage(file, 512);
       const supabase = createClient();
-      const ext = file.name.split(".").pop();
-      const path = `team-logos/${teamId}/${Date.now()}.${ext}`;
+      const path = `team-logos/${teamId}/${Date.now()}.webp`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(path, file, { upsert: true });
+        .upload(path, resized, { upsert: true, contentType: "image/webp" });
 
       if (uploadError) {
         alert("Error al subir imagen: " + uploadError.message);
@@ -81,7 +108,7 @@ export function TeamLogoUpload({ teamId, currentUrl }: TeamLogoUploadProps) {
       </button>
       <div>
         <p className="text-sm font-medium text-foreground/70">Escudo del equipo</p>
-        <p className="text-xs text-foreground/40">PNG sin fondo recomendado. Máx 2MB.</p>
+        <p className="text-xs text-foreground/40">PNG sin fondo recomendado. Se redimensiona a 512px.</p>
       </div>
       <input
         ref={fileRef}

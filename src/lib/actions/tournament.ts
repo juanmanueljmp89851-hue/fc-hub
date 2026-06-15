@@ -1761,11 +1761,11 @@ async function advanceWinner(
   }
 }
 
-/** Notify both players when their next match has both participants assigned */
+/** Notify both players (and team members for team tournaments) when their next match has both participants assigned */
 async function notifyNextMatchReady(matchId: string, tournamentId: string) {
   const updatedMatch = await prisma.tournamentMatch.findUnique({
     where: { id: matchId },
-    select: { player1Id: true, player2Id: true, seriesId: true },
+    select: { player1Id: true, player2Id: true, team1Id: true, team2Id: true, seriesId: true },
   });
   if (!updatedMatch?.player1Id || !updatedMatch?.player2Id) return;
 
@@ -1783,8 +1783,20 @@ async function notifyNextMatchReady(matchId: string, tournamentId: string) {
     await createSeriesMatches(tournamentId, matchId, tournament.knockoutFormat);
   }
 
+  // Collect all user IDs to notify (DTs + team members)
+  const notifyUserIds = new Set([updatedMatch.player1Id, updatedMatch.player2Id]);
+
+  const teamIds = [updatedMatch.team1Id, updatedMatch.team2Id].filter(Boolean) as string[];
+  if (teamIds.length > 0) {
+    const teamMembers = await prisma.teamMember.findMany({
+      where: { teamId: { in: teamIds } },
+      select: { userId: true },
+    });
+    for (const tm of teamMembers) notifyUserIds.add(tm.userId);
+  }
+
   await prisma.notification.createMany({
-    data: [updatedMatch.player1Id, updatedMatch.player2Id].map((userId) => ({
+    data: Array.from(notifyUserIds).map((userId) => ({
       userId,
       type: "MATCH_ASSIGNED" as const,
       title: "Siguiente partido disponible 🏟️",
@@ -2373,6 +2385,22 @@ export async function getTournamentMatchDetail(matchId: string) {
   return { ...match, currentUserId: dbUser.id, isPlayer, isCreator, isAdmin, isTeamTournament, siblingMatches };
 }
 
+async function isDTOfMatchTeam(
+  userId: string,
+  team1Id: string | null,
+  team2Id: string | null,
+): Promise<{ isDT: boolean; side: "P1" | "P2" | null }> {
+  const teamIds = [team1Id, team2Id].filter(Boolean) as string[];
+  if (teamIds.length === 0) return { isDT: false, side: null };
+  const membership = await prisma.teamMember.findFirst({
+    where: { userId, role: "MANAGER", teamId: { in: teamIds } },
+    select: { teamId: true },
+  });
+  if (!membership) return { isDT: false, side: null };
+  const side = membership.teamId === team1Id ? "P1" : "P2";
+  return { isDT: true, side };
+}
+
 export async function readyToPlay(matchId: string) {
   const supabase = createClient();
   const {
@@ -2389,9 +2417,13 @@ export async function readyToPlay(matchId: string) {
   const match = await prisma.tournamentMatch.findUnique({ where: { id: matchId } });
   if (!match) return { error: "Partido no encontrado" };
 
-  const isP1 = match.player1Id === dbUser.id;
-  const isP2 = match.player2Id === dbUser.id;
-  if (!isP1 && !isP2) return { error: "No participás en este partido" };
+  let isP1 = match.player1Id === dbUser.id;
+  let isP2 = match.player2Id === dbUser.id;
+  if (!isP1 && !isP2) {
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (!dt.isDT) return { error: "No participás en este partido" };
+    if (dt.side === "P1") isP1 = true; else isP2 = true;
+  }
 
   // Get tournament info for creator notification
   const tournament = await prisma.tournament.findUnique({
@@ -2490,7 +2522,8 @@ export async function submitTournamentResult(
     return { error: "El partido no está en curso" };
   }
   if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
-    return { error: "No participás en este partido" };
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (!dt.isDT) return { error: "No participás en este partido" };
   }
 
   // Validate proof images: max 3, required only if tournament config says so
@@ -2565,7 +2598,8 @@ export async function submitSiblingResult(
   });
   if (!match) return { error: "Partido no encontrado" };
   if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
-    return { error: "No participás en este partido" };
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (!dt.isDT) return { error: "No participás en este partido" };
   }
 
   if (match.status === "FINISHED" || match.status === "CANCELLED" || match.status === "WALKOVER") {
@@ -2638,7 +2672,8 @@ export async function confirmTournamentResult(matchId: string) {
   if (!match) return { error: "Partido no encontrado" };
   if (match.status !== "PENDING_CONFIRMATION") return { error: "No hay resultado para confirmar" };
   if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
-    return { error: "No participás en este partido" };
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (!dt.isDT) return { error: "No participás en este partido" };
   }
 
   const resultP1 = match.resultP1!;
@@ -2893,11 +2928,14 @@ export async function disputeTournamentResult(matchId: string) {
   });
   if (!match) return { error: "Partido no encontrado" };
   if (match.status !== "PENDING_CONFIRMATION") return { error: "No hay resultado para disputar" };
+  let dtSide: "P1" | "P2" | null = null;
   if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
-    return { error: "No participás en este partido" };
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (!dt.isDT) return { error: "No participás en este partido" };
+    dtSide = dt.side;
   }
 
-  const isP1 = match.player1Id === dbUser.id;
+  const isP1 = match.player1Id === dbUser.id || dtSide === "P1";
   const newCountP1 = match.disputeCountP1 + (isP1 ? 1 : 0);
   const newCountP2 = match.disputeCountP2 + (!isP1 ? 1 : 0);
 
@@ -2969,7 +3007,11 @@ export async function sendArenaMessage(matchId: string, text: string) {
   });
   if (!match) return { error: "Partido no encontrado" };
 
-  const isPlayer = match.player1Id === dbUser.id || match.player2Id === dbUser.id;
+  let isPlayer = match.player1Id === dbUser.id || match.player2Id === dbUser.id;
+  if (!isPlayer) {
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (dt.isDT) isPlayer = true;
+  }
   const isCreator = match.tournament.createdById === dbUser.id;
   const isAdmin = dbUser.role === "ADMIN";
   if (!isPlayer && !isCreator && !isAdmin) return { error: "No tenés acceso a este chat" };
@@ -3009,8 +3051,12 @@ export async function invokeArenaAdmin(matchId: string) {
   });
   if (!match) return { error: "Partido no encontrado" };
 
-  const isPlayer = match.player1Id === dbUser.id || match.player2Id === dbUser.id;
-  if (!isPlayer) return { error: "No participás en este partido" };
+  let isPlayer = match.player1Id === dbUser.id || match.player2Id === dbUser.id;
+  if (!isPlayer) {
+    const dt = await isDTOfMatchTeam(dbUser.id, match.team1Id, match.team2Id);
+    if (!dt.isDT) return { error: "No participás en este partido" };
+    isPlayer = true;
+  }
 
   // Notify tournament creator + all admins (dedup)
   const admins = await prisma.user.findMany({

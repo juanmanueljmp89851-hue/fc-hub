@@ -2,11 +2,20 @@
 
 import Link from "next/link";
 
+interface TeamInfo {
+  id: string;
+  name: string;
+  tag: string | null;
+  logoUrl: string | null;
+}
+
 interface MatchData {
   id: string;
   round: string | null;
   player1: { id: string; username: string; avatarUrl: string | null } | null;
   player2: { id: string; username: string; avatarUrl: string | null } | null;
+  team1?: TeamInfo | null;
+  team2?: TeamInfo | null;
   winner: { id: string; username: string } | null;
   resultP1: number | null;
   resultP2: number | null;
@@ -17,6 +26,7 @@ interface MatchData {
 
 interface TournamentBracketProps {
   matches: MatchData[];
+  isTeamTournament?: boolean;
 }
 
 function getMatchStatusLabel(status: string): { label: string; color: string } {
@@ -110,7 +120,7 @@ function getSeriesAggregate(matches: MatchData[]) {
   return { playerA, playerB, aggA, aggB, winsA, winsB, usernameA: leg1.player1?.username ?? "", usernameB: leg1.player2?.username ?? "" };
 }
 
-export function TournamentBracket({ matches }: TournamentBracketProps) {
+export function TournamentBracket({ matches, isTeamTournament }: TournamentBracketProps) {
   const winnersRounds = new Set(
     matches.filter((m) => m.round?.startsWith("W-")).map((m) => m.round),
   ).size;
@@ -142,10 +152,10 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
               {items.map((item) => {
                 if ("seriesId" in item) {
                   const s = item as SeriesGroup;
-                  return <SeriesCard key={s.seriesId} series={s} />;
+                  return <SeriesCard key={s.seriesId} series={s} isTeamTournament={isTeamTournament} />;
                 }
                 const m = item as MatchData;
-                return <SingleMatchCard key={m.id} match={m} />;
+                return <SingleMatchCard key={m.id} match={m} isTeamTournament={isTeamTournament} />;
               })}
             </div>
           </div>
@@ -155,20 +165,22 @@ export function TournamentBracket({ matches }: TournamentBracketProps) {
   );
 }
 
-function SingleMatchCard({ match }: { match: MatchData }) {
+function SingleMatchCard({ match, isTeamTournament }: { match: MatchData; isTeamTournament?: boolean }) {
   const hasPlayers = match.player1 && match.player2;
   const isPlayable = hasPlayers && match.status !== "FINISHED" && match.status !== "WALKOVER" && match.status !== "CANCELLED";
   const statusLabel = getMatchStatusLabel(match.status);
+  const name1 = isTeamTournament && match.team1 ? match.team1.name : (match.player1?.username ?? "TBD");
+  const name2 = isTeamTournament && match.team2 ? match.team2.name : (match.player2?.username ?? "TBD");
   const content = (
     <>
       <PlayerRow
-        username={match.player1?.username ?? "TBD"}
+        username={name1}
         score={match.resultP1}
         isWinner={match.winner?.id === match.player1?.id}
         isBye={!match.player1}
       />
       <PlayerRow
-        username={match.player2?.username ?? "TBD"}
+        username={name2}
         score={match.resultP2}
         isWinner={match.winner?.id === match.player2?.id}
         isBye={!match.player2}
@@ -206,13 +218,16 @@ function SingleMatchCard({ match }: { match: MatchData }) {
   );
 }
 
-function SeriesCard({ series }: { series: SeriesGroup }) {
+function SeriesCard({ series, isTeamTournament }: { series: SeriesGroup; isTeamTournament?: boolean }) {
   const agg = getSeriesAggregate(series.matches);
   const finishedCount = series.matches.filter((m) => m.status === "FINISHED").length;
   const totalCount = series.matches.length;
   const nextMatch = series.matches.find(
     (m) => m.status !== "FINISHED" && m.status !== "WALKOVER" && m.status !== "CANCELLED",
   );
+  const m0 = series.matches[0];
+  const nameA = isTeamTournament && m0?.team1 ? m0.team1.name : (agg?.usernameA ?? m0?.player1?.username ?? "TBD");
+  const nameB = isTeamTournament && m0?.team2 ? m0.team2.name : (agg?.usernameB ?? m0?.player2?.username ?? "TBD");
 
   return (
     <div className="rounded-lg border border-surface-light bg-background p-2">
@@ -232,13 +247,13 @@ function SeriesCard({ series }: { series: SeriesGroup }) {
       {agg ? (
         <>
           <PlayerRow
-            username={agg.usernameA}
+            username={nameA}
             score={agg.aggA}
             isWinner={agg.aggA > agg.aggB && finishedCount === totalCount}
             isBye={false}
           />
           <PlayerRow
-            username={agg.usernameB}
+            username={nameB}
             score={agg.aggB}
             isWinner={agg.aggB > agg.aggA && finishedCount === totalCount}
             isBye={false}
@@ -247,16 +262,16 @@ function SeriesCard({ series }: { series: SeriesGroup }) {
       ) : (
         <>
           <PlayerRow
-            username={series.matches[0]?.player1?.username ?? "TBD"}
+            username={nameA}
             score={null}
             isWinner={false}
-            isBye={!series.matches[0]?.player1}
+            isBye={!m0?.player1}
           />
           <PlayerRow
-            username={series.matches[0]?.player2?.username ?? "TBD"}
+            username={nameB}
             score={null}
             isWinner={false}
-            isBye={!series.matches[0]?.player2}
+            isBye={!m0?.player2}
           />
         </>
       )}
