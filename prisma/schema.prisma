@@ -70,6 +70,8 @@ model User {
   reportsMade           UserReport[]         @relation("reporter")
   reportsReceived       UserReport[]         @relation("reported")
   reportsResolved       UserReport[]         @relation("report_resolver")
+  managedTeams          Team[]               @relation("TeamManager")
+  teamMemberships       TeamMember[]
 
   @@map("users")
 }
@@ -195,6 +197,8 @@ enum TeamType {
   ULTIMATE_TEAM
   REAL_TEAMS
   FUT_CHAMPIONS
+  CLUBS_PRO
+  RUSH
 }
 
 enum TournamentVisibility {
@@ -1034,4 +1038,50 @@ model FutCard {
   @@index([cardType])
   @@index([releaseDate])
   @@map("fut_cards")
+}
+
+// ─── EQUIPOS (CLUBES PRO / RUSH) ──────────────────────────────
+
+model Team {
+  id          String     @id @default(uuid())
+  name        String
+  tag         String?
+  logoUrl     String?    @map("logo_url")
+  bannerUrl   String?    @map("banner_url")
+  mode        TeamMode   @default(CLUBS_PRO)
+  platform    Platform
+  managerId   String     @map("manager_id")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  manager     User       @relation("TeamManager", fields: [managerId], references: [id])
+  members     TeamMember[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id          String         @id @default(uuid())
+  teamId      String         @map("team_id")
+  userId      String         @map("user_id")
+  role        TeamMemberRole @default(PLAYER)
+  shirtNumber Int?           @map("shirt_number")
+  position    String?
+  joinedAt    DateTime       @default(now()) @map("joined_at")
+
+  team        Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+enum TeamMode {
+  CLUBS_PRO
+  RUSH
+}
+
+enum TeamMemberRole {
+  MANAGER
+  PLAYER
 }

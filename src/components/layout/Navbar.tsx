@@ -15,6 +15,7 @@ const navLinks = [
   { href: "/actualidad", label: "Actualidad" },
   { href: "/jugadores", label: "Cartas FC26" },
   { href: "/torneos", label: "Arena" },
+  { href: "/equipos", label: "Equipos" },
   { href: "/jugar", label: "Duelos" },
   { href: "/ranking", label: "Clasificación" },
   { href: "/prode", label: "Prode" },

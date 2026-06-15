@@ -6,6 +6,7 @@ const PROTECTED_ROUTES = [
   "/jugar",
   "/prode/crear",
   "/torneos/crear",
+  "/equipos/crear",
   "/influencers",
   "/mensajes",
 ];
@@ -13,6 +14,7 @@ const PROTECTED_ROUTES = [
 const PROTECTED_DYNAMIC = [
   "/prode/",
   "/escena/",
+  "/equipos/",
 ];
 
 export async function updateSession(request: NextRequest) {
