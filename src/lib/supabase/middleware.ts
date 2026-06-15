@@ -17,6 +17,7 @@ const PROTECTED_DYNAMIC = [
   "/prode/",
   "/escena/",
   "/equipos/",
+  "/torneos/",
 ];
 
 export async function updateSession(request: NextRequest) {
