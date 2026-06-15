@@ -97,23 +97,41 @@ export default async function ArenaMatchPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Players */}
+          {/* Players / Teams */}
           <div className="mb-8 flex items-center justify-center gap-6">
             <div className="text-center">
-              <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
-                {match.player1?.avatarUrl ? (
-                  <Image src={match.player1.avatarUrl} alt="" fill className="object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl text-foreground/30">👤</div>
-                )}
-              </div>
-              <p className={`font-bold ${match.winner?.id === match.player1?.id ? "text-accent" : ""}`}>
-                {match.player1?.username ?? "BYE"}
-              </p>
-              {match.player1 && (
-                <p className="text-xs text-foreground/50">{match.player1.rankingPoints} pts</p>
+              {match.isTeamTournament && match.team1 ? (
+                <>
+                  <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-xl bg-surface">
+                    {match.team1.logoUrl ? (
+                      <Image src={match.team1.logoUrl} alt="" fill className="object-contain p-1" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl">🛡️</div>
+                    )}
+                  </div>
+                  <p className={`font-bold ${match.winner?.id === match.player1?.id ? "text-accent" : ""}`}>
+                    {match.team1.name}
+                  </p>
+                  {match.team1.tag && <p className="text-[10px] text-foreground/40">[{match.team1.tag}]</p>}
+                  <p className="text-[10px] text-foreground/30">DT: {match.player1?.username ?? "?"}</p>
+                </>
+              ) : (
+                <>
+                  <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
+                    {match.player1?.avatarUrl ? (
+                      <Image src={match.player1.avatarUrl} alt="" fill className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl text-foreground/30">👤</div>
+                    )}
+                  </div>
+                  <p className={`font-bold ${match.winner?.id === match.player1?.id ? "text-accent" : ""}`}>
+                    {match.player1?.username ?? "BYE"}
+                  </p>
+                  {match.player1 && (
+                    <p className="text-xs text-foreground/50">{match.player1.rankingPoints} pts</p>
+                  )}
+                </>
               )}
-              {/* Gamertags */}
               {match.player1 && (
                 <div className="mt-1 space-y-0.5 text-[10px] text-foreground/40">
                   {match.player1.psnUsername && <p>PSN: {match.player1.psnUsername}</p>}
@@ -140,20 +158,38 @@ export default async function ArenaMatchPage({ params }: PageProps) {
             </div>
 
             <div className="text-center">
-              <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
-                {match.player2?.avatarUrl ? (
-                  <Image src={match.player2.avatarUrl} alt="" fill className="object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl text-foreground/30">👤</div>
-                )}
-              </div>
-              <p className={`font-bold ${match.winner?.id === match.player2?.id ? "text-accent" : ""}`}>
-                {match.player2?.username ?? "BYE"}
-              </p>
-              {match.player2 && (
-                <p className="text-xs text-foreground/50">{match.player2.rankingPoints} pts</p>
+              {match.isTeamTournament && match.team2 ? (
+                <>
+                  <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-xl bg-surface">
+                    {match.team2.logoUrl ? (
+                      <Image src={match.team2.logoUrl} alt="" fill className="object-contain p-1" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl">🛡️</div>
+                    )}
+                  </div>
+                  <p className={`font-bold ${match.winner?.id === match.player2?.id ? "text-accent" : ""}`}>
+                    {match.team2.name}
+                  </p>
+                  {match.team2.tag && <p className="text-[10px] text-foreground/40">[{match.team2.tag}]</p>}
+                  <p className="text-[10px] text-foreground/30">DT: {match.player2?.username ?? "?"}</p>
+                </>
+              ) : (
+                <>
+                  <div className="relative mx-auto mb-2 h-16 w-16 overflow-hidden rounded-full bg-surface">
+                    {match.player2?.avatarUrl ? (
+                      <Image src={match.player2.avatarUrl} alt="" fill className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl text-foreground/30">👤</div>
+                    )}
+                  </div>
+                  <p className={`font-bold ${match.winner?.id === match.player2?.id ? "text-accent" : ""}`}>
+                    {match.player2?.username ?? "BYE"}
+                  </p>
+                  {match.player2 && (
+                    <p className="text-xs text-foreground/50">{match.player2.rankingPoints} pts</p>
+                  )}
+                </>
               )}
-              {/* Gamertags */}
               {match.player2 && (
                 <div className="mt-1 space-y-0.5 text-[10px] text-foreground/40">
                   {match.player2.psnUsername && <p>PSN: {match.player2.psnUsername}</p>}
@@ -195,8 +231,8 @@ export default async function ArenaMatchPage({ params }: PageProps) {
                 player2Id: match.player2Id,
               }}
               siblingMatches={match.siblingMatches}
-              player1Username={match.player1?.username ?? "J1"}
-              player2Username={match.player2?.username ?? "J2"}
+              player1Username={match.isTeamTournament && match.team1 ? match.team1.name : (match.player1?.username ?? "J1")}
+              player2Username={match.isTeamTournament && match.team2 ? match.team2.name : (match.player2?.username ?? "J2")}
               currentUserId={match.currentUserId}
               isPlayer={match.isPlayer}
               requireProof={match.tournament.requireProof ?? false}
@@ -225,7 +261,13 @@ export default async function ArenaMatchPage({ params }: PageProps) {
           {match.status === "FINISHED" && match.winner && (
             <div className="border-t border-surface-light pt-6 text-center">
               <p className="text-sm text-foreground/50">Ganador</p>
-              <p className="text-xl font-bold text-accent">{match.winner.username}</p>
+              {match.isTeamTournament ? (
+                <p className="text-xl font-bold text-accent">
+                  {match.winner.id === match.player1?.id ? match.team1?.name : match.team2?.name}
+                </p>
+              ) : (
+                <p className="text-xl font-bold text-accent">{match.winner.username}</p>
+              )}
             </div>
           )}
 
@@ -240,8 +282,8 @@ export default async function ArenaMatchPage({ params }: PageProps) {
             <div className="border-t border-surface-light pt-4 text-center">
               <AdminMatchEdit
                 matchId={match.id}
-                player1Name={match.player1?.username ?? "J1"}
-                player2Name={match.player2?.username ?? "J2"}
+                player1Name={match.isTeamTournament && match.team1 ? match.team1.name : (match.player1?.username ?? "J1")}
+                player2Name={match.isTeamTournament && match.team2 ? match.team2.name : (match.player2?.username ?? "J2")}
                 currentP1={match.resultP1}
                 currentP2={match.resultP2}
               />

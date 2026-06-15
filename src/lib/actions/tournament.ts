@@ -2295,9 +2295,11 @@ export async function getTournamentMatchDetail(matchId: string) {
   const match = await prisma.tournamentMatch.findUnique({
     where: { id: matchId },
     include: {
-      tournament: { select: { id: true, name: true, createdById: true, playoffRule: true, requireProof: true, leagueLegs: true, knockoutFormat: true, waitTimeMinutes: true, scheduleTime: true } },
+      tournament: { select: { id: true, name: true, createdById: true, teamType: true, playoffRule: true, requireProof: true, leagueLegs: true, knockoutFormat: true, waitTimeMinutes: true, scheduleTime: true } },
       player1: { select: { id: true, username: true, avatarUrl: true, rankingPoints: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
       player2: { select: { id: true, username: true, avatarUrl: true, rankingPoints: true, psnUsername: true, xboxUsername: true, pcUsername: true } },
+      team1: { select: { id: true, name: true, tag: true, logoUrl: true } },
+      team2: { select: { id: true, name: true, tag: true, logoUrl: true } },
       winner: { select: { id: true, username: true } },
       messages: {
         orderBy: { createdAt: "asc" },
@@ -2308,8 +2310,18 @@ export async function getTournamentMatchDetail(matchId: string) {
 
   if (!match) return null;
 
-  // Only participants, tournament creator, or admin can access
-  const isPlayer = match.player1Id === dbUser.id || match.player2Id === dbUser.id;
+  // Only participants (or DTs for team tournaments), tournament creator, or admin can access
+  let isPlayer = match.player1Id === dbUser.id || match.player2Id === dbUser.id;
+  const isTeamTournament = match.tournament.teamType === "CLUBS_PRO" || match.tournament.teamType === "RUSH";
+
+  if (!isPlayer && isTeamTournament && (match.team1Id || match.team2Id)) {
+    const dtTeams = await prisma.teamMember.findMany({
+      where: { userId: dbUser.id, role: "MANAGER", teamId: { in: [match.team1Id, match.team2Id].filter(Boolean) as string[] } },
+      select: { teamId: true },
+    });
+    if (dtTeams.length > 0) isPlayer = true;
+  }
+
   const isCreator = match.tournament.createdById === dbUser.id;
   const isAdmin = dbUser.role === "ADMIN";
   if (!isPlayer && !isCreator && !isAdmin) return null;
@@ -2358,7 +2370,7 @@ export async function getTournamentMatchDetail(matchId: string) {
     });
   }
 
-  return { ...match, currentUserId: dbUser.id, isPlayer, isCreator, isAdmin, siblingMatches };
+  return { ...match, currentUserId: dbUser.id, isPlayer, isCreator, isAdmin, isTeamTournament, siblingMatches };
 }
 
 export async function readyToPlay(matchId: string) {
