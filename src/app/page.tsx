@@ -15,6 +15,7 @@ import { NewsFeed } from "@/components/home/NewsFeed";
 import { LiveTicker } from "@/components/home/LiveTicker";
 import { LatestCards } from "@/components/home/LatestCards";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { Onboarding } from "@/components/home/Onboarding";
 import { prisma } from "@/lib/db";
 import type { FutPlayer } from "@/types/player";
 
@@ -146,6 +147,7 @@ export default async function HomePage() {
           <AdSlot format="auto" />
         </div>
       </main>
+      <Onboarding />
     </div>
   );
 }

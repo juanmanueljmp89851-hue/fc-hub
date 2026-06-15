@@ -6,6 +6,8 @@ import Link from "next/link";
 const ADMIN_LINKS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/moderacion", label: "Moderación" },
+  { href: "/admin/mensajes", label: "Mensajes" },
+  { href: "/admin/reportes", label: "Reportes" },
   { href: "/admin/prode", label: "Prode" },
   { href: "/admin/usuarios", label: "Usuarios" },
   { href: "/admin/influencers", label: "Influencers" },

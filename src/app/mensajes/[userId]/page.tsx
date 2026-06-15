@@ -5,8 +5,10 @@ import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { getConversation } from "@/lib/actions/dm";
 import { getCurrentUser } from "@/lib/actions/user";
+import { isBlocked } from "@/lib/actions/block";
 import { DmChatInput } from "@/components/dm/DmChatInput";
 import { DmMessages } from "@/components/dm/DmMessages";
+import { DmActions } from "@/components/dm/DmActions";
 
 export const metadata: Metadata = {
   title: "Mensajes",
@@ -19,12 +21,14 @@ export default async function ConversationPage({ params }: { params: { userId: s
   const { messages, partner, currentUserId } = await getConversation(params.userId);
   if (!partner) redirect("/mensajes");
 
+  const blocked = await isBlocked(params.userId);
+
   return (
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 py-8">
         {/* Header */}
-        <div className="mb-4 flex items-center gap-3">
+        <div className="relative mb-4 flex items-center gap-3">
           <Link href="/mensajes" className="text-foreground/50 transition-colors hover:text-accent">
             ← Mensajes
           </Link>
@@ -36,11 +40,20 @@ export default async function ConversationPage({ params }: { params: { userId: s
             )}
           </div>
           <span className="font-bold">{partner.username}</span>
+          <div className="ml-auto">
+            <DmActions partnerId={params.userId} partnerUsername={partner.username} isBlockedInitial={blocked} />
+          </div>
         </div>
 
         <div className="flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface" style={{ height: "calc(100vh - 200px)" }}>
           <DmMessages messages={messages} currentUserId={currentUserId ?? ""} />
-          <DmChatInput receiverId={params.userId} />
+          {blocked ? (
+            <div className="border-t border-surface-light p-3 text-center text-xs text-foreground/40">
+              Usuario bloqueado — no podés enviar ni recibir mensajes
+            </div>
+          ) : (
+            <DmChatInput receiverId={params.userId} />
+          )}
         </div>
       </main>
     </div>

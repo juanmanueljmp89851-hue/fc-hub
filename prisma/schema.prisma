@@ -65,6 +65,11 @@ model User {
   tournamentMessages    TournamentMessage[]
   dmSent                DirectMessage[]      @relation("dm_sent")
   dmReceived            DirectMessage[]      @relation("dm_received")
+  blockedUsers          BlockedUser[]        @relation("blocker")
+  blockedByUsers        BlockedUser[]        @relation("blocked")
+  reportsMade           UserReport[]         @relation("reporter")
+  reportsReceived       UserReport[]         @relation("reported")
+  reportsResolved       UserReport[]         @relation("report_resolver")
 
   @@map("users")
 }
@@ -880,6 +885,49 @@ model DirectMessage {
   @@index([senderId, receiverId, createdAt])
   @@index([receiverId, read])
   @@map("direct_messages")
+}
+
+// ─── BLOQUEOS ───────────────────────────────────────────────
+
+model BlockedUser {
+  id        String   @id @default(uuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker User @relation("blocker", fields: [blockerId], references: [id])
+  blocked User @relation("blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+  @@map("blocked_users")
+}
+
+// ─── REPORTES ───────────────────────────────────────────────
+
+model UserReport {
+  id             String       @id @default(uuid())
+  reporterId     String       @map("reporter_id")
+  reportedId     String       @map("reported_id")
+  reason         String
+  description    String?
+  status         ReportStatus @default(PENDING)
+  resolvedById   String?      @map("resolved_by")
+  resolutionNote String?      @map("resolution_note")
+  resolvedAt     DateTime?    @map("resolved_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  reporter   User  @relation("reporter", fields: [reporterId], references: [id])
+  reported   User  @relation("reported", fields: [reportedId], references: [id])
+  resolvedBy User? @relation("report_resolver", fields: [resolvedById], references: [id])
+
+  @@map("user_reports")
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  ACTIONED
+  DISMISSED
 }
 
 // ─── LOBBY CHAT ─────────────────────────────────────────────

@@ -18,6 +18,7 @@ const navLinks = [
   { href: "/jugar", label: "Duelos" },
   { href: "/ranking", label: "Clasificación" },
   { href: "/prode", label: "Prode" },
+  { href: "/historial", label: "Historial" },
   { href: "/escena", label: "Competitivo" },
   { href: "/influencers", label: "Streamers" },
 ];

@@ -49,6 +49,16 @@ export async function sendDirectMessage(receiverId: string, text: string) {
   });
   if (!receiver) return { error: "Usuario no encontrado" };
 
+  const block = await prisma.blockedUser.findFirst({
+    where: {
+      OR: [
+        { blockerId: dbUser.id, blockedId: receiverId },
+        { blockerId: receiverId, blockedId: dbUser.id },
+      ],
+    },
+  });
+  if (block) return { error: "No podés enviar mensajes a este usuario" };
+
   await prisma.directMessage.create({
     data: {
       senderId: dbUser.id,
