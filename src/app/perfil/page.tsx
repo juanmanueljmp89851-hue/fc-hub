@@ -155,7 +155,7 @@ export default function ProfilePage() {
             <StatCard label="Rol" value={user.role === "ADMIN" ? "Admin" : "Jugador"} />
           </div>
           <Link
-            href="/historial"
+            href="/jugar"
             className="mt-3 inline-block rounded-lg bg-accent/10 px-4 py-2 text-xs font-bold text-accent transition-colors hover:bg-accent/20"
           >
             📊 Ver historial completo de duelos

@@ -3,7 +3,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { getTopRanking, getActiveMatches } from "@/lib/actions/lobby";
+import { getCurrentUser } from "@/lib/actions/user";
+import { getUserStats } from "@/lib/actions/stats";
 import { LobbyChat } from "@/components/jugar/LobbyChat";
+import { PlayerStats } from "@/components/jugar/PlayerStats";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -34,10 +37,13 @@ function getStatusLabel(status: string) {
 }
 
 export default async function JugarPage() {
-  const [ranking, activeMatches] = await Promise.all([
+  const [ranking, activeMatches, currentUser] = await Promise.all([
     getTopRanking(5),
     getActiveMatches(),
+    getCurrentUser(),
   ]);
+
+  const stats = currentUser ? await getUserStats(currentUser.id) : null;
 
   return (
     <div className="min-h-screen">
@@ -157,6 +163,8 @@ export default async function JugarPage() {
                 Ver historial completo →
               </Link>
             </Card>
+            {/* Stats */}
+            {stats && <PlayerStats stats={stats} />}
           </div>
 
           {/* Right column: Chat Lobby */}

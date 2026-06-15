@@ -4,12 +4,15 @@ import { NextResponse, type NextRequest } from "next/server";
 /** Routes that require authentication — redirect to /auth/login if no session */
 const PROTECTED_ROUTES = [
   "/jugar",
-  "/prode",
+  "/prode/crear",
   "/torneos/crear",
-  "/escena",
   "/influencers",
   "/mensajes",
-  "/historial",
+];
+
+const PROTECTED_DYNAMIC = [
+  "/prode/",
+  "/escena/",
 ];
 
 export async function updateSession(request: NextRequest) {
@@ -40,7 +43,9 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect unauthenticated users from protected routes
   const pathname = request.nextUrl.pathname;
-  if (!user && PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
+  const isExactProtected = PROTECTED_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"));
+  const isDynamicProtected = PROTECTED_DYNAMIC.some((prefix) => pathname.startsWith(prefix) && pathname !== prefix.slice(0, -1));
+  if (!user && (isExactProtected || isDynamicProtected)) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
