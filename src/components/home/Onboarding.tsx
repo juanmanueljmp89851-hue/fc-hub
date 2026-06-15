@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 
 const STEPS = [
   {
@@ -92,13 +91,12 @@ export function Onboarding() {
               Siguiente
             </button>
           ) : (
-            <Link
-              href={current.link}
+            <button
               onClick={dismiss}
-              className="flex-1 rounded-lg bg-accent py-2 text-center text-sm font-bold text-background hover:opacity-90"
+              className="flex-1 rounded-lg bg-accent py-2 text-sm font-bold text-background hover:opacity-90"
             >
               Empezar
-            </Link>
+            </button>
           )}
         </div>
         <button

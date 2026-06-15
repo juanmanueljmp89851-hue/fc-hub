@@ -3,8 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /** Routes that require authentication — redirect to /auth/login if no session */
 const PROTECTED_ROUTES = [
-  "/prode/crear",
+  "/jugar",
+  "/prode",
   "/torneos/crear",
+  "/escena",
+  "/influencers",
+  "/mensajes",
+  "/historial",
 ];
 
 export async function updateSession(request: NextRequest) {
