@@ -81,8 +81,10 @@ export async function addTeamMember(teamId: string, username: string, position?:
     return { error: `Máximo ${maxMembers} jugadores (+ DT)` };
   }
 
-  const targetUser = await prisma.user.findUnique({ where: { username } });
-  if (!targetUser) return { error: `Usuario "${username}" no encontrado` };
+  const targetUser = await prisma.user.findFirst({
+    where: { username: { equals: username, mode: "insensitive" } },
+  });
+  if (!targetUser) return { error: `Usuario "${username}" no encontrado. Verificá que esté registrado en Modo Fosa.` };
 
   const gamertagForPlatform = getGamertag(targetUser, team.platform);
   if (!gamertagForPlatform) {
