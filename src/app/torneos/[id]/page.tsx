@@ -126,6 +126,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
 
   const confirmedCount = tournament.participants.filter((p) => p.status === "CONFIRMED").length;
   const isLeague = tournament.format === "LEAGUE";
+  const isTeamTournament = tournament.teamType === "CLUBS_PRO" || tournament.teamType === "RUSH";
   const hasMatches = tournament.matches.length > 0;
 
   return (
@@ -241,9 +242,11 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               createdById={tournament.createdById}
               participants={tournament.participants.map((p) => ({
                 userId: p.userId,
+                teamId: p.teamId,
                 status: p.status,
               }))}
               maxPlayers={tournament.maxPlayers}
+              teamType={tournament.teamType}
             />
           </div>
 
@@ -421,7 +424,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
           {/* Participantes */}
           <Card>
             <CardHeader>
-              <CardTitle>Participantes ({confirmedCount})</CardTitle>
+              <CardTitle>{isTeamTournament ? "Equipos" : "Participantes"} ({confirmedCount})</CardTitle>
             </CardHeader>
             {tournament.participants.length === 0 ? (
               <p className="text-sm text-foreground/50">No hay inscriptos todavía</p>
@@ -432,19 +435,37 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                     key={p.id}
                     className="flex items-center gap-2 rounded-lg bg-background/50 px-3 py-2"
                   >
-                    <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
-                      {p.user.avatarUrl ? (
-                        <Image src={p.user.avatarUrl} alt="" fill className="object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
-                      )}
-                    </div>
-                    <span className="truncate text-sm text-foreground/70">{p.user.username}</span>
+                    {isTeamTournament && p.team ? (
+                      <>
+                        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-surface">
+                          {p.team.logoUrl ? (
+                            <Image src={p.team.logoUrl} alt="" fill className="object-contain p-0.5" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-sm">🛡️</div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">{p.team.name}</span>
+                          {p.team.tag && <span className="text-xs text-foreground/40">[{p.team.tag}]</span>}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="relative h-6 w-6 overflow-hidden rounded-full bg-surface">
+                          {p.user.avatarUrl ? (
+                            <Image src={p.user.avatarUrl} alt="" fill className="object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-xs text-foreground/30">👤</div>
+                          )}
+                        </div>
+                        <span className="truncate text-sm text-foreground/70">{p.user.username}</span>
+                      </>
+                    )}
                     {p.status === "PENDING" && (
                       <span className="ml-auto text-xs text-gold">Pendiente</span>
                     )}
                     <div className="ml-auto flex items-center gap-1">
-                      {currentUser && p.userId !== currentUser.id && p.status === "CONFIRMED" && (
+                      {!isTeamTournament && currentUser && p.userId !== currentUser.id && p.status === "CONFIRMED" && (
                         <SendDmButton userId={p.userId} username={p.user.username} />
                       )}
                       {canEdit && p.status === "CONFIRMED" && p.userId !== tournament.createdById && (

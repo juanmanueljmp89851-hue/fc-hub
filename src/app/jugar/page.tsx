@@ -5,6 +5,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { getTopRanking, getActiveMatches } from "@/lib/actions/lobby";
 import { getCurrentUser } from "@/lib/actions/user";
 import { getUserStats } from "@/lib/actions/stats";
+import { getTeamRanking } from "@/lib/actions/team";
 import { LobbyChat } from "@/components/jugar/LobbyChat";
 import { PlayerStats } from "@/components/jugar/PlayerStats";
 import Link from "next/link";
@@ -37,10 +38,11 @@ function getStatusLabel(status: string) {
 }
 
 export default async function JugarPage() {
-  const [ranking, activeMatches, currentUser] = await Promise.all([
+  const [ranking, activeMatches, currentUser, teamRanking] = await Promise.all([
     getTopRanking(5),
     getActiveMatches(),
     getCurrentUser(),
+    getTeamRanking(),
   ]);
 
   const stats = currentUser ? await getUserStats(currentUser.id) : null;
@@ -121,6 +123,42 @@ export default async function JugarPage() {
                 </div>
               )}
             </Card>
+
+            {/* Team Ranking */}
+            {teamRanking.length > 0 && (
+              <Card>
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-bold">🛡️ Equipos</h3>
+                  <Link
+                    href="/ranking?tab=equipos"
+                    className="text-xs font-medium text-accent hover:underline"
+                  >
+                    Ver completo →
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {teamRanking.slice(0, 5).map((team, i) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-surface-light/50 transition-colors"
+                    >
+                      <span className="w-6 text-center text-sm">
+                        {getMedalEmoji(i + 1)}
+                      </span>
+                      <div className="h-6 w-6 shrink-0 overflow-hidden rounded-lg bg-surface-light">
+                        {team.logoUrl ? (
+                          <img src={team.logoUrl} alt="" className="h-full w-full object-contain p-0.5" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px]">🛡️</div>
+                        )}
+                      </div>
+                      <span className="flex-1 truncate text-sm font-medium">{team.name}</span>
+                      <span className="text-xs font-bold text-accent">{team.rankingPoints}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Active matches */}
             <Card>

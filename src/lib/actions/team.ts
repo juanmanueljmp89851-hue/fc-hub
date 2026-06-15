@@ -718,3 +718,27 @@ function getGamertag(user: { psnUsername: string | null; xboxUsername: string | 
     default: return null;
   }
 }
+
+// ─── RANKING DE EQUIPOS ───────────────────────────────────
+
+export async function getTeamRanking(mode?: TeamMode) {
+  return prisma.team.findMany({
+    where: mode ? { mode } : undefined,
+    select: {
+      id: true,
+      name: true,
+      tag: true,
+      logoUrl: true,
+      mode: true,
+      rankingPoints: true,
+      won: true,
+      drawn: true,
+      lost: true,
+      goalsFor: true,
+      goalsAgainst: true,
+      _count: { select: { members: true } },
+    },
+    orderBy: [{ rankingPoints: "desc" }, { won: "desc" }, { goalsFor: "desc" }],
+    take: 100,
+  });
+}

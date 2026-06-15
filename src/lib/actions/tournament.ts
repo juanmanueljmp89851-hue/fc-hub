@@ -409,6 +409,9 @@ export async function getTournament(id: string) {
           user: {
             select: { id: true, username: true, avatarUrl: true, rankingPoints: true },
           },
+          team: {
+            select: { id: true, name: true, tag: true, logoUrl: true, rankingPoints: true },
+          },
         },
         orderBy: { joinedAt: "asc" },
       },
@@ -417,6 +420,9 @@ export async function getTournament(id: string) {
           player1: { select: { id: true, username: true, avatarUrl: true } },
           player2: { select: { id: true, username: true, avatarUrl: true } },
           winner: { select: { id: true, username: true } },
+          team1: { select: { id: true, name: true, tag: true, logoUrl: true } },
+          team2: { select: { id: true, name: true, tag: true, logoUrl: true } },
+          winnerTeam: { select: { id: true, name: true } },
         },
         orderBy: [{ round: "asc" }, { createdAt: "asc" }],
       },
@@ -533,6 +539,96 @@ export async function joinTournament(tournamentId: string) {
           ? `Solicitud de inscripción en ${tournament.name}`
           : `Nuevo inscripto en ${tournament.name}`,
         message: `${dbUser.username} ${status === "PENDING" ? "solicita unirse a" : "se inscribió en"} tu torneo.`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      },
+    });
+  }
+
+  revalidatePath(`/torneos/${tournamentId}`);
+  return { success: true, status };
+}
+
+// ─── INSCRIBIR EQUIPO EN TORNEO ─────────────────────────────
+
+export async function joinTournamentAsTeam(tournamentId: string, teamId: string) {
+  const supabase = createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { error: "Tenés que iniciar sesión" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    include: {
+      _count: { select: { participants: { where: { status: { in: ["CONFIRMED", "PENDING"] } } } } },
+    },
+  });
+  if (!tournament) return { error: "Torneo no encontrado" };
+
+  if (tournament.teamType !== "CLUBS_PRO" && tournament.teamType !== "RUSH") {
+    return { error: "Este torneo no es de equipos" };
+  }
+
+  if (tournament.status !== "REGISTRATION") {
+    return { error: "Las inscripciones no están abiertas" };
+  }
+
+  if (tournament.registrationDeadline && new Date() > tournament.registrationDeadline) {
+    return { error: "El plazo de inscripción ya cerró" };
+  }
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: { _count: { select: { members: true } } },
+  });
+  if (!team) return { error: "Equipo no encontrado" };
+
+  if (team.managerId !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "Solo el DT puede inscribir al equipo" };
+  }
+
+  const expectedMode = tournament.teamType === "CLUBS_PRO" ? "CLUBS_PRO" : "RUSH";
+  if (team.mode !== expectedMode) {
+    return { error: `Este torneo es de ${expectedMode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}. Tu equipo es de ${team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}.` };
+  }
+
+  if (tournament.requiresRoster) {
+    const minPlayers = team.mode === "CLUBS_PRO" ? 11 : 5;
+    if (team._count.members < minPlayers) {
+      return { error: `Necesitás al menos ${minPlayers} jugadores en la lista de buena fe` };
+    }
+  }
+
+  const existing = await prisma.tournamentParticipant.findUnique({
+    where: { tournamentId_teamId: { tournamentId, teamId } },
+  });
+  if (existing) return { error: "El equipo ya está inscripto" };
+
+  const isFull = tournament._count.participants >= tournament.maxPlayers;
+  if (isFull) return { error: "El torneo está lleno" };
+
+  const status = tournament.requiresVerification ? "PENDING" : "CONFIRMED";
+  await prisma.tournamentParticipant.create({
+    data: {
+      tournamentId,
+      userId: dbUser.id,
+      teamId,
+      status,
+      confirmedAt: status === "CONFIRMED" ? new Date() : null,
+    },
+  });
+
+  if (tournament.createdById !== dbUser.id) {
+    await prisma.notification.create({
+      data: {
+        userId: tournament.createdById,
+        type: status === "PENDING" ? "TOURNAMENT_JOIN_REQUEST" : "TOURNAMENT_INSCRIPTION",
+        title: status === "PENDING"
+          ? `Solicitud de inscripción: ${team.name}`
+          : `Nuevo equipo inscripto: ${team.name}`,
+        message: `${team.name} (DT: ${dbUser.username}) ${status === "PENDING" ? "solicita unirse a" : "se inscribió en"} tu torneo.`,
         relatedId: tournamentId,
         linkUrl: `/torneos/${tournamentId}`,
       },
