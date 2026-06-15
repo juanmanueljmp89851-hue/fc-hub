@@ -3270,3 +3270,81 @@ export async function sendTournamentChatMessage(tournamentId: string, text: stri
   revalidatePath(`/torneos/${tournamentId}`);
   return { success: true };
 }
+
+// ─── DUPLICAR / REINICIAR TORNEO ──────────────────────────────
+
+export async function duplicateTournament(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const original = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+  });
+  if (!original) return { error: "Torneo no encontrado" };
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: authUser.id } });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  if (original.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "Sin permisos" };
+  }
+
+  const newTournament = await prisma.tournament.create({
+    data: {
+      name: `${original.name} (copia)`,
+      description: original.description,
+      rules: original.rules,
+      format: original.format,
+      leagueLegs: original.leagueLegs,
+      status: "DRAFT",
+      maxPlayers: original.maxPlayers,
+      platforms: original.platforms,
+      teamType: original.teamType,
+      prize: original.prize,
+      visibility: original.visibility,
+      verificationLevel: original.verificationLevel,
+      logoUrl: original.logoUrl,
+      bannerUrl: original.bannerUrl,
+      requiresVerification: original.requiresVerification,
+      matchTime: original.matchTime,
+      difficulty: original.difficulty,
+      controls: original.controls,
+      gameMode: original.gameMode,
+      stadium: original.stadium,
+      groupCount: original.groupCount,
+      qualifyPerGroup: original.qualifyPerGroup,
+      knockoutSeeding: original.knockoutSeeding,
+      randomDrawUntil: original.randomDrawUntil,
+      hasLosersBracket: original.hasLosersBracket,
+      thirdPlaceMatch: original.thirdPlaceMatch,
+      playoffRule: original.playoffRule,
+      knockoutFormat: original.knockoutFormat,
+      requireProof: original.requireProof,
+      scheduleDays: original.scheduleDays,
+      scheduleTimeMode: original.scheduleTimeMode,
+      scheduleTime: original.scheduleTime,
+      waitTimeMinutes: original.waitTimeMinutes,
+      relegationCount: original.relegationCount,
+      cup1Name: original.cup1Name,
+      cup1Spots: original.cup1Spots,
+      cup2Name: original.cup2Name,
+      cup2Spots: original.cup2Spots,
+      createdById: dbUser.id,
+    },
+  });
+
+  await prisma.tournamentParticipant.create({
+    data: {
+      tournamentId: newTournament.id,
+      userId: dbUser.id,
+      status: "CONFIRMED",
+      confirmedAt: new Date(),
+    },
+  });
+
+  revalidatePath("/torneos");
+  return { success: true, tournamentId: newTournament.id };
+}

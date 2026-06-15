@@ -11,6 +11,7 @@ import { TournamentActions } from "@/components/tournaments/TournamentActions";
 import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
 import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
+import { DuplicateTournamentButton } from "@/components/tournaments/DuplicateTournamentButton";
 import { PendingParticipants } from "@/components/tournaments/PendingParticipants";
 import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
 import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
@@ -133,11 +134,13 @@ export default async function TorneoDetailPage({ params }: PageProps) {
       <main className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          {tournament.bannerUrl && (
-            <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
+          <div className="relative mb-4 h-48 overflow-hidden rounded-xl bg-gradient-to-br from-surface-light via-surface to-surface-light">
+            {tournament.bannerUrl ? (
               <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" />
-            </div>
-          )}
+            ) : (
+              <div className="flex h-full items-center justify-center text-6xl opacity-20">🏆</div>
+            )}
+          </div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${getStatusColor(tournament.status)}`}>
               {getStatusLabel(tournament.status)}
@@ -150,11 +153,13 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             ))}
           </div>
           <div className="flex items-center gap-4">
-            {tournament.logoUrl && (
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-surface-light">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-surface-light bg-surface-light">
+              {tournament.logoUrl ? (
                 <Image src={tournament.logoUrl} alt="" fill className="object-cover" />
-              </div>
-            )}
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-2xl">🏟️</div>
+              )}
+            </div>
             <h1 className="text-xl font-bold sm:text-3xl">{tournament.name}</h1>
             {canEdit && (
               <>
@@ -164,6 +169,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                 >
                   Editar
                 </Link>
+                <DuplicateTournamentButton tournamentId={tournament.id} />
                 <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
                 {tournament.status === "IN_PROGRESS" && (
                   <RemindPendingButton tournamentId={tournament.id} />

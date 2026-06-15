@@ -146,14 +146,16 @@ export default async function TorneosPage({ searchParams }: PageProps) {
             <div className="grid gap-4 md:grid-cols-2">
               {tournaments.map((torneo) => (
                 <Link key={torneo.id} href={`/torneos/${torneo.id}`}>
-                  <Card className="overflow-hidden p-0 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
+                  <Card className="flex h-full flex-col overflow-hidden p-0 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
                     {/* Banner */}
-                    {torneo.bannerUrl && (
-                      <div className="relative h-28 w-full overflow-hidden">
+                    <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
+                      {torneo.bannerUrl ? (
                         <Image src={torneo.bannerUrl} alt="" fill className="object-cover" />
-                      </div>
-                    )}
-                    <div className={torneo.bannerUrl ? "p-4" : "p-5"}>
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-4xl opacity-20">🏆</div>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
                     <div className="mb-3 flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <span
@@ -176,11 +178,13 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      {torneo.logoUrl && (
-                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-light">
+                        {torneo.logoUrl ? (
                           <Image src={torneo.logoUrl} alt="" fill className="object-cover" />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-lg">🏟️</div>
+                        )}
+                      </div>
                       <h3 className="text-lg font-bold">{torneo.name}</h3>
                     </div>
                     <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-foreground/60">
@@ -214,11 +218,9 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                       />
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-auto flex items-center justify-between pt-3">
                       <div className="flex items-center gap-2">
-                        {torneo.prize && (
-                          <p className="text-xs text-gold">🏆 {torneo.prize}</p>
-                        )}
+                        <p className="text-xs text-gold">🏆 {torneo.prize || "Premio a definir"}</p>
                         <p className="text-xs text-foreground/40">
                           por {torneo.createdBy.username}
                         </p>
