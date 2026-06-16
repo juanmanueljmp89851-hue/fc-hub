@@ -1504,7 +1504,6 @@ async function generateLeagueMatches(
   players: PlayerInfo[],
   legs: number
 ) {
-  // Crear standings para cada jugador
   for (const player of players) {
     await prisma.leagueStanding.create({
       data: {
@@ -1514,14 +1513,24 @@ async function generateLeagueMatches(
     });
   }
 
-  // Generar todos contra todos
-  let matchday = 1;
+  // Round-robin scheduling (circle method)
+  const ids = players.map((_, i) => i);
+  const isOdd = players.length % 2 !== 0;
+  if (isOdd) ids.push(-1); // BYE slot
+  const total = ids.length;
+  const rounds = total - 1;
+  const half = total / 2;
   for (let leg = 1; leg <= legs; leg++) {
-    for (let i = 0; i < players.length; i++) {
-      for (let j = i + 1; j < players.length; j++) {
-        const isHome = leg === 1;
-        const home = isHome ? players[i] : players[j];
-        const away = isHome ? players[j] : players[i];
+    // Reset rotation for each leg
+    const rot = [...ids];
+    for (let r = 0; r < rounds; r++) {
+      const dayNum = leg === 1 ? r + 1 : rounds + r + 1;
+      for (let i = 0; i < half; i++) {
+        const hIdx = rot[i];
+        const aIdx = rot[total - 1 - i];
+        if (hIdx === -1 || aIdx === -1) continue; // skip BYE
+        const home = leg === 1 ? players[hIdx] : players[aIdx];
+        const away = leg === 1 ? players[aIdx] : players[hIdx];
         await prisma.tournamentMatch.create({
           data: {
             tournamentId,
@@ -1529,14 +1538,16 @@ async function generateLeagueMatches(
             player2Id: away.id,
             team1Id: home.teamId ?? null,
             team2Id: away.teamId ?? null,
-            round: `Jornada ${matchday}`,
+            round: `Jornada ${dayNum}`,
             leg,
-            matchday,
+            matchday: dayNum,
             status: "SCHEDULED",
           },
         });
       }
-      matchday++;
+      // Rotate: fix first element, rotate rest
+      const last = rot.pop()!;
+      rot.splice(1, 0, last);
     }
   }
 }

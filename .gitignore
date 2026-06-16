@@ -32,6 +32,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# scripts & dev artifacts
+/scripts/
+build-log.txt
+prisma/dev.db
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
