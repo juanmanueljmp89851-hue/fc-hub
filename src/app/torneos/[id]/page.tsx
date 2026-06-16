@@ -12,6 +12,7 @@ import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
 import { LeagueTable } from "@/components/tournaments/LeagueTable";
 import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
 import { DuplicateTournamentButton } from "@/components/tournaments/DuplicateTournamentButton";
+import { ResetTournamentButton } from "@/components/tournaments/ResetTournamentButton";
 import { PendingParticipants } from "@/components/tournaments/PendingParticipants";
 import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
 import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
@@ -171,6 +172,9 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                   Editar
                 </Link>
                 <DuplicateTournamentButton tournamentId={tournament.id} />
+                {(tournament.status === "IN_PROGRESS" || tournament.status === "FINISHED") && (
+                  <ResetTournamentButton tournamentId={tournament.id} />
+                )}
                 <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
                 {tournament.status === "IN_PROGRESS" && (
                   <RemindPendingButton tournamentId={tournament.id} />

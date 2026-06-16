@@ -3528,7 +3528,67 @@ export async function sendTournamentChatMessage(tournamentId: string, text: stri
   return { success: true };
 }
 
-// ─── DUPLICAR / REINICIAR TORNEO ──────────────────────────────
+// ─── REINICIAR TORNEO ─────────────────────────────────────────
+
+export async function resetTournament(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { createdById: true, status: true },
+  });
+  if (!tournament) return { error: "Torneo no encontrado" };
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "No tenés permiso" };
+  }
+
+  // Delete in order: match messages → match disputes → matches → league standings
+  const matchIds = await prisma.tournamentMatch.findMany({
+    where: { tournamentId },
+    select: { id: true },
+  });
+  const ids = matchIds.map((m) => m.id);
+
+  if (ids.length > 0) {
+    await prisma.rankingHistory.deleteMany({
+      where: { tournamentMatchId: { in: ids } },
+    });
+    await prisma.matchMessage.deleteMany({
+      where: { tournamentMatchId: { in: ids } },
+    });
+    await prisma.tournamentDispute.deleteMany({
+      where: { tournamentId },
+    });
+    await prisma.tournamentMatch.deleteMany({
+      where: { tournamentId },
+    });
+  }
+
+  await prisma.leagueStanding.deleteMany({
+    where: { tournamentId },
+  });
+
+  // Reset tournament status to REGISTRATION
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { status: "REGISTRATION" },
+  });
+
+  revalidatePath(`/torneos/${tournamentId}`);
+  return { success: true };
+}
+
+// ─── DUPLICAR TORNEO ──────────────────────────────────────────
 
 export async function duplicateTournament(tournamentId: string) {
   const supabase = createClient();
