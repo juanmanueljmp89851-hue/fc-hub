@@ -153,7 +153,7 @@ export async function register() {
 
     for (let i = 0; i < newCards.length; i++) {
       const c = newCards[i];
-      const order = baseOrder + i;
+      const order = baseOrder + (newCards.length - 1 - i);
       await prisma.futCard.upsert({
         where: { eaId_cardType: { eaId: c.eaId, cardType: c.cardType } },
         update: {

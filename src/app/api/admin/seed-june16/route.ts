@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
   const results = [];
   for (let i = 0; i < newCards.length; i++) {
     const c = newCards[i];
-    const order = baseOrder + i;
+    const order = baseOrder + (newCards.length - 1 - i);
     const card = await prisma.futCard.upsert({
       where: { eaId_cardType: { eaId: c.eaId, cardType: c.cardType } },
       update: {
