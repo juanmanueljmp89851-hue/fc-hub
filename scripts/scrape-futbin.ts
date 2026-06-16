@@ -756,19 +756,53 @@ async function main() {
     allCards = sorted.map((s) => s.card);
     console.log(`  🔄 Deduplicado: ${allCards.length} cartas únicas`);
 
-    // Assign release order based on appearance position
-    // First card = newest = highest promoOrder
-    allCards.forEach((card, i) => {
-      card.promoOrder = 1_000_000 - i;
+    // ─── promoOrder: NEW cards above everything, existing cards frozen ───
+    // Two-writer history left manual cards at ~6M and old scraper runs capped at
+    // 1M, so scraped cards never reached the top. Fix: only NEWLY discovered cards
+    // get a fresh order above the current global max (newest first). Existing cards
+    // keep their stored order, so the daily scrape never reshuffles the board — each
+    // day's genuinely-new releases climb straight to the top of home + Cartas FC26.
+    const existingRows = await prisma.futCard.findMany({
+      select: { eaId: true, cardType: true, promoOrder: true },
     });
-    console.log(`  📅 Orden de aparición asignado (${1_000_000} a ${1_000_000 - allCards.length + 1})`);
+    const existingOrder = new Map<string, number>(
+      existingRows.map((c) => [`${c.eaId}:${c.cardType}`, c.promoOrder]),
+    );
+    const globalMax = existingRows.reduce((m, c) => Math.max(m, c.promoOrder), 0);
+
+    const freshCards = allCards.filter(
+      (c) => !existingOrder.has(`${c.eaId}:${c.cardType}`),
+    );
+    // allCards is already sorted newest-first → newest fresh card gets highest order
+    freshCards.forEach((card, i) => {
+      card.promoOrder = globalMax + freshCards.length - i;
+    });
+    // Existing cards: pin to their stored order so upsert update is a no-op on order
+    allCards.forEach((card) => {
+      const key = `${card.eaId}:${card.cardType}`;
+      const stored = existingOrder.get(key);
+      if (stored !== undefined) card.promoOrder = stored;
+    });
+    console.log(
+      `  📅 ${freshCards.length} cartas NUEVAS → order ${globalMax + 1}..${globalMax + freshCards.length} (sobre max ${globalMax}); ${allCards.length - freshCards.length} existentes congeladas`,
+    );
 
     // Save to DB
     console.log(`\n💾 Guardando en Supabase...`);
     const saved = await upsertCards(allCards);
     console.log(`✅ ${saved} cartas guardadas/actualizadas\n`);
+
+    // Fail loud in CI: extracted cards but saved none = broken pipeline (DB, schema,
+    // or DOM change). Without this the job exits 0 and silently writes nothing.
+    if (allCards.length > 0 && saved === 0) {
+      throw new Error(`Se extrajeron ${allCards.length} cartas pero se guardaron 0 — pipeline roto`);
+    }
+    if (allCards.length === 0) {
+      throw new Error("0 cartas extraídas — DOM de FUTBIN cambió o bloqueo de bot");
+    }
   } catch (error) {
     console.error("❌ Error en scraper:", error);
+    process.exitCode = 1; // surface failure to GitHub Actions (red run)
   } finally {
     await browser.close();
     await prisma.$disconnect();
