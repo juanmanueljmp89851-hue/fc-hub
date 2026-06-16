@@ -46,6 +46,8 @@ function UserMenu({ user }: { user: DbUser }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
+        aria-label="Menú de usuario"
+        aria-expanded={open}
         className="flex items-center gap-2 rounded-lg border border-surface-light px-3 py-1.5 transition-colors hover:border-accent"
       >
         <div className="relative h-7 w-7 overflow-hidden rounded-full bg-surface">

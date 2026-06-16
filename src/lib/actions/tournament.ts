@@ -447,6 +447,17 @@ export async function getTournament(id: string) {
   return tournament;
 }
 
+function registrationClosedMessage(status: string): string {
+  const msgs: Record<string, string> = {
+    SETUP: "El torneo está configurando el sorteo",
+    IN_PROGRESS: "El torneo ya comenzó",
+    FINISHED: "El torneo ya finalizó",
+    CANCELLED: "El torneo fue cancelado",
+    DRAFT: "El torneo aún no abrió inscripciones",
+  };
+  return msgs[status] ?? "Las inscripciones no están abiertas";
+}
+
 // ─── INSCRIBIRSE ───────────────────────────────────────────
 
 export async function joinTournament(tournamentId: string) {
@@ -485,7 +496,7 @@ export async function joinTournament(tournamentId: string) {
   }
 
   if (tournament.status !== "REGISTRATION") {
-    return { error: "Las inscripciones no están abiertas" };
+    return { error: registrationClosedMessage(tournament.status) };
   }
 
   // Verificar deadline
@@ -578,7 +589,7 @@ export async function joinTournamentAsTeam(tournamentId: string, teamId: string)
   }
 
   if (tournament.status !== "REGISTRATION") {
-    return { error: "Las inscripciones no están abiertas" };
+    return { error: registrationClosedMessage(tournament.status) };
   }
 
   if (tournament.registrationDeadline && new Date() > tournament.registrationDeadline) {
@@ -2611,7 +2622,7 @@ async function checkTournamentComplete(tournamentId: string) {
         where: { id: tournamentId },
         select: { status: true, format: true, name: true, relegationCount: true, cup1Name: true, cup1Spots: true, cup2Name: true, cup2Spots: true },
       });
-      if (!tournament || tournament.status === "FINISHED") return;
+      if (!tournament || tournament.status !== "IN_PROGRESS") return;
 
       await prisma.tournament.update({
         where: { id: tournamentId },

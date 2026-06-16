@@ -151,7 +151,7 @@ export default async function TorneosPage({ searchParams }: PageProps) {
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {tournaments.map((torneo) => (
                 <Link key={torneo.id} href={`/torneos/${torneo.id}`}>
                   <Card className="flex h-full flex-col overflow-hidden p-0 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
@@ -188,7 +188,7 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                     <div className="flex items-center gap-3">
                       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-light">
                         {torneo.logoUrl ? (
-                          <Image src={torneo.logoUrl} alt="" fill className="object-cover" />
+                          <Image src={torneo.logoUrl} alt={torneo.name} fill className="object-cover" />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-lg">🏟️</div>
                         )}
