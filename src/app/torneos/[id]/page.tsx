@@ -41,6 +41,7 @@ function getStatusLabel(status: string) {
   const map: Record<string, string> = {
     DRAFT: "Próximamente",
     REGISTRATION: "Inscripciones abiertas",
+    SETUP: "Configurando sorteo",
     IN_PROGRESS: "En curso",
     FINISHED: "Finalizado",
     CANCELLED: "Cancelado",
@@ -52,6 +53,7 @@ function getStatusColor(status: string) {
   switch (status) {
     case "IN_PROGRESS": return "bg-accent/20 text-accent";
     case "REGISTRATION": return "bg-gold/20 text-gold";
+    case "SETUP": return "bg-orange-500/20 text-orange-400";
     case "FINISHED": return "bg-foreground/10 text-foreground/50";
     default: return "bg-surface-light text-foreground/50";
   }
@@ -171,6 +173,14 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                 >
                   Editar
                 </Link>
+                {tournament.status === "SETUP" && (
+                  <Link
+                    href={`/torneos/${tournament.id}/sorteo`}
+                    className="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90"
+                  >
+                    Ir al sorteo
+                  </Link>
+                )}
                 <DuplicateTournamentButton tournamentId={tournament.id} />
                 <ResetTournamentButton tournamentId={tournament.id} />
                 <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />

@@ -106,8 +106,9 @@ export function TournamentActions({
     const result = await startTournament(tournamentId);
     if (result.error) {
       setMessage(result.error);
+    } else if ("redirectTo" in result && result.redirectTo) {
+      router.push(result.redirectTo as string);
     } else {
-      setMessage("¡Torneo iniciado!");
       router.refresh();
     }
     setLoading(false);

@@ -833,35 +833,192 @@ export async function startTournament(tournamentId: string) {
     return { error: "Se necesitan al menos 2 participantes confirmados" };
   }
 
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { status: "SETUP" },
+  });
+
+  revalidatePath(`/torneos/${tournamentId}`);
+  return { success: true, redirectTo: `/torneos/${tournamentId}/sorteo` };
+}
+
+// ─── DATOS PARA SORTEO ──────────────────────────────────────
+
+export async function getDrawData(tournamentId: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return null;
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return null;
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: {
+      id: true,
+      name: true,
+      format: true,
+      status: true,
+      teamType: true,
+      groupCount: true,
+      qualifyPerGroup: true,
+      knockoutSeeding: true,
+      hasLosersBracket: true,
+      knockoutFormat: true,
+      leagueLegs: true,
+      createdById: true,
+      participants: {
+        where: { status: "CONFIRMED" },
+        include: { user: { select: { id: true, username: true, avatarUrl: true } }, team: { select: { id: true, name: true, logoUrl: true } } },
+      },
+    },
+  });
+
+  if (!tournament) return null;
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") return null;
+
   const isTeamTournament = tournament.teamType === "CLUBS_PRO" || tournament.teamType === "RUSH";
 
-  // Generar bracket según formato
-  const players: PlayerInfo[] = confirmedPlayers.map((p) => ({
+  return {
+    tournament: {
+      id: tournament.id,
+      name: tournament.name,
+      format: tournament.format,
+      status: tournament.status,
+      groupCount: tournament.groupCount ?? 4,
+      qualifyPerGroup: tournament.qualifyPerGroup ?? 2,
+      hasLosersBracket: tournament.hasLosersBracket,
+      knockoutFormat: tournament.knockoutFormat,
+      leagueLegs: tournament.leagueLegs ?? 1,
+      isTeamTournament,
+    },
+    participants: tournament.participants.map((p) => ({
+      id: p.user.id,
+      username: p.user.username,
+      avatarUrl: p.user.avatarUrl,
+      teamId: p.teamId,
+      teamName: p.team?.name ?? null,
+      teamLogoUrl: p.team?.logoUrl ?? null,
+      displayName: isTeamTournament && p.team ? p.team.name : p.user.username,
+    })),
+  };
+}
+
+// ─── CONFIRMAR SORTEO Y GENERAR PARTIDOS ────────────────────
+
+interface DrawConfig {
+  mode: "RANDOM" | "SEEDED" | "MANUAL" | "MATCHDAY";
+  seeds?: string[];
+  groups?: Record<string, string[]>;
+  bracket?: string[];
+  matchdays?: { matchday: number; matches: { p1: string; p2: string }[] }[];
+}
+
+export async function confirmDraw(tournamentId: string, config: DrawConfig) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+  });
+  if (!dbUser) return { error: "Usuario no encontrado" };
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    include: {
+      participants: {
+        where: { status: "CONFIRMED" },
+        include: { user: true, team: true },
+      },
+    },
+  });
+
+  if (!tournament) return { error: "Torneo no encontrado" };
+  if (tournament.createdById !== dbUser.id && dbUser.role !== "ADMIN") {
+    return { error: "No tenés permiso" };
+  }
+  if (tournament.status !== "SETUP") return { error: "El torneo no está en fase de sorteo" };
+
+  const isTeamTournament = tournament.teamType === "CLUBS_PRO" || tournament.teamType === "RUSH";
+  const players: PlayerInfo[] = tournament.participants.map((p) => ({
     id: p.user.id,
     username: isTeamTournament && p.team ? p.team.name : p.user.username,
     teamId: p.teamId,
   }));
+
   const withLosers = tournament.hasLosersBracket || tournament.format === "DOUBLE_ELIMINATION";
 
-  if (tournament.format === "SINGLE_ELIMINATION") {
-    if (withLosers) {
-      await generateDoubleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { drawMode: config.mode, drawData: config as object },
+  });
+
+  if (tournament.format === "GROUP_KNOCKOUT") {
+    if (config.mode === "MANUAL" && config.groups) {
+      await generateGroupKnockoutManual(
+        tournament.id,
+        players,
+        config.groups,
+        tournament.qualifyPerGroup ?? 2,
+        tournament.knockoutSeeding,
+        withLosers,
+      );
+    } else if (config.mode === "SEEDED" && config.seeds) {
+      await generateGroupKnockoutSeeded(
+        tournament.id,
+        players,
+        config.seeds,
+        tournament.groupCount ?? 4,
+        tournament.qualifyPerGroup ?? 2,
+        tournament.knockoutSeeding,
+        withLosers,
+      );
     } else {
-      await generateSingleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+      await generateGroupKnockoutBracket(
+        tournament.id,
+        players,
+        tournament.groupCount ?? 4,
+        tournament.qualifyPerGroup ?? 2,
+        tournament.knockoutSeeding,
+        withLosers,
+      );
     }
-  } else if (tournament.format === "DOUBLE_ELIMINATION") {
-    await generateDoubleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
-  } else if (tournament.format === "GROUP_KNOCKOUT") {
-    await generateGroupKnockoutBracket(
-      tournament.id,
-      players,
-      tournament.groupCount ?? 4,
-      tournament.qualifyPerGroup ?? 2,
-      tournament.knockoutSeeding,
-      withLosers,
-    );
   } else if (tournament.format === "LEAGUE") {
-    await generateLeagueMatches(tournament.id, players, tournament.leagueLegs ?? 1);
+    if (config.mode === "MATCHDAY" && config.matchdays) {
+      await generateLeagueManual(tournament.id, players, config.matchdays, tournament.leagueLegs ?? 1);
+    } else {
+      await generateLeagueMatches(tournament.id, players, tournament.leagueLegs ?? 1);
+    }
+  } else if (tournament.format === "SINGLE_ELIMINATION" || tournament.format === "DOUBLE_ELIMINATION") {
+    if (config.mode === "MANUAL" && config.bracket) {
+      const ordered = orderPlayersByBracket(players, config.bracket);
+      if (withLosers) {
+        await generateDoubleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+      } else {
+        await generateSingleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+      }
+    } else if (config.mode === "SEEDED" && config.seeds) {
+      const ordered = orderPlayersBySeeds(players, config.seeds);
+      if (withLosers) {
+        await generateDoubleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+      } else {
+        await generateSingleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+      }
+    } else {
+      if (withLosers) {
+        await generateDoubleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+      } else {
+        await generateSingleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+      }
+    }
   }
 
   await prisma.tournament.update({
@@ -874,19 +1031,18 @@ export async function startTournament(tournamentId: string) {
       tournamentId,
       action: "TOURNAMENT_STARTED",
       performedById: dbUser.id,
-      details: `Torneo iniciado con ${confirmedPlayers.length} jugadores`,
+      details: `Torneo iniciado con ${players.length} jugadores. Modo sorteo: ${config.mode}`,
     },
   });
 
-  // Notify all participants
   await prisma.notification.createMany({
-    data: confirmedPlayers
+    data: tournament.participants
       .filter((p) => p.userId !== dbUser.id)
       .map((p) => ({
         userId: p.userId,
-        type: "TOURNAMENT_STARTING",
+        type: "TOURNAMENT_STARTING" as const,
         title: `¡${tournament.name} arrancó!`,
-        message: `El torneo ya comenzó con ${confirmedPlayers.length} jugadores. Revisá tus partidos.`,
+        message: `El torneo ya comenzó con ${players.length} jugadores. Revisá tus partidos.`,
         relatedId: tournamentId,
         linkUrl: `/torneos/${tournamentId}`,
       })),
@@ -894,6 +1050,228 @@ export async function startTournament(tournamentId: string) {
 
   revalidatePath(`/torneos/${tournamentId}`);
   return { success: true };
+}
+
+function orderPlayersByBracket(players: PlayerInfo[], bracketOrder: string[]): PlayerInfo[] {
+  const map = new Map(players.map((p) => [p.id, p]));
+  const ordered: PlayerInfo[] = [];
+  for (const id of bracketOrder) {
+    const p = map.get(id);
+    if (p) ordered.push(p);
+  }
+  const remaining = players.filter((p) => !bracketOrder.includes(p.id));
+  remaining.sort(() => Math.random() - 0.5);
+  return [...ordered, ...remaining];
+}
+
+function orderPlayersBySeeds(players: PlayerInfo[], seeds: string[]): PlayerInfo[] {
+  const seedSet = new Set(seeds);
+  const seeded = seeds.map((id) => players.find((p) => p.id === id)).filter(Boolean) as PlayerInfo[];
+  const unseeded = players.filter((p) => !seedSet.has(p.id));
+  unseeded.sort(() => Math.random() - 0.5);
+
+  if (seeded.length === 0) return unseeded;
+
+  const totalSlots = Math.pow(2, Math.ceil(Math.log2(players.length)));
+  const result: PlayerInfo[] = new Array(totalSlots);
+  const seedPositions = getSeedPositions(totalSlots, seeded.length);
+  seeded.forEach((p, i) => {
+    result[seedPositions[i]] = p;
+  });
+  let ui = 0;
+  for (let i = 0; i < totalSlots; i++) {
+    if (!result[i] && ui < unseeded.length) {
+      result[i] = unseeded[ui++];
+    }
+  }
+  return result.filter(Boolean);
+}
+
+function getSeedPositions(totalSlots: number, seedCount: number): number[] {
+  const positions: number[] = [0, totalSlots - 1];
+  if (seedCount <= 2) return positions.slice(0, seedCount);
+
+  const mid = Math.floor(totalSlots / 2);
+  positions.push(mid, mid - 1);
+  if (seedCount <= 4) return positions.slice(0, seedCount);
+
+  const q1 = Math.floor(totalSlots / 4);
+  const q3 = Math.floor(3 * totalSlots / 4);
+  positions.push(q1, q3 - 1, q3, q1 - 1);
+  return positions.slice(0, seedCount);
+}
+
+async function generateGroupKnockoutSeeded(
+  tournamentId: string,
+  players: PlayerInfo[],
+  seeds: string[],
+  groupCount: number,
+  qualifyPerGroup: number,
+  seeding: KnockoutSeeding = "RANDOM",
+  withLosers: boolean = false,
+) {
+  const seedSet = new Set(seeds);
+  const seeded = seeds.map((id) => players.find((p) => p.id === id)).filter(Boolean) as PlayerInfo[];
+  const unseeded = players.filter((p) => !seedSet.has(p.id));
+  unseeded.sort(() => Math.random() - 0.5);
+
+  const groups: PlayerInfo[][] = Array.from({ length: groupCount }, () => []);
+  seeded.forEach((p, i) => {
+    groups[i % groupCount].push(p);
+  });
+  unseeded.forEach((p, i) => {
+    groups[i % groupCount].push(p);
+  });
+
+  await createGroupMatches(tournamentId, groups, qualifyPerGroup, seeding, withLosers);
+}
+
+async function generateGroupKnockoutManual(
+  tournamentId: string,
+  players: PlayerInfo[],
+  groupAssignments: Record<string, string[]>,
+  qualifyPerGroup: number,
+  seeding: KnockoutSeeding = "RANDOM",
+  withLosers: boolean = false,
+) {
+  const playerMap = new Map(players.map((p) => [p.id, p]));
+  const groupLabels = Object.keys(groupAssignments).sort();
+  const groups: PlayerInfo[][] = groupLabels.map((label) =>
+    groupAssignments[label].map((id) => playerMap.get(id)).filter(Boolean) as PlayerInfo[]
+  );
+
+  await createGroupMatches(tournamentId, groups, qualifyPerGroup, seeding, withLosers);
+}
+
+async function createGroupMatches(
+  tournamentId: string,
+  groups: PlayerInfo[][],
+  qualifyPerGroup: number,
+  seeding: KnockoutSeeding,
+  withLosers: boolean,
+) {
+  const groupLabels = "ABCDEFGHIJKLMNOP";
+  const groupCount = groups.length;
+
+  for (let g = 0; g < groupCount; g++) {
+    const group = groups[g];
+    const label = groupLabels[g];
+
+    for (const player of group) {
+      await prisma.leagueStanding.create({
+        data: { tournamentId, userId: player.id },
+      });
+    }
+
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        await prisma.tournamentMatch.create({
+          data: {
+            tournamentId,
+            player1Id: group[i].id,
+            player2Id: group[j].id,
+            team1Id: group[i].teamId ?? null,
+            team2Id: group[j].teamId ?? null,
+            round: `Grupo ${label}`,
+            groupName: label,
+            status: "SCHEDULED",
+          },
+        });
+      }
+    }
+  }
+
+  const knockoutPlayers = groupCount * qualifyPerGroup;
+  const totalRounds = Math.ceil(Math.log2(knockoutPlayers));
+  const roundNames = getRoundNames(totalRounds);
+  let prevRoundMatches: string[] = [];
+
+  for (let r = 0; r < totalRounds; r++) {
+    const matchesInRound = Math.pow(2, totalRounds - r - 1);
+    const currentRoundMatches: string[] = [];
+
+    for (let m = 0; m < matchesInRound; m++) {
+      const match = await prisma.tournamentMatch.create({
+        data: {
+          tournamentId,
+          round: roundNames[r],
+          bracket: "WINNERS",
+          status: "SCHEDULED",
+        },
+      });
+      currentRoundMatches.push(match.id);
+    }
+    prevRoundMatches = currentRoundMatches;
+  }
+
+  if (withLosers && prevRoundMatches.length > 0) {
+    const losersRounds = 2 * (totalRounds - 1);
+    for (let r = 0; r < losersRounds; r++) {
+      const matchesInRound = Math.max(1, Math.pow(2, totalRounds - Math.ceil((r + 1) / 2) - 1));
+      for (let m = 0; m < matchesInRound; m++) {
+        await prisma.tournamentMatch.create({
+          data: {
+            tournamentId,
+            round: `Losers R${r + 1}`,
+            bracket: "LOSERS",
+            status: "SCHEDULED",
+          },
+        });
+      }
+    }
+    await prisma.tournamentMatch.create({
+      data: {
+        tournamentId,
+        round: "Gran Final",
+        bracket: "WINNERS",
+        status: "SCHEDULED",
+      },
+    });
+  }
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { knockoutSeeding: seeding, hasLosersBracket: withLosers },
+  });
+}
+
+async function generateLeagueManual(
+  tournamentId: string,
+  players: PlayerInfo[],
+  matchdays: { matchday: number; matches: { p1: string; p2: string }[] }[],
+  legs: number,
+) {
+  for (const player of players) {
+    await prisma.leagueStanding.create({
+      data: { tournamentId, userId: player.id },
+    });
+  }
+
+  const playerMap = new Map(players.map((p) => [p.id, p]));
+
+  for (let leg = 1; leg <= legs; leg++) {
+    for (const md of matchdays) {
+      const dayNum = leg === 1 ? md.matchday : md.matchday + matchdays.length;
+      for (const m of md.matches) {
+        const home = leg === 1 ? playerMap.get(m.p1) : playerMap.get(m.p2);
+        const away = leg === 1 ? playerMap.get(m.p2) : playerMap.get(m.p1);
+        if (!home || !away) continue;
+        await prisma.tournamentMatch.create({
+          data: {
+            tournamentId,
+            player1Id: home.id,
+            player2Id: away.id,
+            team1Id: home.teamId ?? null,
+            team2Id: away.teamId ?? null,
+            round: `Jornada ${dayNum}`,
+            leg,
+            matchday: dayNum,
+            status: "SCHEDULED",
+          },
+        });
+      }
+    }
+  }
 }
 
 // ─── GENERAR BRACKETS ──────────────────────────────────────
@@ -1046,9 +1424,9 @@ async function generateSingleEliminationBracket(
   tournamentId: string,
   players: PlayerInfo[],
   knockoutFormat: KnockoutFormat = "SINGLE_MATCH",
+  skipShuffle: boolean = false,
 ) {
-  // Shuffle players
-  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  const shuffled = skipShuffle ? [...players] : [...players].sort(() => Math.random() - 0.5);
 
   // Calcular rondas
   const totalRounds = Math.ceil(Math.log2(shuffled.length));
@@ -1431,8 +1809,9 @@ async function generateDoubleEliminationBracket(
   tournamentId: string,
   players: PlayerInfo[],
   knockoutFormat: KnockoutFormat = "SINGLE_MATCH",
+  skipShuffle: boolean = false,
 ) {
-  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  const shuffled = skipShuffle ? [...players] : [...players].sort(() => Math.random() - 0.5);
   const totalRounds = Math.ceil(Math.log2(shuffled.length));
   const bracketSize = Math.pow(2, totalRounds);
 
