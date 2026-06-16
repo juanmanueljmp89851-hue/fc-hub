@@ -8,6 +8,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
+  // Get current max promoOrder so new cards appear first
+  const top = await prisma.futCard.findFirst({
+    orderBy: { promoOrder: "desc" },
+    select: { promoOrder: true },
+  });
+  const baseOrder = (top?.promoOrder ?? 999_999) + 1;
+
   const newCards = [
     {
       eaId: 25881, name: 'Aaron Wan-Bissaka', commonName: 'Wan-Bissaka',
@@ -82,7 +89,9 @@ export async function GET(req: NextRequest) {
   ];
 
   const results = [];
-  for (const c of newCards) {
+  for (let i = 0; i < newCards.length; i++) {
+    const c = newCards[i];
+    const order = baseOrder + i;
     const card = await prisma.futCard.upsert({
       where: { eaId_cardType: { eaId: c.eaId, cardType: c.cardType } },
       update: {
@@ -91,18 +100,18 @@ export async function GET(req: NextRequest) {
         pace: c.pace, shooting: c.shooting, passing: c.passing,
         dribbling: c.dribbling, defending: c.defending, physical: c.physical,
         club: c.club, league: c.league, nation: c.nation,
-        promo: c.promo, promoOrder: 1000000, cardImageId: c.cardImageId,
+        promo: c.promo, promoOrder: order, cardImageId: c.cardImageId,
         skillMoves: c.skillMoves, weakFoot: c.weakFoot, foot: c.foot,
         height: c.height, weight: c.weight,
         workRateAtk: c.workRateAtk, workRateDef: c.workRateDef,
         releaseDate: c.releaseDate,
       },
       create: {
-        ...c, promoOrder: 1000000, imageUrl: null, source: 'manual',
+        ...c, promoOrder: order, imageUrl: null, source: 'manual',
       },
     });
-    results.push({ id: card.id, name: card.commonName, overall: card.overall });
+    results.push({ id: card.id, name: card.commonName, overall: card.overall, promoOrder: order });
   }
 
-  return NextResponse.json({ ok: true, seeded: results.length, cards: results });
+  return NextResponse.json({ ok: true, baseOrder, seeded: results.length, cards: results });
 }

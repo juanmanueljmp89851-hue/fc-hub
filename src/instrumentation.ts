@@ -72,6 +72,12 @@ export async function register() {
     });
 
     // ── June 2026 new cards (7) ──────────────────────────────
+    const topCard = await prisma.futCard.findFirst({
+      orderBy: { promoOrder: 'desc' },
+      select: { promoOrder: true },
+    });
+    const baseOrder = (topCard?.promoOrder ?? 999_999) + 1;
+
     const newCards = [
       {
         eaId: 25881, name: 'Aaron Wan-Bissaka', commonName: 'Wan-Bissaka',
@@ -145,7 +151,9 @@ export async function register() {
       },
     ];
 
-    for (const c of newCards) {
+    for (let i = 0; i < newCards.length; i++) {
+      const c = newCards[i];
+      const order = baseOrder + i;
       await prisma.futCard.upsert({
         where: { eaId_cardType: { eaId: c.eaId, cardType: c.cardType } },
         update: {
@@ -154,14 +162,14 @@ export async function register() {
           pace: c.pace, shooting: c.shooting, passing: c.passing,
           dribbling: c.dribbling, defending: c.defending, physical: c.physical,
           club: c.club, league: c.league, nation: c.nation,
-          promo: c.promo, promoOrder: 1000000, cardImageId: c.cardImageId,
+          promo: c.promo, promoOrder: order, cardImageId: c.cardImageId,
           skillMoves: c.skillMoves, weakFoot: c.weakFoot, foot: c.foot,
           height: c.height, weight: c.weight,
           workRateAtk: c.workRateAtk, workRateDef: c.workRateDef,
           releaseDate: c.releaseDate,
         },
         create: {
-          ...c, promoOrder: 1000000, imageUrl: null, source: 'manual',
+          ...c, promoOrder: order, imageUrl: null, source: 'manual',
         },
       });
     }
