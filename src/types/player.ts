@@ -15,7 +15,8 @@ export type CardType =
   | "end_of_era"
   | "national_pride"
   | "national_pride_red"
-  | "path_to_glory";
+  | "path_to_glory"
+  | "showdown";
 
 export type PositionCategory = "ATK" | "MID" | "DEF" | "GK";
 
@@ -147,6 +148,10 @@ export function getCardStyle(cardImageId?: string): CardStyle {
   if (id.includes("path_to_glory")) {
     return { textColor: "#c0f0d0", statLabelColor: "#80d0a0", nameColor: "#c0f0d0", dividerColor: "#c0f0d040" };
   }
+  // Showdown — blue/red split card
+  if (id.includes("showdown")) {
+    return { textColor: "#e0e8ff", statLabelColor: "#90a0d0", nameColor: "#e0e8ff", dividerColor: "#e0e8ff40" };
+  }
   // Default special — white text on dark
   return { textColor: "#ffffff", statLabelColor: "#cccccc", nameColor: "#ffffff", dividerColor: "#ffffff40" };
 }
@@ -218,5 +223,9 @@ export const CARD_COLORS: Record<CardType, {
   path_to_glory: {
     gradient: "linear-gradient(160deg, #041a10 0%, #0a3520 20%, #106030 40%, #20a050 55%, #106030 70%, #0a3520 90%, #041a10 100%)",
     text: "#c0f0d0", accent: "#40d080", statText: "#c0f0d0", nameBg: "rgba(4, 26, 16, 0.7)",
+  },
+  showdown: {
+    gradient: "linear-gradient(160deg, #0a1030 0%, #1a2060 20%, #2a40a0 40%, #4060d0 55%, #2a40a0 70%, #1a2060 90%, #0a1030 100%)",
+    text: "#e0e8ff", accent: "#90b0ff", statText: "#e0e8ff", nameBg: "rgba(10, 16, 48, 0.7)",
   },
 };
