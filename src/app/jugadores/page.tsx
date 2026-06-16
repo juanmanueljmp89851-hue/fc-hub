@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default async function JugadoresPage() {
   // Fetch cards from DB grouped by promo, newest first
   const cards = await prisma.futCard.findMany({
-    orderBy: [{ promoOrder: "desc" }, { overall: "desc" }],
+    orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
     take: 1000,
   });
 

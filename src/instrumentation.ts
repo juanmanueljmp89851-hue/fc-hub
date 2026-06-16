@@ -154,18 +154,18 @@ export async function register() {
           pace: c.pace, shooting: c.shooting, passing: c.passing,
           dribbling: c.dribbling, defending: c.defending, physical: c.physical,
           club: c.club, league: c.league, nation: c.nation,
-          promo: c.promo, promoOrder: 999999, cardImageId: c.cardImageId,
+          promo: c.promo, promoOrder: 1000000, cardImageId: c.cardImageId,
           skillMoves: c.skillMoves, weakFoot: c.weakFoot, foot: c.foot,
           height: c.height, weight: c.weight,
           workRateAtk: c.workRateAtk, workRateDef: c.workRateDef,
           releaseDate: c.releaseDate,
         },
         create: {
-          ...c, promoOrder: 999999, imageUrl: null, source: 'manual',
+          ...c, promoOrder: 1000000, imageUrl: null, source: 'manual',
         },
       });
     }
   } catch (e) {
-    console.error('[instrumentation] Carvajal seed error:', e);
+    console.error('[instrumentation] card seed error:', e);
   }
 }

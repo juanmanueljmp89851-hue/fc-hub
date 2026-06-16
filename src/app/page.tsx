@@ -49,7 +49,7 @@ const quickLinks = [
 export default async function HomePage() {
   // Fetch top 15 cards — highest promoOrder first (featured/newest promos)
   const latestRaw = await prisma.futCard.findMany({
-    orderBy: [{ promoOrder: "desc" }, { overall: "desc" }],
+    orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
     take: 15,
   });
 
