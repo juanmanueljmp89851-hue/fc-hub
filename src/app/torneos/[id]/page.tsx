@@ -136,6 +136,9 @@ export default async function TorneoDetailPage({ params }: PageProps) {
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
+        <Link href="/torneos" className="mb-4 inline-flex items-center gap-1 text-sm text-foreground/50 transition-colors hover:text-foreground">
+          ← Torneos
+        </Link>
         {/* Header */}
         <div className="mb-8">
           <div className="relative mb-4 h-48 overflow-hidden rounded-xl bg-gradient-to-br from-surface-light via-surface to-surface-light">

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { rateLimit } from "@/lib/rate-limit";
 
 const BLOCKED_PATTERNS = [
   /\b\d[\d\s\-().]{6,}\d\b/,                          // phone numbers (7+ digits)
@@ -33,6 +34,10 @@ async function getAuthUser() {
 export async function sendDirectMessage(receiverId: string, text: string) {
   const dbUser = await getAuthUser();
   if (!dbUser) return { error: "No autenticado" };
+
+  if (!rateLimit(`dm:${dbUser.id}`, 20, 60_000).ok) {
+    return { error: "Demasiados mensajes. Esperá un momento." };
+  }
 
   const trimmed = text.trim();
   if (!trimmed || trimmed.length > 500) return { error: "Mensaje inválido" };

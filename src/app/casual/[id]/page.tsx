@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
@@ -50,6 +51,9 @@ export default async function CasualMatchPage({ params }: PageProps) {
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 py-8">
+        <Link href="/casual" className="mb-4 inline-flex items-center gap-1 text-sm text-foreground/50 transition-colors hover:text-foreground">
+          ← Volver a partidos
+        </Link>
         <Card>
           {/* Status */}
           <div className="mb-6 text-center">

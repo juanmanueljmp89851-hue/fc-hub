@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import type { TournamentFormat, TournamentStatus, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule, KnockoutFormat } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { RANKING } from "@/lib/constants";
+import { rateLimit } from "@/lib/rate-limit";
 
 // ─── CREAR TORNEO ──────────────────────────────────────────
 
@@ -466,6 +467,10 @@ export async function joinTournament(tournamentId: string) {
     return { error: "Usuario no encontrado" };
   }
 
+  if (!rateLimit(`join:${dbUser.id}`, 10, 60_000).ok) {
+    return { error: "Demasiados intentos. Esperá un momento." };
+  }
+
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
     include: {
@@ -781,17 +786,31 @@ export async function leaveTournament(tournamentId: string) {
   });
 
   if (nextInWaitlist) {
+    const promoted = !tournament.requiresVerification;
     await prisma.tournamentParticipant.create({
       data: {
         tournamentId,
         userId: nextInWaitlist.userId,
-        status: tournament.requiresVerification ? "PENDING" : "CONFIRMED",
-        confirmedAt: tournament.requiresVerification ? null : new Date(),
+        status: promoted ? "CONFIRMED" : "PENDING",
+        confirmedAt: promoted ? new Date() : null,
       },
     });
 
     await prisma.tournamentWaitlist.delete({
       where: { id: nextInWaitlist.id },
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId: nextInWaitlist.userId,
+        type: "TOURNAMENT_JOIN_ACCEPTED" as const,
+        title: promoted ? "¡Se liberó un cupo!" : "Se liberó un cupo — pendiente de verificación",
+        message: promoted
+          ? `Se liberó un lugar en ${tournament.name} y quedaste inscripto automáticamente.`
+          : `Se liberó un lugar en ${tournament.name}. Tu inscripción está pendiente de aprobación.`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      },
     });
   }
 
@@ -2121,8 +2140,8 @@ async function advanceWinner(
       await prisma.tournamentMatch.update({
         where: { id: nextMatch.id },
         data: isSlot1
-          ? { player1Id: winnerId, team1Id: winnerTeamId ?? undefined }
-          : { player2Id: winnerId, team2Id: winnerTeamId ?? undefined },
+          ? { player1Id: winnerId, team1Id: winnerTeamId ?? null }
+          : { player2Id: winnerId, team2Id: winnerTeamId ?? null },
       });
       await notifyNextMatchReady(nextMatch.id, tournamentId);
     } else if (format === "DOUBLE_ELIMINATION" && bracket === "W") {
@@ -2132,7 +2151,7 @@ async function advanceWinner(
       if (gf) {
         await prisma.tournamentMatch.update({
           where: { id: gf.id },
-          data: { player1Id: winnerId, team1Id: winnerTeamId ?? undefined },
+          data: { player1Id: winnerId, team1Id: winnerTeamId ?? null },
         });
         await notifyNextMatchReady(gf.id, tournamentId);
       }
@@ -2152,8 +2171,8 @@ async function advanceWinner(
       await prisma.tournamentMatch.update({
         where: { id: nextMatch.id },
         data: isSlot1
-          ? { player1Id: winnerId, team1Id: winnerTeamId ?? undefined }
-          : { player2Id: winnerId, team2Id: winnerTeamId ?? undefined },
+          ? { player1Id: winnerId, team1Id: winnerTeamId ?? null }
+          : { player2Id: winnerId, team2Id: winnerTeamId ?? null },
       });
       await notifyNextMatchReady(nextMatch.id, tournamentId);
     } else {
@@ -2164,7 +2183,7 @@ async function advanceWinner(
       if (gf) {
         await prisma.tournamentMatch.update({
           where: { id: gf.id },
-          data: { player2Id: winnerId, team2Id: winnerTeamId ?? undefined },
+          data: { player2Id: winnerId, team2Id: winnerTeamId ?? null },
         });
         await notifyNextMatchReady(gf.id, tournamentId);
       }
@@ -2312,8 +2331,8 @@ async function sendToLosers(
     await prisma.tournamentMatch.update({
       where: { id: losersMatch.id },
       data: isSlot1
-        ? { player1Id: loserId, team1Id: loserTeamId ?? undefined }
-        : { player2Id: loserId, team2Id: loserTeamId ?? undefined },
+        ? { player1Id: loserId, team1Id: loserTeamId ?? null }
+        : { player2Id: loserId, team2Id: loserTeamId ?? null },
     });
     await notifyNextMatchReady(losersMatch.id, tournamentId);
   }
@@ -2423,8 +2442,8 @@ async function checkGroupComplete(
         data: {
           player1Id: p1?.id ?? null,
           player2Id: p2?.id ?? null,
-          team1Id: p1?.teamId ?? undefined,
-          team2Id: p2?.teamId ?? undefined,
+          team1Id: p1?.teamId ?? null,
+          team2Id: p2?.teamId ?? null,
         },
       });
     }
@@ -4011,10 +4030,10 @@ export async function resetTournament(tournamentId: string) {
     where: { tournamentId },
   });
 
-  // Reset tournament status to REGISTRATION
+  // Reset tournament status and clear draw config
   await prisma.tournament.update({
     where: { id: tournamentId },
-    data: { status: "REGISTRATION" },
+    data: { status: "REGISTRATION", drawMode: "RANDOM", drawData: Prisma.DbNull },
   });
 
   revalidatePath(`/torneos/${tournamentId}`);
