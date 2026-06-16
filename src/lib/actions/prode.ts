@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { PRODE } from "@/lib/constants";
+import { getCurrentUser } from "@/lib/actions/user";
 
 // ─── Auth helper ────────────────────────────────────────────
 
@@ -999,12 +1000,18 @@ export async function scoreGroupPredictions(
 // ─── Admin: Open/Close weeks ────────────────────────────────
 
 export async function openProdeWeek(weekId: string) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ADMIN") throw new Error("No autorizado");
+
   await prisma.prodeWeek.update({ where: { id: weekId }, data: { status: "OPEN" } });
   revalidatePath("/prode");
   return { success: true };
 }
 
 export async function closeProdeWeek(weekId: string) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ADMIN") throw new Error("No autorizado");
+
   await prisma.prodeWeek.update({ where: { id: weekId }, data: { status: "CLOSED" } });
   revalidatePath("/prode");
   return { success: true };

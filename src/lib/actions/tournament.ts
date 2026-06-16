@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { TournamentFormat, TournamentStatus, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule, KnockoutFormat } from "@prisma/client";
@@ -956,69 +957,89 @@ export async function confirmDraw(tournamentId: string, config: DrawConfig) {
 
   const withLosers = tournament.hasLosersBracket || tournament.format === "DOUBLE_ELIMINATION";
 
-  await prisma.tournament.update({
-    where: { id: tournamentId },
-    data: { drawMode: config.mode, drawData: config as object },
-  });
+  // Atomic: lock row first to prevent double-confirmDraw race condition
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Re-check status inside transaction to prevent race
+      const locked = await tx.tournament.update({
+        where: { id: tournamentId, status: "SETUP" },
+        data: { drawMode: config.mode, drawData: config as object },
+      });
+      if (!locked) throw new Error("RACE");
+    });
+  } catch {
+    return { error: "El torneo ya no está en fase de sorteo" };
+  }
 
-  if (tournament.format === "GROUP_KNOCKOUT") {
-    if (config.mode === "MANUAL" && config.groups) {
-      await generateGroupKnockoutManual(
-        tournament.id,
-        players,
-        config.groups,
-        tournament.qualifyPerGroup ?? 2,
-        tournament.knockoutSeeding,
-        withLosers,
-      );
-    } else if (config.mode === "SEEDED" && config.seeds) {
-      await generateGroupKnockoutSeeded(
-        tournament.id,
-        players,
-        config.seeds,
-        tournament.groupCount ?? 4,
-        tournament.qualifyPerGroup ?? 2,
-        tournament.knockoutSeeding,
-        withLosers,
-      );
-    } else {
-      await generateGroupKnockoutBracket(
-        tournament.id,
-        players,
-        tournament.groupCount ?? 4,
-        tournament.qualifyPerGroup ?? 2,
-        tournament.knockoutSeeding,
-        withLosers,
-      );
-    }
-  } else if (tournament.format === "LEAGUE") {
-    if (config.mode === "MATCHDAY" && config.matchdays) {
-      await generateLeagueManual(tournament.id, players, config.matchdays, tournament.leagueLegs ?? 1);
-    } else {
-      await generateLeagueMatches(tournament.id, players, tournament.leagueLegs ?? 1);
-    }
-  } else if (tournament.format === "SINGLE_ELIMINATION" || tournament.format === "DOUBLE_ELIMINATION") {
-    if (config.mode === "MANUAL" && config.bracket) {
-      const ordered = orderPlayersByBracket(players, config.bracket);
-      if (withLosers) {
-        await generateDoubleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+  try {
+    if (tournament.format === "GROUP_KNOCKOUT") {
+      if (config.mode === "MANUAL" && config.groups) {
+        await generateGroupKnockoutManual(
+          tournament.id,
+          players,
+          config.groups,
+          tournament.qualifyPerGroup ?? 2,
+          tournament.knockoutSeeding,
+          withLosers,
+        );
+      } else if (config.mode === "SEEDED" && config.seeds) {
+        await generateGroupKnockoutSeeded(
+          tournament.id,
+          players,
+          config.seeds,
+          tournament.groupCount ?? 4,
+          tournament.qualifyPerGroup ?? 2,
+          tournament.knockoutSeeding,
+          withLosers,
+        );
       } else {
-        await generateSingleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+        await generateGroupKnockoutBracket(
+          tournament.id,
+          players,
+          tournament.groupCount ?? 4,
+          tournament.qualifyPerGroup ?? 2,
+          tournament.knockoutSeeding,
+          withLosers,
+        );
       }
-    } else if (config.mode === "SEEDED" && config.seeds) {
-      const ordered = orderPlayersBySeeds(players, config.seeds);
-      if (withLosers) {
-        await generateDoubleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+    } else if (tournament.format === "LEAGUE") {
+      if (config.mode === "MATCHDAY" && config.matchdays) {
+        await generateLeagueManual(tournament.id, players, config.matchdays, tournament.leagueLegs ?? 1);
       } else {
-        await generateSingleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+        await generateLeagueMatches(tournament.id, players, tournament.leagueLegs ?? 1);
       }
-    } else {
-      if (withLosers) {
-        await generateDoubleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+    } else if (tournament.format === "SINGLE_ELIMINATION" || tournament.format === "DOUBLE_ELIMINATION") {
+      if (config.mode === "MANUAL" && config.bracket) {
+        const ordered = orderPlayersByBracket(players, config.bracket);
+        if (withLosers) {
+          await generateDoubleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+        } else {
+          await generateSingleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+        }
+      } else if (config.mode === "SEEDED" && config.seeds) {
+        const ordered = orderPlayersBySeeds(players, config.seeds);
+        if (withLosers) {
+          await generateDoubleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+        } else {
+          await generateSingleEliminationBracket(tournament.id, ordered, tournament.knockoutFormat, true);
+        }
       } else {
-        await generateSingleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+        if (withLosers) {
+          await generateDoubleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+        } else {
+          await generateSingleEliminationBracket(tournament.id, players, tournament.knockoutFormat);
+        }
       }
     }
+  } catch (err) {
+    // Rollback: delete any partial matches created, reset to SETUP
+    await prisma.leagueStanding.deleteMany({ where: { tournamentId } });
+    await prisma.tournamentMatch.deleteMany({ where: { tournamentId } });
+    await prisma.tournament.update({
+      where: { id: tournamentId },
+      data: { status: "SETUP", drawMode: "RANDOM", drawData: Prisma.DbNull },
+    });
+    return { error: `Error generando partidos: ${err instanceof Error ? err.message : "desconocido"}` };
   }
 
   await prisma.tournament.update({
@@ -2427,7 +2448,12 @@ export async function softDeleteTournament(tournamentId: string) {
 
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
-    select: { createdById: true, deletedAt: true },
+    select: {
+      createdById: true,
+      deletedAt: true,
+      name: true,
+      participants: { select: { userId: true } },
+    },
   });
   if (!tournament) throw new Error("Torneo no encontrado");
   if (tournament.deletedAt) throw new Error("Ya está eliminado");
@@ -2439,6 +2465,23 @@ export async function softDeleteTournament(tournamentId: string) {
     where: { id: tournamentId },
     data: { deletedAt: new Date(), deletedById: dbUser.id },
   });
+
+  const participantIds = tournament.participants
+    .map((p) => p.userId)
+    .filter((id) => id !== dbUser.id);
+
+  if (participantIds.length > 0) {
+    await prisma.notification.createMany({
+      data: participantIds.map((userId) => ({
+        userId,
+        type: "TOURNAMENT_CANCELLED" as const,
+        title: `Torneo cancelado: ${tournament.name}`,
+        message: `El torneo "${tournament.name}" fue cancelado por el organizador.`,
+        relatedId: tournamentId,
+        linkUrl: `/torneos/${tournamentId}`,
+      })),
+    });
+  }
 
   revalidatePath("/torneos");
   revalidatePath(`/torneos/${tournamentId}`);

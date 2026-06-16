@@ -901,6 +901,7 @@ enum NotificationType {
   TEAM_JOIN_ACCEPTED
   TEAM_JOIN_REJECTED
   TEAM_PLAYER_LEFT
+  TOURNAMENT_CANCELLED
 }
 
 // ─── MENSAJES DIRECTOS ─────────────────────────────────────
