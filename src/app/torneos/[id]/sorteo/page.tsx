@@ -46,6 +46,7 @@ export default function SorteoPage() {
   const [groups, setGroups] = useState<Record<string, string[]>>({});
   const [bracketOrder, setBracketOrder] = useState<string[]>([]);
   const [matchdays, setMatchdays] = useState<{ matchday: number; matches: { p1: string; p2: string }[] }[]>([]);
+  const [draggedPlayer, setDraggedPlayer] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -112,6 +113,13 @@ export default function SorteoPage() {
     if (mode === "MATCHDAY") initMatchdays();
   }, [mode, isGroupKnockout, initGroups, initMatchdays]);
 
+  function handleClearAll() {
+    setSeeds([]);
+    setBracketOrder([]);
+    if (isGroupKnockout) initGroups();
+    if (isLeague) initMatchdays();
+  }
+
   async function handleConfirm() {
     setConfirming(true);
     setError("");
@@ -131,6 +139,12 @@ export default function SorteoPage() {
 
     if (mode === "SEEDED" && seeds.length === 0) {
       setError("Seleccioná al menos un cabeza de serie");
+      setConfirming(false);
+      return;
+    }
+
+    if (mode === "SEEDED" && isGroupKnockout && seeds.length > tournament!.groupCount) {
+      setError(`Tenés ${seeds.length} seeds pero solo ${tournament!.groupCount} grupos. Máximo ${tournament!.groupCount} seeds para que no caigan dos en el mismo grupo.`);
       setConfirming(false);
       return;
     }
@@ -191,10 +205,46 @@ export default function SorteoPage() {
     }));
   }
 
+  function handleDropOnGroup(groupLabel: string) {
+    if (draggedPlayer) {
+      addToGroup(groupLabel, draggedPlayer);
+      setDraggedPlayer(null);
+    }
+  }
+
   function addToBracket(playerId: string) {
     setBracketOrder((prev) =>
       prev.includes(playerId) ? prev.filter((id) => id !== playerId) : [...prev, playerId]
     );
+  }
+
+  function autoFillLeague() {
+    const n = participants.length;
+    const ids = participants.map((p) => p.id);
+    const isOdd = n % 2 !== 0;
+    const list = isOdd ? [...ids, "BYE"] : [...ids];
+    const total = list.length;
+    const rounds = total - 1;
+    const half = total / 2;
+
+    const mds: { matchday: number; matches: { p1: string; p2: string }[] }[] = [];
+
+    for (let r = 0; r < rounds; r++) {
+      const dayMatches: { p1: string; p2: string }[] = [];
+      for (let i = 0; i < half; i++) {
+        const home = list[i];
+        const away = list[total - 1 - i];
+        if (home !== "BYE" && away !== "BYE") {
+          dayMatches.push({ p1: home, p2: away });
+        }
+      }
+      mds.push({ matchday: r + 1, matches: dayMatches });
+      // rotate: fix first, rotate rest
+      const last = list.pop()!;
+      list.splice(1, 0, last);
+    }
+
+    setMatchdays(mds);
   }
 
   function addMatchToDay(dayIndex: number, p1: string, p2: string) {
@@ -244,6 +294,12 @@ export default function SorteoPage() {
     matchdays.flatMap((md) => md.matches.map((m) => [m.p1, m.p2].sort().join("-")))
   );
 
+  const hasAnyData =
+    seeds.length > 0 ||
+    bracketOrder.length > 0 ||
+    Object.values(groups).some((g) => g.length > 0) ||
+    matchdays.some((md) => md.matches.length > 0);
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -288,6 +344,11 @@ export default function SorteoPage() {
           <div className="space-y-4">
             <p className="text-sm text-foreground/60">
               Seleccioná los cabezas de serie (se distribuyen en grupos/brackets distintos). El resto va al azar.
+              {isGroupKnockout && (
+                <span className="ml-1 text-orange-400">
+                  Máximo {tournament.groupCount} seeds ({tournament.groupCount} grupos).
+                </span>
+              )}
             </p>
             <div className="grid gap-2 sm:grid-cols-2">
               {participants.map((p) => (
@@ -300,17 +361,7 @@ export default function SorteoPage() {
                       : "border-surface-light bg-surface/30 text-foreground/70 hover:border-accent/50"
                   }`}
                 >
-                  {p.teamLogoUrl || p.avatarUrl ? (
-                    <img
-                      src={p.teamLogoUrl ?? p.avatarUrl ?? ""}
-                      alt=""
-                      className="h-8 w-8 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface text-xs">
-                      {p.displayName[0]}
-                    </div>
-                  )}
+                  <ParticipantAvatar p={p} />
                   <span className="flex-1 font-medium">{p.displayName}</span>
                   {seeds.includes(p.id) && (
                     <span className="rounded-full bg-gold/20 px-2 py-0.5 text-xs font-bold text-gold">
@@ -330,14 +381,18 @@ export default function SorteoPage() {
             {unassignedPlayers.length > 0 && (
               <div>
                 <p className="mb-2 text-sm font-medium text-foreground/60">
-                  Sin asignar ({unassignedPlayers.length})
+                  Sin asignar ({unassignedPlayers.length}) — arrastrá a un grupo o usá los botones
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {unassignedPlayers.map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center gap-2 rounded-lg border border-surface-light bg-surface/30 px-3 py-2 text-sm"
+                      draggable
+                      onDragStart={() => setDraggedPlayer(p.id)}
+                      onDragEnd={() => setDraggedPlayer(null)}
+                      className="flex cursor-grab items-center gap-2 rounded-lg border border-surface-light bg-surface/30 px-3 py-2 text-sm active:cursor-grabbing"
                     >
+                      <ParticipantAvatar p={p} size="sm" />
                       <span>{p.displayName}</span>
                       <div className="flex gap-1">
                         {Object.keys(groups).map((label) => (
@@ -361,11 +416,19 @@ export default function SorteoPage() {
               {Object.entries(groups).map(([label, playerIds]) => (
                 <div
                   key={label}
-                  className="rounded-xl border border-surface-light bg-surface/30 p-4"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDropOnGroup(label)}
+                  className={`rounded-xl border p-4 transition-colors ${
+                    draggedPlayer
+                      ? "border-accent/50 bg-accent/5"
+                      : "border-surface-light bg-surface/30"
+                  }`}
                 >
-                  <h3 className="mb-2 font-bold">Grupo {label}</h3>
+                  <h3 className="mb-2 font-bold">Grupo {label} <span className="text-sm font-normal text-foreground/40">({playerIds.length})</span></h3>
                   {playerIds.length === 0 ? (
-                    <p className="text-sm text-foreground/40">Vacío</p>
+                    <p className="py-4 text-center text-sm text-foreground/40">
+                      {draggedPlayer ? "Soltá acá" : "Vacío"}
+                    </p>
                   ) : (
                     <div className="space-y-1">
                       {playerIds.map((id) => {
@@ -373,9 +436,15 @@ export default function SorteoPage() {
                         return (
                           <div
                             key={id}
-                            className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2 text-sm"
+                            draggable
+                            onDragStart={() => setDraggedPlayer(id)}
+                            onDragEnd={() => setDraggedPlayer(null)}
+                            className="flex cursor-grab items-center justify-between rounded-lg bg-background/50 px-3 py-2 text-sm active:cursor-grabbing"
                           >
-                            <span>{p?.displayName}</span>
+                            <div className="flex items-center gap-2">
+                              {p && <ParticipantAvatar p={p} size="sm" />}
+                              <span>{p?.displayName}</span>
+                            </div>
                             <button
                               onClick={() => removeFromGroup(label, id)}
                               className="text-xs text-red-400 hover:text-red-300"
@@ -398,7 +467,7 @@ export default function SorteoPage() {
           <div className="space-y-4">
             <p className="text-sm text-foreground/60">
               Seleccioná participantes en el orden que querés para el bracket. Los primeros se
-              enfrentan entre sí en R1 (1 vs 2, 3 vs 4, etc).
+              enfrentan entre sí en R1 (1 vs 2, 3 vs 4, etc). Los no seleccionados se ubican al azar al final.
             </p>
             <div className="grid gap-2 sm:grid-cols-2">
               {participants.map((p) => {
@@ -413,17 +482,7 @@ export default function SorteoPage() {
                         : "border-surface-light bg-surface/30 text-foreground/70 hover:border-accent/50"
                     }`}
                   >
-                    {p.teamLogoUrl || p.avatarUrl ? (
-                      <img
-                        src={p.teamLogoUrl ?? p.avatarUrl ?? ""}
-                        alt=""
-                        className="h-8 w-8 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface text-xs">
-                        {p.displayName[0]}
-                      </div>
-                    )}
+                    <ParticipantAvatar p={p} />
                     <span className="flex-1 font-medium">{p.displayName}</span>
                     {pos >= 0 && (
                       <span className="rounded-full bg-accent/20 px-2 py-0.5 text-xs font-bold text-accent">
@@ -435,24 +494,13 @@ export default function SorteoPage() {
               })}
             </div>
 
+            {/* Bracket preview */}
             {bracketOrder.length >= 2 && (
-              <div className="rounded-xl border border-surface-light bg-surface/30 p-4">
-                <h3 className="mb-2 text-sm font-medium text-foreground/60">Preview enfrentamientos R1</h3>
-                <div className="space-y-1">
-                  {Array.from({ length: Math.floor(bracketOrder.length / 2) }, (_, i) => {
-                    const p1 = getParticipant(bracketOrder[i * 2]);
-                    const p2 = getParticipant(bracketOrder[i * 2 + 1]);
-                    return (
-                      <div key={i} className="flex items-center gap-2 text-sm">
-                        <span className="text-foreground/40">M{i + 1}:</span>
-                        <span className="font-medium">{p1?.displayName}</span>
-                        <span className="text-foreground/40">vs</span>
-                        <span className="font-medium">{p2?.displayName}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <BracketPreview
+                bracketOrder={bracketOrder}
+                allPlayers={participants}
+                getParticipant={getParticipant}
+              />
             )}
           </div>
         )}
@@ -466,11 +514,12 @@ export default function SorteoPage() {
             addMatchToDay={addMatchToDay}
             removeMatchFromDay={removeMatchFromDay}
             getParticipant={getParticipant}
+            onAutoFill={autoFillLeague}
           />
         )}
 
-        {/* Confirm */}
-        <div className="mt-8 flex items-center gap-4">
+        {/* Actions */}
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <button
             onClick={handleConfirm}
             disabled={confirming}
@@ -478,6 +527,14 @@ export default function SorteoPage() {
           >
             {confirming ? "Generando partidos..." : "Confirmar y comenzar"}
           </button>
+          {hasAnyData && (
+            <button
+              onClick={handleClearAll}
+              className="rounded-lg border border-red-500/30 px-4 py-3 text-sm text-red-400 transition-colors hover:bg-red-500/10"
+            >
+              Limpiar todo
+            </button>
+          )}
           <button
             onClick={() => router.push(`/torneos/${tournamentId}`)}
             className="rounded-lg border border-surface-light px-4 py-3 text-sm text-foreground/60 hover:border-accent hover:text-accent"
@@ -490,6 +547,98 @@ export default function SorteoPage() {
   );
 }
 
+function ParticipantAvatar({ p, size = "md" }: { p: Participant; size?: "sm" | "md" }) {
+  const cls = size === "sm" ? "h-6 w-6 rounded text-[10px]" : "h-8 w-8 rounded-lg text-xs";
+  if (p.teamLogoUrl || p.avatarUrl) {
+    return <img src={p.teamLogoUrl ?? p.avatarUrl ?? ""} alt="" className={`${cls} object-cover`} />;
+  }
+  return (
+    <div className={`flex items-center justify-center bg-surface ${cls}`}>
+      {p.displayName[0]}
+    </div>
+  );
+}
+
+function BracketPreview({
+  bracketOrder,
+  allPlayers,
+  getParticipant,
+}: {
+  bracketOrder: string[];
+  allPlayers: Participant[];
+  getParticipant: (id: string) => Participant | undefined;
+}) {
+  const ordered = [...bracketOrder];
+  const unordered = allPlayers.filter((p) => !bracketOrder.includes(p.id));
+  const full = [...ordered, ...unordered.map((p) => p.id)];
+  const totalRounds = Math.ceil(Math.log2(full.length));
+  const bracketSize = Math.pow(2, totalRounds);
+
+  const r1Matches: { p1: string | null; p2: string | null }[] = [];
+  for (let i = 0; i < bracketSize / 2; i++) {
+    r1Matches.push({
+      p1: full[i * 2] ?? null,
+      p2: full[i * 2 + 1] ?? null,
+    });
+  }
+
+  const r2Winners: (string | null)[] = r1Matches.map((m) => {
+    if (!m.p1 && !m.p2) return null;
+    if (!m.p1) return m.p2;
+    if (!m.p2) return m.p1;
+    return null; // undecided
+  });
+
+  const getName = (id: string | null) => {
+    if (!id) return "—";
+    const p = getParticipant(id);
+    return p?.displayName ?? "?";
+  };
+
+  return (
+    <div className="rounded-xl border border-surface-light bg-surface/30 p-4">
+      <h3 className="mb-3 text-sm font-medium text-foreground/60">Preview bracket</h3>
+      <div className="flex gap-8 overflow-x-auto pb-2">
+        {/* R1 */}
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-foreground/40">Ronda 1</p>
+          {r1Matches.map((m, i) => (
+            <div key={i} className="flex flex-col rounded-lg border border-surface-light bg-background/50 text-xs">
+              <div className={`px-3 py-1.5 ${!m.p2 ? "font-bold text-accent" : ""}`}>
+                {getName(m.p1)}
+              </div>
+              <div className="border-t border-surface-light" />
+              <div className={`px-3 py-1.5 ${!m.p1 ? "font-bold text-accent" : ""}`}>
+                {getName(m.p2)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* R2 */}
+        {totalRounds >= 2 && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-foreground/40">
+              {totalRounds === 2 ? "Final" : totalRounds === 3 ? "Semifinal" : "Ronda 2"}
+            </p>
+            {Array.from({ length: Math.ceil(r2Winners.length / 2) }, (_, i) => (
+              <div key={i} className="flex flex-col rounded-lg border border-surface-light bg-background/50 text-xs">
+                <div className="px-3 py-1.5 text-foreground/50">
+                  {r2Winners[i * 2] ? getName(r2Winners[i * 2]) : `G M${i * 2 + 1}`}
+                </div>
+                <div className="border-t border-surface-light" />
+                <div className="px-3 py-1.5 text-foreground/50">
+                  {r2Winners[i * 2 + 1] ? getName(r2Winners[i * 2 + 1]) : `G M${i * 2 + 2}`}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function MatchdayEditor({
   participants,
   matchdays,
@@ -497,6 +646,7 @@ function MatchdayEditor({
   addMatchToDay,
   removeMatchFromDay,
   getParticipant,
+  onAutoFill,
 }: {
   participants: Participant[];
   matchdays: { matchday: number; matches: { p1: string; p2: string }[] }[];
@@ -504,6 +654,7 @@ function MatchdayEditor({
   addMatchToDay: (dayIndex: number, p1: string, p2: string) => void;
   removeMatchFromDay: (dayIndex: number, matchIndex: number) => void;
   getParticipant: (id: string) => Participant | undefined;
+  onAutoFill: () => void;
 }) {
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [selectedP1, setSelectedP1] = useState("");
@@ -519,11 +670,22 @@ function MatchdayEditor({
   const isPairScheduled = (a: string, b: string) =>
     allScheduledPairs.has([a, b].sort().join("-"));
 
+  const totalMatches = matchdays.reduce((sum, md) => sum + md.matches.length, 0);
+  const expected = (participants.length * (participants.length - 1)) / 2;
+
   return (
     <div className="space-y-4">
-      <p className="text-sm text-foreground/60">
-        Armá los partidos de cada jornada. Cada par de participantes debe jugar exactamente una vez.
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-foreground/60">
+          Armá los partidos de cada jornada. Cada par de participantes debe jugar exactamente una vez.
+        </p>
+        <button
+          onClick={onAutoFill}
+          className="shrink-0 rounded-lg border border-accent/30 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/10"
+        >
+          Auto-rellenar
+        </button>
+      </div>
 
       {/* Day tabs */}
       <div className="flex flex-wrap gap-2">
@@ -617,8 +779,10 @@ function MatchdayEditor({
 
       {/* Progress */}
       <div className="text-sm text-foreground/60">
-        Partidos armados: {matchdays.reduce((sum, md) => sum + md.matches.length, 0)} /{" "}
-        {(participants.length * (participants.length - 1)) / 2}
+        Partidos armados: {totalMatches} / {expected}
+        {totalMatches === expected && (
+          <span className="ml-2 text-accent">✓ Completo</span>
+        )}
       </div>
     </div>
   );

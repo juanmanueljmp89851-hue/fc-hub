@@ -190,6 +190,19 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </>
             )}
           </div>
+          {tournament.status === "SETUP" && canEdit && (
+            <Link
+              href={`/torneos/${tournament.id}/sorteo`}
+              className="mt-3 flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 transition-colors hover:bg-orange-500/15"
+            >
+              <span className="text-2xl">🎲</span>
+              <div>
+                <p className="font-semibold text-orange-400">Sorteo pendiente</p>
+                <p className="text-sm text-foreground/60">Configurá los grupos, bracket o fixture antes de comenzar</p>
+              </div>
+              <span className="ml-auto text-sm font-medium text-orange-400">Ir al sorteo →</span>
+            </Link>
+          )}
           {tournament.description && (
             <CollapsibleText text={tournament.description} maxLines={3} className="mt-2 text-foreground/60" />
           )}
