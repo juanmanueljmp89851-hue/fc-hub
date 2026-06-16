@@ -271,7 +271,7 @@ export default function CrearTorneoPage() {
                       />
                     </label>
                   </div>
-                  <p className="mt-1 text-xs text-foreground/40">Cuadrado. JPG/PNG/WebP. Max 5MB.</p>
+                  <p className="mt-1 text-xs text-foreground/40">Cuadrado (500×500 recomendado). JPG, PNG o WebP. Máx 5MB.</p>
                 </div>
 
                 {/* Banner (panorámico) */}
@@ -314,7 +314,7 @@ export default function CrearTorneoPage() {
                       />
                     </label>
                   </div>
-                  <p className="mt-1 text-xs text-foreground/40">Panorámico (ej. 1200×400). Max 5MB.</p>
+                  <p className="mt-1 text-xs text-foreground/40">Panorámico (1200×400 recomendado). JPG, PNG o WebP. Máx 5MB.</p>
                 </div>
               </div>
             </div>

@@ -291,6 +291,7 @@ export default function EditarTorneoPage() {
                       />
                     </label>
                   </div>
+                  <p className="mt-1 text-xs text-foreground/40">Cuadrado (500×500 recomendado). JPG, PNG o WebP. Máx 5MB.</p>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-foreground/70">Banner</label>
@@ -329,6 +330,7 @@ export default function EditarTorneoPage() {
                       />
                     </label>
                   </div>
+                  <p className="mt-1 text-xs text-foreground/40">Panorámico (1200×400 recomendado). JPG, PNG o WebP. Máx 5MB.</p>
                 </div>
               </div>
             </div>
