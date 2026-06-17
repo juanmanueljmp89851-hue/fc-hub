@@ -502,6 +502,18 @@ async function upsertCards(cards: ScrapedCard[]): Promise<number> {
       continue;
     }
 
+    // Skip if same eaId+cardImageId exists with a different cardType (avoids
+    // duplicates when scraper uses "special" but DB has "end_of_era", "icon", etc.)
+    if (card.cardImageId) {
+      const existingVariant = await prisma.futCard.findFirst({
+        where: { eaId: card.eaId, cardImageId: card.cardImageId, NOT: { cardType: card.cardType } },
+        select: { id: true },
+      });
+      if (existingVariant) {
+        continue;
+      }
+    }
+
     const pricePs = parsePrice(card.pricePs ?? "");
     const pricePc = parsePrice(card.pricePc ?? "");
 

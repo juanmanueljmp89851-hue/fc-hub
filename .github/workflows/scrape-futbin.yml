@@ -30,8 +30,21 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Run FUTBIN scraper
+      - name: Run FUTBIN scraper (attempt 1)
+        id: scrape1
+        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: npx tsx scripts/scrape-futbin.ts --daily --version=uecl_rttf,end_of_era,prime_heroes,sbc_set,all_specials --pages 20
+        run: npx tsx scripts/scrape-futbin.ts --daily --version=showdown,uecl_rttf,end_of_era,prime_heroes,sbc_set,all_specials --pages 20
+
+      - name: Wait before retry
+        if: steps.scrape1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Run FUTBIN scraper (attempt 2)
+        if: steps.scrape1.outcome == 'failure'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: npx tsx scripts/scrape-futbin.ts --daily --version=showdown,uecl_rttf,end_of_era,prime_heroes,sbc_set,all_specials --pages 20
