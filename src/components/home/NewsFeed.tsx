@@ -79,7 +79,7 @@ export function NewsFeed({ limit = 16 }: NewsFeedProps) {
 
   if (loading) {
     return (
-      <div className="space-y-4" style={{ minHeight: 600, contain: "layout" }}>
+      <div className="space-y-4">
         <h2 className="text-xl font-bold">Últimas Noticias</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -101,68 +101,71 @@ export function NewsFeed({ limit = 16 }: NewsFeedProps) {
   }
 
   const [featured, ...rest] = news;
+  const sideNews = rest.slice(0, 8);
 
   return (
-    <div className="space-y-4" style={{ minHeight: 600, contain: "layout" }}>
-      <h2 className="text-xl font-bold">Últimas Noticias</h2>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-xl font-bold">
+          <span className="inline-block h-6 w-1 rounded-full bg-accent" />
+          Últimas Noticias
+        </h2>
+        <a href="/actualidad" className="text-sm font-medium text-accent hover:underline">
+          Ver más →
+        </a>
+      </div>
 
-      {/* Featured article */}
-      <a
-        href={featured.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group block overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/50"
-      >
-        <div className="grid md:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Featured — big card left */}
+        <a
+          href={featured.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex flex-col justify-end overflow-hidden rounded-xl border border-surface-light bg-surface"
+        >
           <NewsImage
             src={featured.imageUrl}
             alt=""
-            className="h-48 md:h-64"
+            className="absolute inset-0 h-full w-full"
           />
-          <div className="flex flex-col justify-center p-6">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="text-sm">{featured.sourceIcon}</span>
-              <span className="text-xs font-medium text-accent">{featured.source}</span>
-              <span className="text-xs text-foreground/40">{timeAgo(new Date(featured.pubDate))}</span>
-            </div>
-            <h3 className="mb-2 text-lg font-bold leading-tight group-hover:text-accent">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+          <div className="relative z-10 p-6">
+            <span className="mb-3 inline-block rounded-md bg-accent/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent">
+              {featured.source}
+            </span>
+            <h3 className="mb-2 text-xl font-bold leading-tight text-white group-hover:text-accent">
               {featured.title}
             </h3>
             {featured.description && (
-              <p className="line-clamp-3 text-sm text-foreground/60">{featured.description}</p>
+              <p className="line-clamp-2 text-sm text-white/60">{featured.description}</p>
             )}
           </div>
-        </div>
-      </a>
+        </a>
 
-      {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {rest.map((item, i) => (
-          <a
-            key={i}
-            href={item.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/50"
-          >
-            <NewsImage
-              src={item.imageUrl}
-              alt=""
-              className="h-36"
-              fallbackSize="text-3xl"
-            />
-            <div className="p-3">
-              <div className="mb-1 flex items-center gap-1.5">
-                <span className="text-xs">{item.sourceIcon}</span>
-                <span className="text-[10px] font-medium text-foreground/50">{item.source}</span>
-                <span className="text-[10px] text-foreground/30">{timeAgo(new Date(item.pubDate))}</span>
+        {/* Side — small rows right */}
+        <div className="flex h-full flex-col gap-2">
+          {sideNews.map((item, i) => (
+            <a
+              key={i}
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-1 items-center gap-3 rounded-lg border border-surface-light bg-surface/50 px-4 py-3 transition-colors hover:border-accent/30 hover:bg-surface"
+            >
+              <div className="min-w-0 flex-1">
+                <h4 className="line-clamp-2 text-sm font-semibold leading-snug group-hover:text-accent">
+                  {item.title}
+                </h4>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium text-accent">{item.source}</span>
+                  <span className="text-[10px] text-foreground/30">·</span>
+                  <span className="text-[10px] text-foreground/30">{timeAgo(new Date(item.pubDate))}</span>
+                </div>
               </div>
-              <h4 className="line-clamp-3 text-sm font-semibold leading-snug group-hover:text-accent">
-                {item.title}
-              </h4>
-            </div>
-          </a>
-        ))}
+              <span className="shrink-0 text-foreground/10 transition-colors group-hover:text-accent">›</span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

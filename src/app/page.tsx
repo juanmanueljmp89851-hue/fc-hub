@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 import { Navbar } from "@/components/layout/Navbar";
+import { HeroParallax } from "@/components/home/HeroParallax";
 import { Card } from "@/components/ui/Card";
 import { NewsFeed } from "@/components/home/NewsFeed";
 import { LiveTicker } from "@/components/home/LiveTicker";
@@ -86,23 +87,10 @@ export default async function HomePage() {
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        {/* Hero Banner */}
-        <section className="relative mb-8 overflow-hidden rounded-2xl border border-surface-light bg-gradient-to-br from-surface via-surface to-surface-light p-5 sm:p-8 md:p-12">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/5 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
-
-          <p className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-accent">
-            <span className="inline-block h-px w-5 bg-accent" />
-            Todo el universo EA FC y fútbol en una sola plataforma
-          </p>
-          <h1 className="mb-3 text-2xl font-black leading-[1.1] sm:text-4xl md:text-5xl">
-            <span className="italic text-foreground">Stats, mercado y fútbol. </span>
-            <span className="italic text-accent">No salís más, caíste.</span>
-          </h1>
-          <p className="max-w-xl text-sm text-foreground/50">
-            Donde vive el meta. Armá squads, seguí precios, competí y viví fútbol sin pausa.
-          </p>
-        </section>
+        {/* Hero Parallax */}
+        <div className="-mx-4 -mt-8 mb-8">
+          <HeroParallax />
+        </div>
 
         {/* Live Ticker */}
         <div className="-mx-4 mb-8">
@@ -113,16 +101,14 @@ export default async function HomePage() {
         <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           {quickLinks.map((link) => (
             <Link key={link.href} href={link.href} className="group">
-              <Card className="flex h-full min-h-[120px] flex-col justify-between transition-all hover:border-accent/30 hover:shadow-[0_0_20px_rgba(0,255,135,0.05)]">
+              <Card className="relative flex h-full min-h-[120px] flex-col justify-end transition-all hover:border-accent/30 hover:shadow-[0_0_20px_rgba(0,255,135,0.05)]">
+                <span className="absolute right-3 top-3 text-sm text-foreground/20 transition-colors group-hover:text-accent">↗</span>
                 <div>
-                  <span className="mb-2 block text-2xl">{link.icon}</span>
+                  <span className="mb-3 block text-2xl">{link.icon}</span>
                   <h3 className="font-bold text-foreground">{link.title}</h3>
                   <p className="mt-1 text-xs text-foreground/50">
                     {link.description}
                   </p>
-                </div>
-                <div className="mt-3 text-right">
-                  <span className="text-foreground/20 transition-colors group-hover:text-accent">→</span>
                 </div>
               </Card>
             </Link>

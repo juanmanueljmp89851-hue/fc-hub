@@ -95,21 +95,22 @@ export function LiveTicker() {
   const duration = Math.max(matches.length * 2, 15);
 
   return (
-    <div className="group/ticker relative overflow-hidden border-y border-surface-light bg-surface/50 touch-manipulation">
+    <div className="group/ticker relative overflow-hidden rounded-xl border border-accent/20 bg-surface/60 backdrop-blur-sm touch-manipulation">
       {/* Fixed label */}
-      <div className="absolute left-0 top-0 z-20 flex h-full items-center border-r border-surface-light bg-background pl-2 pr-2 sm:pl-3 sm:pr-3">
+      <div className="absolute left-0 top-0 z-20 flex h-full items-center bg-background pl-2 pr-6 sm:pl-3 sm:pr-8">
         <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wide text-red-500 sm:gap-1.5 sm:text-[10px]">
           <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500 sm:h-1.5 sm:w-1.5" />
-          <span className="hidden sm:inline">EN VIVO</span>
-          <span className="sm:hidden">LIVE</span>
+          <span className="hidden sm:inline">RESULTADOS EN VIVO</span>
+          <span className="sm:hidden">EN VIVO</span>
         </span>
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-6 translate-x-full bg-gradient-to-r from-background to-transparent" />
       </div>
 
       {/* Right fade */}
       <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-background to-transparent" />
 
       <div
-        className="flex whitespace-nowrap py-1.5 pl-[68px] sm:pl-[95px] animate-[ticker_var(--ticker-duration)_linear_infinite] group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]"
+        className="flex whitespace-nowrap py-1.5 pl-[120px] sm:pl-[240px] animate-[ticker_var(--ticker-duration)_linear_infinite] group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]"
         style={{
           "--ticker-duration": `${duration}s`,
         } as React.CSSProperties}
