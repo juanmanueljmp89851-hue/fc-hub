@@ -417,7 +417,7 @@ export function HeroParallax() {
           background: rgba(0,255,135,0.06);
         }
         .hero-jugador-img {
-          object-position: 93% 22%;
+          object-position: 97% 22%;
         }
         @media (max-width: 680px) {
           .hero-jugador-anim {
