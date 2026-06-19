@@ -421,11 +421,12 @@ export function HeroParallax() {
         }
         @media (max-width: 680px) {
           .hero-jugador-anim {
-            inset: -10% -40% -10% 40% !important;
+            inset: 0 !important;
             transform: none !important;
           }
           .hero-jugador-img {
-            object-position: 70% 45% !important;
+            object-fit: contain !important;
+            object-position: 85% 100% !important;
           }
           .hero-badge-text {
             font-size: 7px !important;
