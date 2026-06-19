@@ -199,6 +199,7 @@ export function HeroParallax() {
           {/* Eyebrow badge */}
           <div className="hero-fade-in" style={{ marginBottom: "28px", animationDelay: "0.2s" }}>
             <span
+              className="hero-badge-text"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -231,6 +232,7 @@ export function HeroParallax() {
 
           {/* H1 */}
           <h1
+            className="hero-h1"
             style={{
               fontSize: "clamp(38px, 6.7vw, 90px)",
               fontWeight: 900,
@@ -418,6 +420,18 @@ export function HeroParallax() {
           .hero-jugador-anim {
             inset: 0 !important;
             transform: none !important;
+          }
+          .hero-jugador-anim img {
+            object-position: 78% 18% !important;
+          }
+          .hero-badge-text {
+            font-size: 7px !important;
+            letter-spacing: 0.08em !important;
+            padding: 5px 10px !important;
+            gap: 6px !important;
+          }
+          .hero-h1 {
+            font-size: clamp(24px, 7.5vw, 36px) !important;
           }
         }
         @media (prefers-reduced-motion: reduce) {
