@@ -120,9 +120,9 @@ export function HeroParallax() {
           alt="Jugador Modo Fosa"
           fill
           priority
+          className="hero-jugador-img"
           style={{
             objectFit: "cover",
-            objectPosition: "70% 22%",
           }}
         />
       </div>
@@ -416,12 +416,15 @@ export function HeroParallax() {
           border-color: rgba(0,255,135,0.55);
           background: rgba(0,255,135,0.06);
         }
+        .hero-jugador-img {
+          object-position: 70% 22%;
+        }
         @media (max-width: 680px) {
           .hero-jugador-anim {
             inset: 0 !important;
             transform: none !important;
           }
-          .hero-jugador-anim img {
+          .hero-jugador-img {
             object-position: 82% 20% !important;
           }
           .hero-badge-text {
