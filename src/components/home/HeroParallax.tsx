@@ -422,7 +422,8 @@ export function HeroParallax() {
         @media (max-width: 680px) {
           .hero-jugador-anim {
             inset: 0 !important;
-            transform: none !important;
+            transform: scale(1.5) !important;
+            transform-origin: 85% 100% !important;
           }
           .hero-jugador-img {
             object-fit: contain !important;
