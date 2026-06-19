@@ -425,7 +425,7 @@ export function HeroParallax() {
             transform: none !important;
           }
           .hero-jugador-img {
-            object-position: 82% 20% !important;
+            object-position: 70% 22% !important;
           }
           .hero-badge-text {
             font-size: 7px !important;
