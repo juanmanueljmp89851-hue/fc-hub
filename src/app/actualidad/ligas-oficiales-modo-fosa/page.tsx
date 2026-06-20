@@ -35,13 +35,14 @@ export default function LigasOficialesPage() {
           <time dateTime="2026-06-20">20 de junio de 2026</time>
         </div>
 
-        <div className="relative -mx-4 mb-8 aspect-square overflow-hidden rounded-xl sm:mx-0 sm:aspect-video">
+        <div className="-mx-4 mb-8 sm:mx-0">
           <Image
             src="/images/liga-oficial-1.png"
             alt="Liga Oficial Modo Fosa #1"
-            fill
+            width={1254}
+            height={1254}
             priority
-            className="object-cover"
+            className="w-full rounded-xl"
           />
         </div>
 
@@ -73,12 +74,13 @@ export default function LigasOficialesPage() {
             Dos formas de jugar. Una sola historia.
           </h2>
 
-          <div className="!my-8 relative aspect-video overflow-hidden rounded-xl">
+          <div className="!my-8">
             <Image
               src="/images/liga-oficial-3.png"
               alt="Liga Ultimate Team y Liga Equipos Reales"
-              fill
-              className="object-cover"
+              width={1024}
+              height={1536}
+              className="w-full rounded-xl"
             />
           </div>
 
@@ -222,12 +224,13 @@ export default function LigasOficialesPage() {
             Levantarán la Bengala de la Fosa.
           </p>
 
-          <div className="!my-8 relative aspect-video overflow-hidden rounded-xl">
+          <div className="!my-8">
             <Image
               src="/images/liga-oficial-4.png"
               alt="La Bengala de la Fosa — Trofeo oficial"
-              fill
-              className="object-cover"
+              width={1536}
+              height={1024}
+              className="w-full rounded-xl"
             />
           </div>
 
@@ -291,12 +294,12 @@ export default function LigasOficialesPage() {
             competencia.
           </p>
 
-          <div className="!my-8 relative mx-auto max-w-md overflow-hidden rounded-xl">
+          <div className="!my-8 mx-auto max-w-md">
             <Image
               src="/images/liga-oficial-2.png"
               alt="Liga Oficial Modo Fosa #1 — Información completa"
-              width={600}
-              height={900}
+              width={1254}
+              height={1254}
               className="w-full rounded-xl"
             />
           </div>
