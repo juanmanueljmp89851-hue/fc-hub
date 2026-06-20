@@ -121,8 +121,7 @@ export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
           {/* Featured — big card left */}
           <a
             href={featured.link}
-            target="_blank"
-            rel="noopener noreferrer"
+            {...(featured.link.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
             className="group relative flex flex-col justify-end overflow-hidden rounded-xl border border-surface-light bg-surface"
           >
             <NewsImage
@@ -150,8 +149,7 @@ export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
               <a
                 key={i}
                 href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(item.link.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
                 className="group flex flex-1 items-center gap-3 rounded-lg border border-surface-light bg-surface/50 px-4 py-3 transition-colors hover:border-accent/30 hover:bg-surface"
               >
                 <div className="min-w-0 flex-1">
@@ -182,8 +180,7 @@ export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
           <a
             key={i}
             href={item.link}
-            target="_blank"
-            rel="noopener noreferrer"
+            {...(item.link.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
             className="group overflow-hidden rounded-xl border border-surface-light bg-surface transition-colors hover:border-accent/30"
           >
             <NewsImage src={item.imageUrl} alt="" className="w-full rounded-t-xl" />

@@ -338,7 +338,20 @@ const PINNED_ARTICLES: Array<{
   item: Omit<NewsItem, "pubDate"> & { pubDate: Date };
 }> = [
   {
-    position: 1, // Second item (index 1)
+    position: 0,
+    item: {
+      title: "Modo Fosa abre sus puertas a la competencia: llegan las primeras Ligas Oficiales de la comunidad",
+      description: "Durante julio se disputarán las primeras Ligas Oficiales Modo Fosa: Ultimate Team y Equipos Reales. Competí, ganá y dejá tu marca.",
+      link: "/actualidad/ligas-oficiales-modo-fosa",
+      imageUrl: null,
+      source: "Modo Fosa",
+      sourceIcon: "🟢",
+      pubDate: new Date("2026-06-20T12:00:00Z"),
+      language: "es",
+    },
+  },
+  {
+    position: 2,
     item: {
       title: "EA FC 26: así es el modo Mundial 2026 del juego",
       description: "Todo lo que sabemos sobre el modo Copa del Mundo FIFA 2026 en EA Sports FC 26.",
