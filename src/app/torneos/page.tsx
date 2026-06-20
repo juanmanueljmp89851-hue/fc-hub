@@ -83,11 +83,21 @@ interface PageProps {
 }
 
 export default async function TorneosPage({ searchParams }: PageProps) {
-  const { tournaments, total } = await listTournaments({
+  const { tournaments: rawTournaments, total } = await listTournaments({
     status: searchParams.status as undefined,
     platform: searchParams.platform as undefined,
     search: searchParams.search,
     page: searchParams.page ? parseInt(searchParams.page) : 1,
+  });
+
+  const tournaments = [...rawTournaments].sort((a, b) => {
+    const pinOrder = (t: typeof a) => {
+      const name = t.name.toLowerCase();
+      if (name.includes("ultimate team")) return 0;
+      if (name.includes("equipos reales")) return 1;
+      return 2;
+    };
+    return pinOrder(a) - pinOrder(b);
   });
 
   const jsonLd = {
