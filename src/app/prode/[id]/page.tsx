@@ -83,24 +83,26 @@ export default async function ProdeDetailPage({ params }: PageProps) {
                 <Image src={prode.imageUrl} alt="" fill className="object-cover" />
               </div>
             )}
-            <h1 className="text-2xl font-bold">{prode.name}</h1>
-            {prode.visibility === "PRIVATE" && (
-              <span className="rounded-full bg-surface-light px-2.5 py-0.5 text-xs font-medium text-foreground/50">
-                🔒 Privado
-              </span>
-            )}
-            {canEdit && (
-              <>
-                <Link
-                  href={`/prode/${prode.id}/editar`}
-                  className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
-                >
-                  Editar
-                </Link>
-                <DeleteProdeButton prodeId={prode.id} prodeName={prode.name} />
-              </>
-            )}
+            <div>
+              <h1 className="text-base font-bold sm:text-2xl">{prode.name}</h1>
+              {prode.visibility === "PRIVATE" && (
+                <span className="mt-1 inline-block rounded-full bg-surface-light px-2.5 py-0.5 text-xs font-medium text-foreground/50">
+                  🔒 Privado
+                </span>
+              )}
+            </div>
           </div>
+          {canEdit && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Link
+                href={`/prode/${prode.id}/editar`}
+                className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+              >
+                Editar
+              </Link>
+              <DeleteProdeButton prodeId={prode.id} prodeName={prode.name} />
+            </div>
+          )}
           {prode.description && (
             <p className="mt-1 text-foreground/60 whitespace-pre-wrap">
               <Linkify text={prode.description} />

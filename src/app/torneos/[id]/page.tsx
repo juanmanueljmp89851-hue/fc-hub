@@ -159,7 +159,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-surface-light bg-surface-light">
               {tournament.logoUrl ? (
                 <Image src={tournament.logoUrl} alt="" fill className="object-cover" />
@@ -167,32 +167,32 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                 <div className="flex h-full w-full items-center justify-center text-2xl">🏟️</div>
               )}
             </div>
-            <h1 className="text-xl font-bold sm:text-3xl">{tournament.name}</h1>
-            {canEdit && (
-              <>
-                <Link
-                  href={`/torneos/${tournament.id}/editar`}
-                  className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
-                >
-                  Editar
-                </Link>
-                {tournament.status === "SETUP" && (
-                  <Link
-                    href={`/torneos/${tournament.id}/sorteo`}
-                    className="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90"
-                  >
-                    Ir al sorteo
-                  </Link>
-                )}
-                <DuplicateTournamentButton tournamentId={tournament.id} />
-                <ResetTournamentButton tournamentId={tournament.id} />
-                <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
-                {tournament.status === "IN_PROGRESS" && (
-                  <RemindPendingButton tournamentId={tournament.id} />
-                )}
-              </>
-            )}
+            <h1 className="text-base font-bold sm:text-3xl">{tournament.name}</h1>
           </div>
+          {canEdit && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Link
+                href={`/torneos/${tournament.id}/editar`}
+                className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:border-accent hover:text-accent"
+              >
+                Editar
+              </Link>
+              {tournament.status === "SETUP" && (
+                <Link
+                  href={`/torneos/${tournament.id}/sorteo`}
+                  className="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90"
+                >
+                  Ir al sorteo
+                </Link>
+              )}
+              <DuplicateTournamentButton tournamentId={tournament.id} />
+              <ResetTournamentButton tournamentId={tournament.id} />
+              <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
+              {tournament.status === "IN_PROGRESS" && (
+                <RemindPendingButton tournamentId={tournament.id} />
+              )}
+            </div>
+          )}
           {tournament.status === "SETUP" && canEdit && (
             <Link
               href={`/torneos/${tournament.id}/sorteo`}
