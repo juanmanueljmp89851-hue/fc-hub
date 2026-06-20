@@ -29,6 +29,8 @@ const FUTBIN_VERSIONS = (process.argv.find((a) => a.startsWith("--version="))?.s
 const FUTBIN_SQUADS = (process.argv.find((a) => a.startsWith("--squad="))?.split("=")[1] ?? "").split(",").filter(Boolean);
 // --daily: also scrape /home-tab/new-players (today's new cards)
 const SCRAPE_DAILY = process.argv.includes("--daily");
+// --auto: discover available versions from FUTBIN dropdown automatically
+const AUTO_VERSIONS = process.argv.includes("--auto");
 const FUTBIN_NEW_PLAYERS_URL = `${FUTBIN_BASE}/home-tab/new-players`;
 
 function futbinPlayersUrl(version: string, page: number): string {
@@ -46,7 +48,9 @@ const SQUAD_MAP: Record<string, { cardType: string; promo: string; order: number
 // Map FUTBIN version filter slugs to our promo names
 const PROMO_MAP: Record<string, { cardType: string; promo: string; order: number }> = {
   // Newest promos first (higher order = newer)
-  greats_of_the_game: { cardType: "icon", promo: "Greats of the Game", order: 112 },
+  greats_of_the_game_icon: { cardType: "icon", promo: "Greats of the Game Icon", order: 113 },
+  greats_of_the_game_hero: { cardType: "hero", promo: "Greats of the Game Hero", order: 112.5 },
+  greats_of_the_game: { cardType: "icon", promo: "Greats of the Game Icon", order: 113 },
   icon_journey_of_nations: { cardType: "icon", promo: "Icon Journey Of Nations", order: 111 },
   path_to_glory: { cardType: "path_to_glory", promo: "Path To Glory", order: 110 },
   national_pride_red: { cardType: "national_pride_red", promo: "National Pride Red", order: 109.5 },
@@ -310,10 +314,11 @@ function inferPromo(cardImageId: string): {
 
   const id = cardImageId.toLowerCase();
 
-  // New promos (June 2026)
-  if (id.includes("trophy_titans")) return PROMO_MAP.greats_of_the_game;
-  if (id.includes("greats_of_the_game") || id.includes("gotg")) return PROMO_MAP.greats_of_the_game;
-  if (id.includes("ecl_champion") || id.includes("champion_icon")) return PROMO_MAP.greats_of_the_game;
+  // Greats of the Game — Hero vs Icon
+  if (id.includes("gotg_hero") || id.includes("greats_of_the_game_hero")) return PROMO_MAP.greats_of_the_game_hero;
+  if (id.includes("trophy_titans")) return PROMO_MAP.greats_of_the_game_icon;
+  if (id.includes("greats_of_the_game") || id.includes("gotg")) return PROMO_MAP.greats_of_the_game_icon;
+  if (id.includes("ecl_champion") || id.includes("champion_icon")) return PROMO_MAP.greats_of_the_game_icon;
   if (id.includes("journey_of_nations") || id.includes("jon")) return PROMO_MAP.icon_journey_of_nations;
   if (id.includes("path_to_glory") || id.includes("ptg")) return PROMO_MAP.path_to_glory;
   if (id.includes("national_pride_red")) return PROMO_MAP.national_pride_red;
@@ -591,6 +596,59 @@ async function upsertCards(cards: ScrapedCard[]): Promise<number> {
   return upserted;
 }
 
+// ─── AUTO-DISCOVER FUTBIN VERSIONS ──────────────────────────
+
+async function discoverFutbinVersions(page: Page): Promise<string[]> {
+  console.log(`\n🔎 Auto-descubrimiento de versiones FUTBIN...`);
+  await page.goto(`${FUTBIN_BASE}/26/players`, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(3000);
+
+  // Close cookie consent if present
+  try {
+    const consentBtn = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll");
+    if (await consentBtn.count() > 0) await consentBtn.first().click();
+  } catch {}
+
+  // Extract version filter options from dropdown/select
+  const versions = await page.evaluate(() => {
+    const found: string[] = [];
+    // Try select element with version options
+    const selects = Array.from(document.querySelectorAll("select"));
+    for (let s = 0; s < selects.length; s++) {
+      const opts = Array.from(selects[s].options);
+      for (let o = 0; o < opts.length; o++) {
+        const val = opts[o].value?.trim();
+        if (val && val !== "" && val !== "all" && !val.startsWith("http")) {
+          found.push(val);
+        }
+      }
+    }
+    // Also try data attributes or filter links
+    const filterLinks = Array.from(document.querySelectorAll("[data-version], a[href*='version=']"));
+    for (let i = 0; i < filterLinks.length; i++) {
+      const el = filterLinks[i];
+      const v = (el as HTMLElement).dataset?.version ?? "";
+      if (v) found.push(v);
+      const href = (el as HTMLAnchorElement).href ?? "";
+      const match = href.match(/version=([^&]+)/);
+      if (match) found.push(match[1]);
+    }
+    return found.filter((v, i, a) => a.indexOf(v) === i);
+  });
+
+  if (versions.length > 0) {
+    console.log(`  ✅ ${versions.length} versiones descubiertas: ${versions.join(", ")}`);
+    return versions;
+  }
+
+  // Fallback: use all PROMO_MAP keys + all_specials
+  console.log(`  ⚠ No se encontraron versiones en dropdown. Usando PROMO_MAP como fallback.`);
+  const allKeys = Object.keys(PROMO_MAP).concat("all_specials", "sbc_set");
+  const fallback = allKeys.filter((v, i, a) => a.indexOf(v) === i);
+  console.log(`  📋 ${fallback.length} versiones desde PROMO_MAP: ${fallback.join(", ")}`);
+  return fallback;
+}
+
 // ─── MAIN ────────────────────────────────────────────────────
 
 async function main() {
@@ -601,9 +659,10 @@ async function main() {
   const hasSquads = FUTBIN_SQUADS.length > 0;
 
   console.log(`\n🔍 Scraper FUTBIN FC 26 — ${new Date().toLocaleString("es-AR")}`);
+  if (AUTO_VERSIONS) console.log(`   🤖 Modo automático: descubrimiento de versiones`);
   if (SCRAPE_DAILY) console.log(`   📅 Daily: /home-tab/new-players`);
   if (hasSquads) console.log(`   Squads: ${FUTBIN_SQUADS.join(", ")}`);
-  if (!hasSquads && !SCRAPE_DAILY) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
+  if (!hasSquads && !SCRAPE_DAILY && !AUTO_VERSIONS) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
   console.log(`   Páginas por versión: ${maxPages}`);
   console.log(`   Fuente: ${SOURCE}\n`);
 
@@ -672,16 +731,25 @@ async function main() {
         });
       }
     } else {
+      // Resolve version list: --auto discovers from FUTBIN, otherwise use --version flag
+      const resolvedVersions = AUTO_VERSIONS
+        ? await discoverFutbinVersions(page)
+        : FUTBIN_VERSIONS;
+
       // Put specific promos BEFORE all_specials so they get highest promoOrder
       // all_specials is a catch-all; specific promos represent today's newest releases
       const specific: string[] = [];
       const catchAll: string[] = [];
-      for (const version of FUTBIN_VERSIONS) {
+      for (const version of resolvedVersions) {
         if (version === "all_specials") {
           catchAll.push(version);
         } else {
           specific.push(version);
         }
+      }
+      // Always include all_specials as catch-all in auto mode
+      if (AUTO_VERSIONS && catchAll.length === 0) {
+        catchAll.push("all_specials");
       }
       for (const version of [...specific, ...catchAll]) {
         targets.push({
