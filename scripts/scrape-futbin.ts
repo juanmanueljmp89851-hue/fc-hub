@@ -5,16 +5,38 @@
  *   npx tsx scripts/scrape-futbin.ts                  # Scrape homepage (latest)
  *   npx tsx scripts/scrape-futbin.ts --promo tots     # Scrape TOTS specifically
  *   npx tsx scripts/scrape-futbin.ts --pages 5        # Scrape 5 pages of specials
+ *   npx tsx scripts/scrape-futbin.ts --bee --rotate   # ScrapingBee + daily rotation
  *
  * Fallback: si FUTBIN banea, cambiar SOURCE a "futgg" o "futwiz"
  */
 
-import { chromium } from "playwright-extra";
-import type { Page } from "playwright";
-import stealth from "puppeteer-extra-plugin-stealth";
 import { PrismaClient } from "@prisma/client";
 
-chromium.use(stealth());
+// ScraperAPI mode: use cheerio for HTML parsing, no browser needed
+const USE_SCRAPER_API = process.argv.includes("--bee");
+const SCRAPER_API_KEY = process.env.SCRAPERAPI_KEY ?? "";
+// Rotation mode: scrape a subset of squads per day to stay within credit budget
+const USE_ROTATION = process.argv.includes("--rotate");
+const SQUADS_PER_DAY = 6;
+
+// Lazy-loaded modules (conditional on mode)
+let chromium: any;
+let stealth: any;
+type Page = import("playwright").Page;
+let cheerioLoad: any;
+
+async function loadDeps() {
+  if (USE_SCRAPER_API) {
+    const cheerioMod = await import("cheerio");
+    cheerioLoad = cheerioMod.load;
+  } else {
+    const pw = await import("playwright-extra");
+    chromium = pw.chromium;
+    const stealthMod = await import("puppeteer-extra-plugin-stealth");
+    stealth = stealthMod.default;
+    chromium.use(stealth());
+  }
+}
 
 const prisma = new PrismaClient();
 
@@ -146,6 +168,125 @@ const PROMO_MAP: Record<string, { cardType: string; promo: string; order: number
   hero: { cardType: "hero", promo: "Héroe", order: 9 },
   gold_rare: { cardType: "gold_rare", promo: "Oro Raro", order: 1 },
 };
+
+// ─── SCRAPERAPI FETCH ───────────────────────────────────────
+
+async function fetchWithScraperAPI(url: string): Promise<string> {
+  const apiUrl = new URL("https://api.scraperapi.com/");
+  apiUrl.searchParams.set("api_key", SCRAPER_API_KEY);
+  apiUrl.searchParams.set("url", url);
+  apiUrl.searchParams.set("render", "true");
+  apiUrl.searchParams.set("ultra_premium", "true");
+  apiUrl.searchParams.set("wait_for_selector", "tr.player-row");
+  apiUrl.searchParams.set("country_code", "us");
+
+  const res = await fetch(apiUrl.toString(), { signal: AbortSignal.timeout(90000) });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`ScraperAPI error ${res.status}: ${body.slice(0, 200)}`);
+  }
+  return res.text();
+}
+
+function parsePlayerListHtml(html: string, sourceUrl: string): ScrapedCard[] {
+  const $ = cheerioLoad(html);
+  const results: ScrapedCard[] = [];
+
+  $("tr.player-row").each((_, row) => {
+    try {
+      const $row = $(row);
+      const link = $row.find("a.player-row-playercard");
+      const href = link.attr("href") ?? "";
+      const futbinIdMatch = href.match(/\/26\/player\/(\d+)/);
+      if (!futbinIdMatch) return;
+      const futbinId = parseInt(futbinIdMatch[1]);
+
+      const name = $row.find(".table-player-name").text().trim();
+      if (!name) return;
+
+      const faceSrc = $row.find("img.playercard-26-special-img, img[src*='players/p']").attr("src") ?? "";
+      const eaIdMatch = faceSrc.match(/players\/p?(\d+)\.png/);
+      const eaId = eaIdMatch ? parseInt(eaIdMatch[1]) : 0;
+
+      const overall = parseInt($row.find("td.table-rating .rating-square").text().trim() || "0");
+
+      const posTd = $row.find("td.table-pos");
+      const mainPos = posTd.find(".table-pos-main span:first-child").text().trim();
+      const altPosText = posTd.find(".xs-font").text().trim();
+      const altPositions = altPosText ? altPosText.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+      const pace = parseInt($row.find("td.table-pace .table-key-stats").text().trim() || "0");
+      const shooting = parseInt($row.find("td.table-shooting .table-key-stats").text().trim() || "0");
+      const passing = parseInt($row.find("td.table-passing .table-key-stats").text().trim() || "0");
+      const dribbling = parseInt($row.find("td.table-dribbling .table-key-stats").text().trim() || "0");
+      const defending = parseInt($row.find("td.table-defending .table-key-stats").text().trim() || "0");
+      const physical = parseInt($row.find("td.table-physicality .table-key-stats").text().trim() || "0");
+
+      const cardSrc = $row.find("img.playercard-s-26-bg, img[src*='cards/tiny/']").attr("src") ?? "";
+      const cardMatch = cardSrc.match(/cards\/tiny\/(.+?)\.png/);
+      const cardImageId = cardMatch?.[1] ?? "";
+
+      const pricePs = $row.find("td.platform-ps-only .price").text().trim().replace(/[^\d.KMk]/g, "");
+      const pricePc = $row.find("td.platform-pc-only .price").text().trim().replace(/[^\d.KMk]/g, "");
+
+      const fbRatingText = $row.find("span.futbin-rating-tag").text().trim();
+      const futbinRating = fbRatingText ? parseFloat(fbRatingText) : undefined;
+
+      const smText = $row.find("td.table-skills").text().trim();
+      const wfText = $row.find("td.table-weak-foot").text().trim();
+      const skillMoves = smText ? parseInt(smText) : undefined;
+      const weakFoot = wfText ? parseInt(wfText) : undefined;
+
+      const footSrc = $row.find("td.table-foot img").attr("src") ?? "";
+      const foot = footSrc.includes("foot-left") ? "Izquierdo" : footSrc.includes("foot-right") ? "Derecho" : undefined;
+
+      const heightText = $row.find("td.table-height .text-center").text().trim();
+      const heightMatch = heightText.match(/(\d+)cm/);
+      const height = heightMatch ? parseInt(heightMatch[1]) : undefined;
+
+      const promoInfo = inferPromo(cardImageId);
+      results.push({
+        futbinId,
+        eaId,
+        name,
+        overall,
+        position: mainPos,
+        altPositions,
+        pace, shooting, passing, dribbling, defending, physical,
+        club: "", league: "", nation: "",
+        cardType: promoInfo.cardType,
+        promo: promoInfo.promo,
+        promoOrder: promoInfo.order,
+        skillMoves, weakFoot, foot, height, futbinRating,
+        pricePs: pricePs || undefined,
+        pricePc: pricePc || undefined,
+        cardImageId,
+        imageUrl: eaId > 0 ? `https://cdn.futbin.com/content/fifa26/img/players/p${eaId}.png` : undefined,
+        sourceUrl: `https://www.futbin.com${href}`,
+      });
+    } catch {
+      // Skip malformed rows
+    }
+  });
+
+  return results;
+}
+
+// ─── ROTATION LOGIC ─────────────────────────────────────────
+
+function getRotationSquads(): string[] {
+  const allSquads = Object.keys(SQUAD_MAP);
+  allSquads.sort((a, b) => (SQUAD_MAP[b]?.order ?? 0) - (SQUAD_MAP[a]?.order ?? 0));
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  const totalGroups = Math.ceil(allSquads.length / SQUADS_PER_DAY);
+  const groupIndex = dayOfYear % totalGroups;
+  const start = groupIndex * SQUADS_PER_DAY;
+  const todaySquads = allSquads.slice(start, start + SQUADS_PER_DAY);
+  console.log(`  🔄 Rotación día ${dayOfYear} → grupo ${groupIndex + 1}/${totalGroups}: ${todaySquads.join(", ")}`);
+  return todaySquads;
+}
 
 // ─── SCRAPER ─────────────────────────────────────────────────
 
@@ -701,6 +842,8 @@ async function discoverFutbinSquads(page: Page): Promise<string[]> {
 // ─── MAIN ────────────────────────────────────────────────────
 
 async function main() {
+  await loadDeps();
+
   const args = process.argv.slice(2);
   const pagesArg = args.find((a) => a.startsWith("--pages"));
   const maxPages = pagesArg ? parseInt(args[args.indexOf(pagesArg) + 1] ?? "3") : 3;
@@ -708,12 +851,92 @@ async function main() {
   const hasSquads = FUTBIN_SQUADS.length > 0;
 
   console.log(`\n🔍 Scraper FUTBIN FC 26 — ${new Date().toLocaleString("es-AR")}`);
+  if (USE_SCRAPER_API) console.log(`   🐝 Modo ScraperAPI (IPs residenciales)`);
+  if (USE_ROTATION) console.log(`   🔄 Rotación: ${SQUADS_PER_DAY} squads/día`);
   if (AUTO_VERSIONS) console.log(`   🤖 Modo automático: descubrimiento de versiones`);
   if (SCRAPE_DAILY) console.log(`   📅 Daily: /home-tab/new-players`);
   if (hasSquads) console.log(`   Squads: ${FUTBIN_SQUADS.join(", ")}`);
-  if (!hasSquads && !SCRAPE_DAILY && !AUTO_VERSIONS) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
+  if (!hasSquads && !SCRAPE_DAILY && !AUTO_VERSIONS && !USE_ROTATION) console.log(`   Versiones: ${FUTBIN_VERSIONS.join(", ")}`);
   console.log(`   Páginas por versión: ${maxPages}`);
   console.log(`   Fuente: ${SOURCE}\n`);
+
+  if (USE_SCRAPER_API && !SCRAPER_API_KEY) {
+    throw new Error("SCRAPERAPI_KEY no configurada. Setear como env var o secret.");
+  }
+
+  // ─── SCRAPINGBEE MODE ─────────────────────────────────────────
+  if (USE_SCRAPER_API) {
+    let allCards: ScrapedCard[] = [];
+    const seen = new Set<string>();
+
+    try {
+      const squadsToScrape = USE_ROTATION
+        ? getRotationSquads()
+        : hasSquads
+          ? FUTBIN_SQUADS
+          : Object.keys(SQUAD_MAP);
+
+      const targets = squadsToScrape.map((squad) => ({
+        label: `Squad: ${squad}`,
+        urlFn: (p: number) => futbinSquadUrl(squad, p),
+        forcePromo: SQUAD_MAP[squad],
+      }));
+
+      let creditsUsed = 0;
+
+      for (const target of targets) {
+        console.log(`\n🏷️  ${target.label}`);
+
+        for (let p = 1; p <= maxPages; p++) {
+          const url = target.urlFn(p);
+          console.log(`\n📄 [${target.label}] Página ${p}/${maxPages}`);
+
+          const html = await fetchWithScraperAPI(url);
+          creditsUsed += 10;
+          console.log(`  🐝 ScraperAPI fetch OK (${creditsUsed} créditos usados)`);
+
+          const cards = parsePlayerListHtml(html, url);
+          console.log(`  ✓ ${cards.length} cartas extraídas`);
+
+          if (target.forcePromo) {
+            for (const card of cards) {
+              card.cardType = target.forcePromo.cardType;
+              card.promo = target.forcePromo.promo;
+              card.promoOrder = target.forcePromo.order;
+            }
+          }
+
+          let added = 0;
+          for (const card of cards) {
+            const key = `${card.eaId}:${card.cardType}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              allCards.push(card);
+              added++;
+            }
+          }
+          console.log(`  ✓ ${added} nuevas (${cards.length - added} duplicadas)`);
+
+          if (cards.length === 0 || (added === 0 && cards.length > 0)) {
+            console.log(`  ⏭️  ${cards.length === 0 ? "Página vacía" : "Sin cartas nuevas"}, saltando resto de ${target.label}`);
+            break;
+          }
+        }
+      }
+
+      console.log(`\n📊 Total: ${allCards.length} cartas únicas — ${creditsUsed} créditos ScraperAPI`);
+
+      await saveCards(allCards);
+    } catch (error) {
+      console.error("❌ Error en scraper:", error);
+      process.exitCode = 1;
+    } finally {
+      await prisma.$disconnect();
+    }
+    return;
+  }
+
+  // ─── PLAYWRIGHT MODE (local / fallback) ──────────────────────
 
   const browser = await chromium.launch({
     headless: true,
@@ -745,37 +968,29 @@ async function main() {
 
   const page = await context.newPage();
 
-  // Remove webdriver flag
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
 
-  // Pre-visit homepage to establish cookies/session (anti-bot measure)
   console.log("🌐 Pre-visit FUTBIN homepage (establish session)...");
   await page.goto("https://www.futbin.com", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForTimeout(3000 + Math.random() * 2000);
-  // Accept cookies if present
   try {
     const consent = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll");
     if (await consent.count() > 0) await consent.first().click();
   } catch {}
   await page.waitForTimeout(2000 + Math.random() * 1000);
 
-  // Block only ad/tracking scripts — keep images/fonts/CSS to look real
   await page.route("**/googlesyndication**", (route) => route.abort());
   await page.route("**/doubleclick**", (route) => route.abort());
   await page.route("**/google-analytics**", (route) => route.abort());
   await page.route("**/adsrvr.org**", (route) => route.abort());
 
-  // Track seen cards across versions to deduplicate
   const seen = new Set<string>();
   let allCards: ScrapedCard[] = [];
-  let dailyDiscovery: ScrapedCard[] = []; // daily cards appended at end (discovery only)
+  let dailyDiscovery: ScrapedCard[] = [];
 
   try {
-    // ─── DAILY: Scrape today's new players (discovery only) ─────────────
-    // Daily cards go at END — they're for discovering new cards not yet in version pages.
-    // Version scrape (sorted by date_added desc) defines the real promoOrder.
     if (SCRAPE_DAILY) {
       console.log(`\n📅 Scraping cartas nuevas del día (discovery)...`);
       const dailyCards = await scrapeFutbinNewPlayers(page);
@@ -794,11 +1009,18 @@ async function main() {
       }
     }
 
-    // Determine scrape targets: either squads (p_squad=) or versions (version=)
     const targets: Array<{ label: string; urlFn: (p: number) => string; forcePromo?: { cardType: string; promo: string; order: number } }> = [];
 
-    if (AUTO_VERSIONS) {
-      // Auto mode: discover squads from FUTBIN dropdown, scrape each one
+    if (USE_ROTATION) {
+      const rotSquads = getRotationSquads();
+      for (const squad of rotSquads) {
+        targets.push({
+          label: `Squad: ${squad}`,
+          urlFn: (p) => futbinSquadUrl(squad, p),
+          forcePromo: SQUAD_MAP[squad],
+        });
+      }
+    } else if (AUTO_VERSIONS) {
       const discoveredSquads = await discoverFutbinSquads(page);
       for (const squad of discoveredSquads) {
         const squadInfo = SQUAD_MAP[squad];
@@ -821,7 +1043,6 @@ async function main() {
         });
       }
     } else {
-      // Legacy version-based scraping (fallback)
       for (const version of FUTBIN_VERSIONS) {
         targets.push({
           label: `Version: ${version}`,
@@ -839,7 +1060,6 @@ async function main() {
 
         const cards = await scrapeFutbinPlayerList(page, url);
 
-        // Force promo override when using squad-based scraping
         if (target.forcePromo) {
           for (const card of cards) {
             card.cardType = target.forcePromo.cardType;
@@ -848,7 +1068,6 @@ async function main() {
           }
         }
 
-        // Deduplicate: keep first occurrence (primary version has priority)
         let added = 0;
         for (const card of cards) {
           const key = `${card.eaId}:${card.cardType}`;
@@ -860,13 +1079,11 @@ async function main() {
         }
         console.log(`  ✓ ${added} nuevas (${cards.length - added} duplicadas)`);
 
-        // Stop early if page empty or all cards already seen
         if (cards.length === 0 || (added === 0 && cards.length > 0)) {
           console.log(`  ⏭️  ${cards.length === 0 ? "Página vacía" : "Sin cartas nuevas"}, saltando resto de ${target.label}`);
           break;
         }
 
-        // Rate limiting
         const isLast = p === maxPages && target === targets[targets.length - 1];
         if (!isLast) {
           const delay = 5000 + Math.random() * 5000;
@@ -876,87 +1093,75 @@ async function main() {
       }
     }
 
-    // Append daily discovery cards at the end (for cards not found in version scrape)
     if (dailyDiscovery.length > 0) {
       allCards.push(...dailyDiscovery);
       console.log(`  📅 +${dailyDiscovery.length} cartas de discovery daily agregadas al final`);
     }
 
-    console.log(`\n📊 Total cartas (con duplicados): ${allCards.length}`);
-
-    // Deduplicate: keep first occurrence (version scrape = correct date order)
-    // If duplicate has better stats, use those but keep position
-    const dedupMap = new Map<string, { card: ScrapedCard; firstIndex: number }>();
-    allCards.forEach((card, i) => {
-      const key = `${card.eaId}:${card.cardType}`;
-      const existing = dedupMap.get(key);
-      if (!existing) {
-        dedupMap.set(key, { card, firstIndex: i });
-      } else {
-        // Keep earliest position but take version with real stats
-        const hasStats = card.pace > 0 || card.shooting > 0;
-        const existingHasStats = existing.card.pace > 0 || existing.card.shooting > 0;
-        if (hasStats && !existingHasStats) {
-          dedupMap.set(key, { card, firstIndex: existing.firstIndex });
-        }
-      }
-    });
-
-    // Sort by first appearance order and rebuild allCards
-    const sorted = [...dedupMap.values()].sort((a, b) => a.firstIndex - b.firstIndex);
-    allCards = sorted.map((s) => s.card);
-    console.log(`  🔄 Deduplicado: ${allCards.length} cartas únicas`);
-
-    // ─── promoOrder: NEW cards above everything, existing cards frozen ───
-    // Two-writer history left manual cards at ~6M and old scraper runs capped at
-    // 1M, so scraped cards never reached the top. Fix: only NEWLY discovered cards
-    // get a fresh order above the current global max (newest first). Existing cards
-    // keep their stored order, so the daily scrape never reshuffles the board — each
-    // day's genuinely-new releases climb straight to the top of home + Cartas FC26.
-    const existingRows = await prisma.futCard.findMany({
-      select: { eaId: true, cardType: true, promoOrder: true },
-    });
-    const existingOrder = new Map<string, number>(
-      existingRows.map((c) => [`${c.eaId}:${c.cardType}`, c.promoOrder]),
-    );
-    const globalMax = existingRows.reduce((m, c) => Math.max(m, c.promoOrder), 0);
-
-    const freshCards = allCards.filter(
-      (c) => !existingOrder.has(`${c.eaId}:${c.cardType}`),
-    );
-    // allCards is already sorted newest-first → newest fresh card gets highest order
-    freshCards.forEach((card, i) => {
-      card.promoOrder = globalMax + freshCards.length - i;
-    });
-    // Existing cards: pin to their stored order so upsert update is a no-op on order
-    allCards.forEach((card) => {
-      const key = `${card.eaId}:${card.cardType}`;
-      const stored = existingOrder.get(key);
-      if (stored !== undefined) card.promoOrder = stored;
-    });
-    console.log(
-      `  📅 ${freshCards.length} cartas NUEVAS → order ${globalMax + 1}..${globalMax + freshCards.length} (sobre max ${globalMax}); ${allCards.length - freshCards.length} existentes congeladas`,
-    );
-
-    // Save to DB
-    console.log(`\n💾 Guardando en Supabase...`);
-    const saved = await upsertCards(allCards);
-    console.log(`✅ ${saved} cartas guardadas/actualizadas\n`);
-
-    // Fail loud in CI: extracted cards but saved none = broken pipeline (DB, schema,
-    // or DOM change). Without this the job exits 0 and silently writes nothing.
-    if (allCards.length > 0 && saved === 0) {
-      throw new Error(`Se extrajeron ${allCards.length} cartas pero se guardaron 0 — pipeline roto`);
-    }
-    if (allCards.length === 0) {
-      throw new Error("0 cartas extraídas — DOM de FUTBIN cambió o bloqueo de bot");
-    }
+    await saveCards(allCards);
   } catch (error) {
     console.error("❌ Error en scraper:", error);
-    process.exitCode = 1; // surface failure to GitHub Actions (red run)
+    process.exitCode = 1;
   } finally {
     await browser.close();
     await prisma.$disconnect();
+  }
+}
+
+async function saveCards(allCards: ScrapedCard[]) {
+  console.log(`\n📊 Total cartas (con duplicados): ${allCards.length}`);
+
+  const dedupMap = new Map<string, { card: ScrapedCard; firstIndex: number }>();
+  allCards.forEach((card, i) => {
+    const key = `${card.eaId}:${card.cardType}`;
+    const existing = dedupMap.get(key);
+    if (!existing) {
+      dedupMap.set(key, { card, firstIndex: i });
+    } else {
+      const hasStats = card.pace > 0 || card.shooting > 0;
+      const existingHasStats = existing.card.pace > 0 || existing.card.shooting > 0;
+      if (hasStats && !existingHasStats) {
+        dedupMap.set(key, { card, firstIndex: existing.firstIndex });
+      }
+    }
+  });
+
+  const sorted = [...dedupMap.values()].sort((a, b) => a.firstIndex - b.firstIndex);
+  allCards = sorted.map((s) => s.card);
+  console.log(`  🔄 Deduplicado: ${allCards.length} cartas únicas`);
+
+  const existingRows = await prisma.futCard.findMany({
+    select: { eaId: true, cardType: true, promoOrder: true },
+  });
+  const existingOrder = new Map<string, number>(
+    existingRows.map((c) => [`${c.eaId}:${c.cardType}`, c.promoOrder]),
+  );
+  const globalMax = existingRows.reduce((m, c) => Math.max(m, c.promoOrder), 0);
+
+  const freshCards = allCards.filter(
+    (c) => !existingOrder.has(`${c.eaId}:${c.cardType}`),
+  );
+  freshCards.forEach((card, i) => {
+    card.promoOrder = globalMax + freshCards.length - i;
+  });
+  allCards.forEach((card) => {
+    const key = `${card.eaId}:${card.cardType}`;
+    const stored = existingOrder.get(key);
+    if (stored !== undefined) card.promoOrder = stored;
+  });
+  console.log(
+    `  📅 ${freshCards.length} cartas NUEVAS → order ${globalMax + 1}..${globalMax + freshCards.length} (sobre max ${globalMax}); ${allCards.length - freshCards.length} existentes congeladas`,
+  );
+
+  console.log(`\n💾 Guardando en Supabase...`);
+  const saved = await upsertCards(allCards);
+  console.log(`✅ ${saved} cartas guardadas/actualizadas\n`);
+
+  if (allCards.length > 0 && saved === 0) {
+    throw new Error(`Se extrajeron ${allCards.length} cartas pero se guardaron 0 — pipeline roto`);
+  }
+  if (allCards.length === 0) {
+    throw new Error("0 cartas extraídas — DOM de FUTBIN cambió o bloqueo de bot");
   }
 }
 

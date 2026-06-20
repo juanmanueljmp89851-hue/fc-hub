@@ -7,44 +7,21 @@ on:
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
 jobs:
-  scrape:
+  trigger-scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 2
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Chromium
-        run: npx playwright install chromium --with-deps
-
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      - name: Run FUTBIN scraper (attempt 1)
-        id: scrape1
-        continue-on-error: true
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: npx tsx scripts/scrape-futbin.ts --daily --auto --pages 20
-
-      - name: Wait before retry
-        if: steps.scrape1.outcome == 'failure'
-        run: sleep 30
-
-      - name: Run FUTBIN scraper (attempt 2)
-        if: steps.scrape1.outcome == 'failure'
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: npx tsx scripts/scrape-futbin.ts --daily --auto --pages 20
+      - name: Trigger scraper on Render
+        run: |
+          echo "Triggering scrape at $(date -u)"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.SCRAPE_SECRET }}" \
+            "${{ secrets.SCRAPER_URL }}/scrape")
+          echo "Response status: $STATUS"
+          if [ "$STATUS" -ne 202 ]; then
+            echo "Failed to trigger scraper (status $STATUS)"
+            exit 1
+          fi
+          echo "Scraper triggered successfully"

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: fc-hub-scraper
+    runtime: docker
+    dockerfilePath: ./Dockerfile.scraper
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SCRAPE_SECRET
+        sync: false
