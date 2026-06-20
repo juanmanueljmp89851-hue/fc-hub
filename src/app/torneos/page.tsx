@@ -125,16 +125,16 @@ export default async function TorneosPage({ searchParams }: PageProps) {
               Torneos, copas y eventos de la comunidad
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <Link
               href="/equipos"
-              className="rounded-lg border border-surface-light px-5 py-2.5 font-bold text-foreground/70 transition-colors hover:border-accent/50 hover:text-accent"
+              className="rounded-lg border border-surface-light px-3 py-1.5 text-xs font-bold text-foreground/70 transition-colors hover:border-accent/50 hover:text-accent sm:px-5 sm:py-2.5 sm:text-sm"
             >
               ⚽ Equipos
             </Link>
             <Link
               href="/torneos/crear"
-              className="rounded-lg bg-accent px-5 py-2.5 font-bold text-background transition-opacity hover:opacity-90"
+              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-background transition-opacity hover:opacity-90 sm:px-5 sm:py-2.5 sm:text-sm"
             >
               + Crear Torneo
             </Link>
