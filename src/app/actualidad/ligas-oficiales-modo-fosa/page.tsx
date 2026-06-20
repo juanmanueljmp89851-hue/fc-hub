@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     description:
       "Durante julio se disputarán las primeras Ligas Oficiales Modo Fosa. Dos ligas. Dos campeones. Una sola comunidad.",
     type: "article",
+    images: [{ url: "/images/liga-oficial-4.png" }],
   },
 };
 
@@ -31,6 +33,16 @@ export default function LigasOficialesPage() {
             Modo Fosa
           </span>
           <time dateTime="2026-06-20">20 de junio de 2026</time>
+        </div>
+
+        <div className="relative -mx-4 mb-8 aspect-square overflow-hidden rounded-xl sm:mx-0 sm:aspect-video">
+          <Image
+            src="/images/liga-oficial-4.png"
+            alt="Liga Oficial Modo Fosa #1"
+            fill
+            priority
+            className="object-cover"
+          />
         </div>
 
         <h1 className="mb-8 text-2xl font-black leading-tight sm:text-4xl">
@@ -60,6 +72,15 @@ export default function LigasOficialesPage() {
           <h2 className="!mt-10 text-xl font-bold text-foreground sm:text-2xl">
             Dos formas de jugar. Una sola historia.
           </h2>
+
+          <div className="!my-8 relative aspect-video overflow-hidden rounded-xl">
+            <Image
+              src="/images/liga-oficial-3.png"
+              alt="Liga Ultimate Team y Liga Equipos Reales"
+              fill
+              className="object-cover"
+            />
+          </div>
 
           <h3 className="!mt-8 text-lg font-bold text-accent sm:text-xl">
             Liga Ultimate Team
@@ -201,6 +222,15 @@ export default function LigasOficialesPage() {
             Levantarán la Bengala de la Fosa.
           </p>
 
+          <div className="!my-8 relative aspect-video overflow-hidden rounded-xl">
+            <Image
+              src="/images/liga-oficial-1.png"
+              alt="La Bengala de la Fosa — Trofeo oficial"
+              fill
+              className="object-cover"
+            />
+          </div>
+
           <p>
             Un trofeo diseñado especialmente para representar el espíritu de la
             comunidad: pasión, identidad y competencia.
@@ -260,6 +290,16 @@ export default function LigasOficialesPage() {
             amigos, compañeros de club o rivales para ayudarlos a sumarse a la
             competencia.
           </p>
+
+          <div className="!my-8 relative mx-auto max-w-md overflow-hidden rounded-xl">
+            <Image
+              src="/images/liga-oficial-2.png"
+              alt="Liga Oficial Modo Fosa #1 — Información completa"
+              width={600}
+              height={900}
+              className="w-full rounded-xl"
+            />
+          </div>
 
           <h2 className="!mt-10 text-xl font-bold text-foreground sm:text-2xl">
             Enlaces de inscripción
