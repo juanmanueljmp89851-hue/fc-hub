@@ -145,7 +145,7 @@ export default async function ProdePage() {
                   return (
                     <Link key={prode.id} href={`/prode/${prode.id}`}>
                       <Card className="flex h-full flex-col overflow-hidden p-0 transition-colors hover:border-accent/50">
-                        <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
+                        <div className="relative aspect-[3/1] w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
                           {prode.bannerUrl ? (
                             <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
                           ) : (
@@ -226,7 +226,7 @@ export default async function ProdePage() {
               const statusInfo = getStatusInfo(prode.status);
               return (
                 <Card key={prode.id} className="flex h-full flex-col overflow-hidden p-0">
-                  <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
+                  <div className="relative aspect-[3/1] w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
                     {prode.bannerUrl ? (
                       <Image src={prode.bannerUrl} alt="" fill className="object-cover" />
                     ) : (

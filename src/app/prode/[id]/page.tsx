@@ -70,7 +70,7 @@ export default async function ProdeDetailPage({ params }: PageProps) {
 
         {/* Banner */}
         {prode.bannerUrl && (
-          <div className="relative mb-4 h-48 overflow-hidden rounded-xl">
+          <div className="relative mb-4 aspect-[3/1] overflow-hidden rounded-xl">
             <Image src={prode.bannerUrl} alt={prode.name} fill className="object-cover" />
           </div>
         )}

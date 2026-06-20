@@ -156,7 +156,7 @@ export default async function TorneosPage({ searchParams }: PageProps) {
                 <Link key={torneo.id} href={`/torneos/${torneo.id}`}>
                   <Card className="flex h-full flex-col overflow-hidden p-0 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5">
                     {/* Banner */}
-                    <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
+                    <div className="relative aspect-[3/1] w-full overflow-hidden bg-gradient-to-br from-surface-light via-surface to-surface-light">
                       {torneo.bannerUrl ? (
                         <Image src={torneo.bannerUrl} alt="" fill className="object-cover" />
                       ) : (

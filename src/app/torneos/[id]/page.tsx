@@ -141,7 +141,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
         </Link>
         {/* Header */}
         <div className="mb-8">
-          <div className="relative mb-4 h-48 overflow-hidden rounded-xl bg-gradient-to-br from-surface-light via-surface to-surface-light">
+          <div className="relative mb-4 aspect-[3/1] overflow-hidden rounded-xl bg-gradient-to-br from-surface-light via-surface to-surface-light">
             {tournament.bannerUrl ? (
               <Image src={tournament.bannerUrl} alt={tournament.name} fill className="object-cover" />
             ) : (
