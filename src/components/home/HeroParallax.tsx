@@ -426,7 +426,7 @@ export function HeroParallax() {
           .hero-jugador-anim {
             inset: 0 -70% 0 70% !important;
             transform: scale(3.0) !important;
-            transform-origin: 85% 108% !important;
+            transform-origin: 85% 112% !important;
           }
           .hero-jugador-img {
             object-fit: contain !important;
