@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description:
       "Durante julio se disputarán las primeras Ligas Oficiales Modo Fosa. Dos ligas. Dos campeones. Una sola comunidad.",
     type: "article",
-    images: [{ url: "/images/liga-oficial-4.png" }],
+    images: [{ url: "/images/liga-oficial-1.png" }],
   },
 };
 
@@ -37,7 +37,7 @@ export default function LigasOficialesPage() {
 
         <div className="relative -mx-4 mb-8 aspect-square overflow-hidden rounded-xl sm:mx-0 sm:aspect-video">
           <Image
-            src="/images/liga-oficial-4.png"
+            src="/images/liga-oficial-1.png"
             alt="Liga Oficial Modo Fosa #1"
             fill
             priority
@@ -224,7 +224,7 @@ export default function LigasOficialesPage() {
 
           <div className="!my-8 relative aspect-video overflow-hidden rounded-xl">
             <Image
-              src="/images/liga-oficial-1.png"
+              src="/images/liga-oficial-4.png"
               alt="La Bengala de la Fosa — Trofeo oficial"
               fill
               className="object-cover"

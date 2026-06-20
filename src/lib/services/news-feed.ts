@@ -343,7 +343,7 @@ const PINNED_ARTICLES: Array<{
       title: "Modo Fosa abre sus puertas a la competencia: llegan las primeras Ligas Oficiales de la comunidad",
       description: "Durante julio se disputarán las primeras Ligas Oficiales Modo Fosa: Ultimate Team y Equipos Reales. Competí, ganá y dejá tu marca.",
       link: "/actualidad/ligas-oficiales-modo-fosa",
-      imageUrl: "/images/liga-oficial-4.png",
+      imageUrl: "/images/liga-oficial-1.png",
       source: "Modo Fosa",
       sourceIcon: "🟢",
       pubDate: new Date("2026-06-20T12:00:00Z"),
