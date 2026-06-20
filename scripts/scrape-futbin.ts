@@ -185,8 +185,10 @@ async function scrapeFutbinPlayerList(page: Page, url: string): Promise<ScrapedC
   console.log(`  → Navegando a: ${url}`);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
 
-  // Wait for table to render
-  await page.waitForTimeout(5000);
+  // Wait for table to render + simulate human scroll
+  await page.waitForTimeout(3000 + Math.random() * 2000);
+  await page.evaluate(() => window.scrollBy(0, 300 + Math.random() * 400));
+  await page.waitForTimeout(1000 + Math.random() * 1500);
 
   // Close cookie consent — FUTBIN uses Cookiebot
   try {
@@ -715,7 +717,12 @@ async function main() {
 
   const browser = await chromium.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-blink-features=AutomationControlled",
+      "--disable-features=IsolateOrigins,site-per-process",
+    ],
   });
 
   const context = await browser.newContext({
@@ -723,16 +730,42 @@ async function main() {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
     viewport: { width: 1920, height: 1080 },
     locale: "en-US",
+    extraHTTPHeaders: {
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
+      "Accept-Encoding": "gzip, deflate, br",
+      "DNT": "1",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+      "Upgrade-Insecure-Requests": "1",
+    },
   });
 
   const page = await context.newPage();
 
-  // Block heavy resources for speed — but allow CDN images (need src for EA IDs)
-  await page.route("**/*.{jpg,jpeg,gif,woff,woff2}", (route) => route.abort());
-  await page.route("**/ads/**", (route) => route.abort());
-  await page.route("**/analytics/**", (route) => route.abort());
+  // Remove webdriver flag
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+  });
+
+  // Pre-visit homepage to establish cookies/session (anti-bot measure)
+  console.log("🌐 Pre-visit FUTBIN homepage (establish session)...");
+  await page.goto("https://www.futbin.com", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(3000 + Math.random() * 2000);
+  // Accept cookies if present
+  try {
+    const consent = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll");
+    if (await consent.count() > 0) await consent.first().click();
+  } catch {}
+  await page.waitForTimeout(2000 + Math.random() * 1000);
+
+  // Block only ad/tracking scripts — keep images/fonts/CSS to look real
   await page.route("**/googlesyndication**", (route) => route.abort());
   await page.route("**/doubleclick**", (route) => route.abort());
+  await page.route("**/google-analytics**", (route) => route.abort());
+  await page.route("**/adsrvr.org**", (route) => route.abort());
 
   // Track seen cards across versions to deduplicate
   const seen = new Set<string>();
@@ -836,7 +869,7 @@ async function main() {
         // Rate limiting
         const isLast = p === maxPages && target === targets[targets.length - 1];
         if (!isLast) {
-          const delay = 3000 + Math.random() * 2000;
+          const delay = 5000 + Math.random() * 5000;
           console.log(`  ⏱ Esperando ${(delay / 1000).toFixed(1)}s...`);
           await page.waitForTimeout(delay);
         }
