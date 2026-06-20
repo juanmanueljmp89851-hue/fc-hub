@@ -26,9 +26,15 @@ export function HeroParallax() {
       return;
     }
 
+    const isMobile = window.matchMedia("(max-width:680px)").matches;
     const scrolled = window.scrollY;
     tribuna.style.transform = `translate3d(0, ${scrolled * 0.25}px, 0) scale(1.04)`;
-    jugador.style.transform = `translate3d(0, ${scrolled * 0.55}px, 0)`;
+
+    if (isMobile) {
+      jugador.style.transform = `scale(3.0) translateY(calc(10% + ${scrolled * 0.35}px))`;
+    } else {
+      jugador.style.transform = `translate3d(0, ${scrolled * 0.55}px, 0)`;
+    }
 
     if (indicator) {
       indicator.style.opacity = scrolled > 80 ? "0" : "1";
@@ -49,7 +55,7 @@ export function HeroParallax() {
     const mqMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
 
     function setup() {
-      const enabled = !mqMobile.matches && !mqMotion.matches;
+      const enabled = !mqMotion.matches;
       if (enabled) {
         applyParallax();
         window.addEventListener("scroll", onScroll, { passive: true });
@@ -425,7 +431,7 @@ export function HeroParallax() {
         @media (max-width: 680px) {
           .hero-jugador-anim {
             inset: 0 -70% 0 70% !important;
-            transform: scale(3.0) translateY(10%) !important;
+            transform: scale(3.0) translateY(10%);
             transform-origin: 85% 100% !important;
           }
           .hero-jugador-img {
