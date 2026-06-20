@@ -74,6 +74,7 @@ export function HeroParallax() {
   return (
     <div
       ref={heroRef}
+      className="hero-container"
       style={{
         position: "relative",
         minHeight: "600px",
@@ -183,6 +184,7 @@ export function HeroParallax() {
 
       {/* CONTENIDO TEXTO */}
       <div
+        className="hero-content-wrap"
         style={{
           position: "relative",
           zIndex: 7,
@@ -297,6 +299,7 @@ export function HeroParallax() {
       {/* Scroll hint */}
       <div
         ref={scrollIndicatorRef}
+        className="hero-scroll-hint"
         style={{
           position: "relative",
           zIndex: 7,
@@ -437,6 +440,15 @@ export function HeroParallax() {
           }
           .hero-h1 {
             font-size: clamp(24px, 7.5vw, 36px) !important;
+          }
+          .hero-scroll-hint {
+            display: none !important;
+          }
+          .hero-content-wrap {
+            height: min(70vh, 520px) !important;
+          }
+          .hero-container {
+            min-height: 420px !important;
           }
         }
         @media (prefers-reduced-motion: reduce) {
