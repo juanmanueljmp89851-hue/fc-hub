@@ -37,12 +37,74 @@ function futbinPlayersUrl(version: string, page: number): string {
   return `${FUTBIN_BASE}/26/players?page=${page}&version=${version}&sort=date_added&order=desc`;
 }
 function futbinSquadUrl(squad: string, page: number): string {
-  return `${FUTBIN_BASE}/26/players?page=${page}&p_squad=${squad}&sort=Player_Rating&order=desc`;
+  return `${FUTBIN_BASE}/26/players?page=${page}&p_squad=${squad}&sort=date_added&order=desc`;
 }
 
 // Map FUTBIN p_squad slugs → forced promo (overrides inferPromo)
 const SQUAD_MAP: Record<string, { cardType: string; promo: string; order: number }> = {
+  // Greats of the Game / Trophy Titans
+  GreatsOfTheGame: { cardType: "icon", promo: "Greats of the Game Icon", order: 113 },
+  TrophyTitanIcons: { cardType: "icon", promo: "Greats of the Game Icon", order: 113 },
+  TrophyTitanIcons2: { cardType: "icon", promo: "Greats of the Game Icon", order: 113 },
+  TrophyTitanHeroes: { cardType: "hero", promo: "Greats of the Game Hero", order: 112.5 },
+  TrophyTitanHeroes2: { cardType: "hero", promo: "Greats of the Game Hero", order: 112.5 },
+  // Star Performers / National Pride
+  StarPerformers: { cardType: "national_pride", promo: "National Pride", order: 109 },
+  // Path to Glory
+  PathToGlory: { cardType: "path_to_glory", promo: "Path To Glory", order: 110 },
+  PathToGloryTeam2: { cardType: "path_to_glory", promo: "Path To Glory", order: 110 },
+  // UCL/UEL/UECL/UWCL Winners
+  UCLWinners: { cardType: "special", promo: "UCL Camino a la Final", order: 60 },
+  UELWinners: { cardType: "special", promo: "UEL Camino a la Final", order: 59 },
+  UECLWinners: { cardType: "special", promo: "UECL Camino a la Final", order: 58 },
+  UWCLWinners: { cardType: "special", promo: "UWCL Camino a la Final", order: 57 },
+  UCLRTTF: { cardType: "special", promo: "UCL Camino a la Final", order: 60 },
+  UELUECLRTTF: { cardType: "special", promo: "UEL Camino a la Final", order: 59 },
+  "UWCL RTTF": { cardType: "special", promo: "UWCL Camino a la Final", order: 57 },
+  // Prime Heroes
   PrimeHeroes: { cardType: "hero", promo: "Prime Heroes", order: 105 },
+  // TOTS variants
+  UltimateTOTSmale: { cardType: "tots", promo: "TOTS", order: 100 },
+  UltimateTOTSfemale: { cardType: "tots", promo: "TOTS", order: 100 },
+  PremierLeagueTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  LaLigaTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  BundesligaTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  SerieATOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  Ligue1TOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  EFLTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  MLSTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  LigaPortugalTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  LigaFTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  EredivisieTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  RestOfWorldTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  RestOfEuropeTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  SaudiProLeagueTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  SuperLigTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  NWSLTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  BWSLTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  FrauenBundesligaTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  D1ArkemaTOTS: { cardType: "tots", promo: "TOTS", order: 100 },
+  // FUT Birthday
+  FUTBirthday: { cardType: "special", promo: "FUT Birthday", order: 90 },
+  FUTBirthdayTeam2: { cardType: "special", promo: "FUT Birthday", order: 90 },
+  FUTBdayIconsHeroes: { cardType: "special", promo: "FUT Birthday", order: 90 },
+  FUTBdayIconsHeroes2: { cardType: "special", promo: "FUT Birthday", order: 90 },
+  // Future Stars
+  FutureStars: { cardType: "special", promo: "Estrellas del Futuro", order: 85 },
+  FutureStarsTeam2: { cardType: "special", promo: "Estrellas del Futuro", order: 85 },
+  FSIconsandHeroes: { cardType: "special", promo: "Estrellas del Futuro", order: 85 },
+  FSIconsandHeroes2: { cardType: "special", promo: "Estrellas del Futuro", order: 85 },
+  // Fantasy FC
+  FantasyFC: { cardType: "special", promo: "Fantasy FC", order: 35 },
+  FantasyFCTeam2: { cardType: "special", promo: "Fantasy FC", order: 35 },
+  FantasyFCHeroes: { cardType: "special", promo: "Fantasy FC", order: 35 },
+  FantasyFCHeroes2: { cardType: "special", promo: "Fantasy FC", order: 35 },
+  FantasyFPL: { cardType: "special", promo: "Fantasy FC", order: 35 },
+  // Knockout Royalty
+  KnockoutRoyalty: { cardType: "special", promo: "Knockout Royalty", order: 25 },
+  KORoyaltyIconsHeroes: { cardType: "special", promo: "Knockout Royalty", order: 25 },
+  // Answer The Call / Festival of Football
+  AnswerTheCall: { cardType: "special", promo: "Festival de Fútbol", order: 20 },
 };
 
 // Map FUTBIN version filter slugs to our promo names
@@ -596,12 +658,12 @@ async function upsertCards(cards: ScrapedCard[]): Promise<number> {
   return upserted;
 }
 
-// ─── AUTO-DISCOVER FUTBIN VERSIONS ──────────────────────────
+// ─── AUTO-DISCOVER FUTBIN SQUADS ────────────────────────────
 
-async function discoverFutbinVersions(page: Page): Promise<string[]> {
-  console.log(`\n🔎 Auto-descubrimiento de versiones FUTBIN...`);
+async function discoverFutbinSquads(page: Page): Promise<string[]> {
+  console.log(`\n🔎 Auto-descubrimiento de squads FUTBIN...`);
   await page.goto(`${FUTBIN_BASE}/26/players`, { waitUntil: "domcontentloaded", timeout: 30000 });
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
 
   // Close cookie consent if present
   try {
@@ -609,43 +671,28 @@ async function discoverFutbinVersions(page: Page): Promise<string[]> {
     if (await consentBtn.count() > 0) await consentBtn.first().click();
   } catch {}
 
-  // Extract version filter options from dropdown/select
-  const versions = await page.evaluate(() => {
+  // Extract p_squad values from FUTBIN's promo filter dropdown
+  const squads = await page.evaluate(() => {
     const found: string[] = [];
-    // Try select element with version options
-    const selects = Array.from(document.querySelectorAll("select"));
-    for (let s = 0; s < selects.length; s++) {
-      const opts = Array.from(selects[s].options);
-      for (let o = 0; o < opts.length; o++) {
-        const val = opts[o].value?.trim();
-        if (val && val !== "" && val !== "all" && !val.startsWith("http")) {
-          found.push(val);
-        }
-      }
-    }
-    // Also try data attributes or filter links
-    const filterLinks = Array.from(document.querySelectorAll("[data-version], a[href*='version=']"));
-    for (let i = 0; i < filterLinks.length; i++) {
-      const el = filterLinks[i];
-      const v = (el as HTMLElement).dataset?.version ?? "";
-      if (v) found.push(v);
-      const href = (el as HTMLAnchorElement).href ?? "";
-      const match = href.match(/version=([^&]+)/);
-      if (match) found.push(match[1]);
+    // FUTBIN uses .filter-box.dropdown-sub-list with links containing ?p_squad=
+    const links = Array.from(document.querySelectorAll(".filter-box a[href*='p_squad='], .dropdown-content a[href*='p_squad=']"));
+    for (let i = 0; i < links.length; i++) {
+      const href = (links[i] as HTMLAnchorElement).getAttribute("href") ?? "";
+      const match = href.match(/p_squad=([^&]+)/);
+      if (match && match[1]) found.push(match[1]);
     }
     return found.filter((v, i, a) => a.indexOf(v) === i);
   });
 
-  if (versions.length > 0) {
-    console.log(`  ✅ ${versions.length} versiones descubiertas: ${versions.join(", ")}`);
-    return versions;
+  if (squads.length > 0) {
+    console.log(`  ✅ ${squads.length} squads descubiertas: ${squads.slice(0, 10).join(", ")}...`);
+    return squads;
   }
 
-  // Fallback: use all PROMO_MAP keys + all_specials
-  console.log(`  ⚠ No se encontraron versiones en dropdown. Usando PROMO_MAP como fallback.`);
-  const allKeys = Object.keys(PROMO_MAP).concat("all_specials", "sbc_set");
-  const fallback = allKeys.filter((v, i, a) => a.indexOf(v) === i);
-  console.log(`  📋 ${fallback.length} versiones desde PROMO_MAP: ${fallback.join(", ")}`);
+  // Fallback: use all SQUAD_MAP keys
+  console.log(`  ⚠ No se encontraron squads en dropdown. Usando SQUAD_MAP como fallback.`);
+  const fallback = Object.keys(SQUAD_MAP);
+  console.log(`  📋 ${fallback.length} squads desde SQUAD_MAP`);
   return fallback;
 }
 
@@ -717,12 +764,22 @@ async function main() {
     // Determine scrape targets: either squads (p_squad=) or versions (version=)
     const targets: Array<{ label: string; urlFn: (p: number) => string; forcePromo?: { cardType: string; promo: string; order: number } }> = [];
 
-    if (hasSquads) {
+    if (AUTO_VERSIONS) {
+      // Auto mode: discover squads from FUTBIN dropdown, scrape each one
+      const discoveredSquads = await discoverFutbinSquads(page);
+      for (const squad of discoveredSquads) {
+        const squadInfo = SQUAD_MAP[squad];
+        targets.push({
+          label: `Squad: ${squad}`,
+          urlFn: (p) => futbinSquadUrl(squad, p),
+          forcePromo: squadInfo,
+        });
+      }
+    } else if (hasSquads) {
       for (const squad of FUTBIN_SQUADS) {
         const squadInfo = SQUAD_MAP[squad];
         if (!squadInfo) {
-          console.log(`⚠ Squad "${squad}" no encontrado en SQUAD_MAP. Squads disponibles: ${Object.keys(SQUAD_MAP).join(", ")}`);
-          continue;
+          console.log(`⚠ Squad "${squad}" no encontrado en SQUAD_MAP`);
         }
         targets.push({
           label: `Squad: ${squad}`,
@@ -731,27 +788,8 @@ async function main() {
         });
       }
     } else {
-      // Resolve version list: --auto discovers from FUTBIN, otherwise use --version flag
-      const resolvedVersions = AUTO_VERSIONS
-        ? await discoverFutbinVersions(page)
-        : FUTBIN_VERSIONS;
-
-      // Put specific promos BEFORE all_specials so they get highest promoOrder
-      // all_specials is a catch-all; specific promos represent today's newest releases
-      const specific: string[] = [];
-      const catchAll: string[] = [];
-      for (const version of resolvedVersions) {
-        if (version === "all_specials") {
-          catchAll.push(version);
-        } else {
-          specific.push(version);
-        }
-      }
-      // Always include all_specials as catch-all in auto mode
-      if (AUTO_VERSIONS && catchAll.length === 0) {
-        catchAll.push("all_specials");
-      }
-      for (const version of [...specific, ...catchAll]) {
+      // Legacy version-based scraping (fallback)
+      for (const version of FUTBIN_VERSIONS) {
         targets.push({
           label: `Version: ${version}`,
           urlFn: (p) => futbinPlayersUrl(version, p),
