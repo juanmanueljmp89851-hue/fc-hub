@@ -199,7 +199,7 @@ export function HeroParallax() {
       >
         <div>
           {/* Eyebrow badge */}
-          <div className="hero-fade-in" style={{ marginBottom: "28px", animationDelay: "0.2s" }}>
+          <div className="hero-fade-in hero-badge-wrap" style={{ marginBottom: "28px", animationDelay: "0.2s" }}>
             <span
               className="hero-badge-text"
               style={{
@@ -266,7 +266,7 @@ export function HeroParallax() {
 
           {/* Subtitle */}
           <p
-            className="hero-fade-in"
+            className="hero-fade-in hero-subtitle"
             style={{
               fontSize: "clamp(15px, 1.5vw, 18.5px)",
               color: "rgb(150,160,182)",
@@ -440,6 +440,12 @@ export function HeroParallax() {
           }
           .hero-h1 {
             font-size: clamp(24px, 7.5vw, 36px) !important;
+          }
+          .hero-badge-wrap {
+            margin-top: 20px !important;
+          }
+          .hero-subtitle {
+            font-size: 13px !important;
           }
           .hero-scroll-hint {
             display: none !important;
