@@ -44,7 +44,8 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
   const [predictions, setPredictions] = useState<Record<string, { home: string; away: string }>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [sortMode, setSortMode] = useState<SortMode>("group");
+  const hasGroups = matches.some((m) => m.group);
+  const [sortMode, setSortMode] = useState<SortMode>(hasGroups ? "group" : "date");
 
   // All matches editable until 1 min before each match starts
   const hasPerMatchLock = true;
@@ -155,7 +156,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
       )}
 
       {/* Sort toggle — only show if matches have groups */}
-      {matches.some((m) => m.group) && (
+      {hasGroups && (
         <div className="flex items-center gap-2">
           <span className="text-xs text-foreground/40">Ordenar por:</span>
           <div className="inline-flex rounded-lg border border-surface-light bg-surface">
