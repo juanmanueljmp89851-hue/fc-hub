@@ -616,6 +616,95 @@ export async function getUserGroupPredictions(prodeId: string) {
   });
 }
 
+export async function getAllGroupPredictionsForProde(prodeId: string) {
+  const predictions = await prisma.prodeGroupPrediction.findMany({
+    where: { prodeId },
+    include: {
+      user: { select: { username: true, avatarUrl: true } },
+    },
+    orderBy: [{ groupName: "asc" }, { pointsEarned: "desc" }],
+  });
+
+  const byGroup: Record<
+    string,
+    {
+      userId: string;
+      username: string;
+      avatarUrl: string | null;
+      first: string;
+      second: string;
+      third: string;
+      fourth: string;
+      pointsEarned: number;
+    }[]
+  > = {};
+
+  for (const p of predictions) {
+    if (!byGroup[p.groupName]) byGroup[p.groupName] = [];
+    byGroup[p.groupName].push({
+      userId: p.userId,
+      username: p.user.username,
+      avatarUrl: p.user.avatarUrl,
+      first: p.first,
+      second: p.second,
+      third: p.third,
+      fourth: p.fourth,
+      pointsEarned: p.pointsEarned,
+    });
+  }
+
+  return byGroup;
+}
+
+export async function getRealGroupStandings() {
+  const weeks = await prisma.prodeWeek.findMany({
+    where: { title: { contains: "Fase de Grupos" } },
+    include: {
+      matches: {
+        where: { status: "FINISHED", group: { not: null } },
+        select: { homeTeam: true, awayTeam: true, homeScore: true, awayScore: true, group: true },
+      },
+    },
+  });
+
+  const standings: Record<string, Record<string, { pts: number; gd: number; gf: number }>> = {};
+  for (const w of weeks) {
+    for (const m of w.matches) {
+      if (m.homeScore === null || m.awayScore === null || !m.group) continue;
+      if (!standings[m.group]) standings[m.group] = {};
+      const s = standings[m.group];
+      if (!s[m.homeTeam]) s[m.homeTeam] = { pts: 0, gd: 0, gf: 0 };
+      if (!s[m.awayTeam]) s[m.awayTeam] = { pts: 0, gd: 0, gf: 0 };
+
+      s[m.homeTeam].gf += m.homeScore;
+      s[m.homeTeam].gd += m.homeScore - m.awayScore;
+      s[m.awayTeam].gf += m.awayScore;
+      s[m.awayTeam].gd += m.awayScore - m.homeScore;
+
+      if (m.homeScore > m.awayScore) {
+        s[m.homeTeam].pts += 3;
+      } else if (m.homeScore < m.awayScore) {
+        s[m.awayTeam].pts += 3;
+      } else {
+        s[m.homeTeam].pts += 1;
+        s[m.awayTeam].pts += 1;
+      }
+    }
+  }
+
+  const result: Record<string, { first: string; second: string; third: string; fourth: string }> = {};
+  for (const [g, teams] of Object.entries(standings)) {
+    const sorted = Object.entries(teams)
+      .sort(([, a], [, b]) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf)
+      .map(([name]) => name);
+    if (sorted.length >= 4) {
+      result[g] = { first: sorted[0], second: sorted[1], third: sorted[2], fourth: sorted[3] };
+    }
+  }
+
+  return result;
+}
+
 export async function getSimulatedGroupOrder(prodeId: string) {
   const userId = await getAuthUserId();
   if (!userId) return null;

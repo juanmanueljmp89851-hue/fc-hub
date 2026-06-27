@@ -165,7 +165,7 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-foreground/40">
           <span>🎯 Exacto: <span className="font-bold text-gold">5</span></span>
           <span>✅ Ganador: <span className="font-bold text-accent">3</span></span>
-          <span>📊 Grupo 4/4: <span className="font-bold text-gold">10</span></span>
+          <span>📊 Grupo: <span className="font-bold text-gold">+10</span>(4/4) · <span className="font-bold text-accent">+6</span>(3/4) · +3(2/4) · +1(1/4)</span>
           <span>🔮 Campeón: <span className="font-bold text-accent">10</span></span>
         </div>
       </div>

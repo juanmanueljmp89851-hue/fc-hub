@@ -28,6 +28,8 @@ import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";
 import { ProdeChat } from "@/components/prode/ProdeChat";
 import { ProdeLeaderboard } from "@/components/prode/ProdeLeaderboard";
 import { ProdeParticipants } from "@/components/prode/ProdeParticipants";
+import { Suspense } from "react";
+import { GroupPredictionsSection } from "@/components/prode/GroupPredictionsSection";
 
 function getWeekStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string }> = {
@@ -230,6 +232,13 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Group predictions comparison */}
+        <div className="mt-6">
+          <Suspense fallback={<div className="h-12 animate-pulse rounded-xl bg-surface" />}>
+            <GroupPredictionsSection prodeId={prode.id} />
+          </Suspense>
         </div>
 
         {/* Ad */}
