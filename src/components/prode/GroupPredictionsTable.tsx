@@ -51,6 +51,22 @@ function PointsBadge({ points }: { points: number }) {
   );
 }
 
+function calcGroupPoints(
+  pred: { first: string | null; second: string | null; third: string | null; fourth: string | null },
+  real: { first: string; second: string; third: string; fourth: string },
+) {
+  let correct = 0;
+  if (pred.first === real.first) correct++;
+  if (pred.second === real.second) correct++;
+  if (pred.third === real.third) correct++;
+  if (pred.fourth === real.fourth) correct++;
+  if (correct === 4) return 10;
+  if (correct === 3) return 6;
+  if (correct === 2) return 3;
+  if (correct === 1) return 1;
+  return 0;
+}
+
 export function GroupPredictionsTable({ predictions, realStandings }: GroupPredictionsTableProps) {
   const [open, setOpen] = useState(false);
   const groups = Object.keys(predictions).sort();
@@ -151,7 +167,7 @@ export function GroupPredictionsTable({ predictions, realStandings }: GroupPredi
                               </>
                             )}
                             <td className="py-1.5 text-right">
-                              <PointsBadge points={pred.pointsEarned} />
+                              <PointsBadge points={real && pred.first ? calcGroupPoints(pred, real) : 0} />
                             </td>
                           </tr>
                         ))}
