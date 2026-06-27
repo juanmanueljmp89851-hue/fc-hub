@@ -178,6 +178,43 @@ export function GroupPredictionsTable({ predictions, realStandings }: GroupPredi
               );
             })}
           </div>
+          {/* Total points per user */}
+          {(() => {
+            const userTotals: Record<string, { username: string; total: number }> = {};
+            for (const g of groups) {
+              const real = realStandings[g];
+              if (!real) continue;
+              for (const pred of predictions[g]) {
+                if (!userTotals[pred.userId]) userTotals[pred.userId] = { username: pred.username, total: 0 };
+                if (pred.first) userTotals[pred.userId].total += calcGroupPoints(pred, real);
+              }
+            }
+            const sorted = Object.values(userTotals).sort((a, b) => b.total - a.total);
+            if (sorted.length === 0) return null;
+            const scoredGroups = groups.filter((g) => realStandings[g]).length;
+            return (
+              <div className="border-t border-surface-light px-4 py-3">
+                <h4 className="mb-2 text-xs font-bold uppercase text-foreground/50">
+                  Total puntos por orden de grupo ({scoredGroups}/{groups.length} grupos definidos)
+                </h4>
+                <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4">
+                  {sorted.map((u, i) => (
+                    <div
+                      key={u.username}
+                      className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs ${
+                        i === 0 && u.total > 0 ? "bg-gold/10 border border-gold/30" : "bg-surface-light/30"
+                      }`}
+                    >
+                      <span className="font-medium text-foreground/70 truncate">{u.username}</span>
+                      <span className={`ml-2 font-bold ${u.total > 0 ? "text-gold" : "text-foreground/30"}`}>
+                        {u.total}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           <div className="px-4 py-2 border-t border-surface-light/50">
             <p className="text-[9px] text-foreground/30">* Orden inferido desde predicciones de partidos (no completó predicción de grupo)</p>
           </div>
