@@ -26,6 +26,10 @@ export const PRODE = {
   GROUP_3_CORRECT: 6,
   GROUP_2_CORRECT: 3,
   GROUP_1_CORRECT: 1,
+  // Knockout bonus
+  KNOCKOUT_EXTRA_TIME: 2,
+  KNOCKOUT_PENALTIES: 2,
+  KNOCKOUT_WINNER: 3,
   // Round advancement scoring (per correct team)
   ADVANCE_ROUND_32: 1,
   ADVANCE_ROUND_16: 2,

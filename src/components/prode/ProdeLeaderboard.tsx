@@ -168,6 +168,12 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
           <span>📊 Grupo: <span className="font-bold text-gold">+10</span>(4/4) · <span className="font-bold text-accent">+6</span>(3/4) · +3(2/4) · +1(1/4)</span>
           <span>🔮 Campeón: <span className="font-bold text-accent">10</span></span>
         </div>
+        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-foreground/40">
+          <span className="font-medium text-foreground/50">Desde 16avos:</span>
+          <span>⏱️ Acertar extra time: <span className="font-bold text-accent">+2</span></span>
+          <span>🥅 Acertar penales: <span className="font-bold text-accent">+2</span></span>
+          <span>🏆 Acertar quién avanza: <span className="font-bold text-gold">+3</span></span>
+        </div>
       </div>
     </div>
   );

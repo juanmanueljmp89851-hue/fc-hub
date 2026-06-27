@@ -604,6 +604,11 @@ model ProdeMatch {
   group      String?
   status     ProdeMatchStatus @default(SCHEDULED)
 
+  // Knockout fields (filled by admin after match)
+  extraTime  Boolean? @map("extra_time")
+  penalties  Boolean? @map("penalties")
+  winnerTeam String?  @map("winner_team")
+
   week        ProdeWeek         @relation(fields: [weekId], references: [id])
   predictions ProdePrediction[]
 
@@ -621,10 +626,13 @@ model ProdePrediction {
   prodeId       String   @map("prode_id")
   userId        String   @map("user_id")
   matchId       String   @map("match_id")
-  predHomeScore Int      @map("pred_home_score")
-  predAwayScore Int      @map("pred_away_score")
-  pointsEarned  Int      @default(0) @map("points_earned")
-  createdAt     DateTime @default(now()) @map("created_at")
+  predHomeScore  Int      @map("pred_home_score")
+  predAwayScore  Int      @map("pred_away_score")
+  predExtraTime  Boolean? @map("pred_extra_time")
+  predPenalties  Boolean? @map("pred_penalties")
+  predWinner     String?  @map("pred_winner")
+  pointsEarned   Int      @default(0) @map("points_earned")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   prode Prode      @relation(fields: [prodeId], references: [id])
   user  User       @relation(fields: [userId], references: [id])

@@ -58,8 +58,17 @@ export default async function ProdeWeekPage({ params }: PageProps) {
       homeScore: m.homeScore,
       awayScore: m.awayScore,
       status: m.status,
+      extraTime: m.extraTime,
+      penalties: m.penalties,
+      winnerTeam: m.winnerTeam,
       predictions: pred
-        ? [{ predHomeScore: pred.predHomeScore, predAwayScore: pred.predAwayScore }]
+        ? [{
+            predHomeScore: pred.predHomeScore,
+            predAwayScore: pred.predAwayScore,
+            predExtraTime: pred.predExtraTime,
+            predPenalties: pred.predPenalties,
+            predWinner: pred.predWinner,
+          }]
         : undefined,
       allPredictions: allPredsMap.get(m.id) ?? [],
     };

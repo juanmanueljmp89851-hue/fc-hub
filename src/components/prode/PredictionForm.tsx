@@ -11,6 +11,9 @@ interface OtherPrediction {
   avatarUrl: string | null;
   predHomeScore: number;
   predAwayScore: number;
+  predExtraTime?: boolean | null;
+  predPenalties?: boolean | null;
+  predWinner?: string | null;
 }
 
 interface MatchWithPrediction {
@@ -24,7 +27,16 @@ interface MatchWithPrediction {
   homeScore: number | null;
   awayScore: number | null;
   status: string;
-  predictions?: { predHomeScore: number; predAwayScore: number }[];
+  extraTime?: boolean | null;
+  penalties?: boolean | null;
+  winnerTeam?: string | null;
+  predictions?: {
+    predHomeScore: number;
+    predAwayScore: number;
+    predExtraTime?: boolean | null;
+    predPenalties?: boolean | null;
+    predWinner?: string | null;
+  }[];
   allPredictions?: OtherPrediction[];
 }
 
@@ -42,6 +54,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<Record<string, { home: string; away: string }>>({});
+  const [knockoutPreds, setKnockoutPreds] = useState<Record<string, { extraTime?: boolean; penalties?: boolean; winner?: string }>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const hasGroups = matches.some((m) => m.group);
@@ -73,6 +86,19 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
       }
     }
     setPredictions(initial);
+
+    const initialKnockout: Record<string, { extraTime?: boolean; penalties?: boolean; winner?: string }> = {};
+    for (const match of matches) {
+      const existing = match.predictions?.[0];
+      if (existing && (existing.predExtraTime != null || existing.predPenalties != null || existing.predWinner != null)) {
+        initialKnockout[match.id] = {
+          extraTime: existing.predExtraTime ?? undefined,
+          penalties: existing.predPenalties ?? undefined,
+          winner: existing.predWinner ?? undefined,
+        };
+      }
+    }
+    setKnockoutPreds(initialKnockout);
   }, [matches]);
 
   const isOpen = weekStatus === "OPEN" || hasPerMatchLock;
@@ -91,11 +117,17 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
 
     const preds = Object.entries(predictions)
       .filter(([, v]) => v.home !== "" && v.away !== "")
-      .map(([matchId, v]) => ({
-        matchId,
-        predHomeScore: parseInt(v.home) || 0,
-        predAwayScore: parseInt(v.away) || 0,
-      }));
+      .map(([matchId, v]) => {
+        const ko = knockoutPreds[matchId];
+        return {
+          matchId,
+          predHomeScore: parseInt(v.home) || 0,
+          predAwayScore: parseInt(v.away) || 0,
+          ...(ko?.extraTime != null && { predExtraTime: ko.extraTime }),
+          ...(ko?.penalties != null && { predPenalties: ko.penalties }),
+          ...(ko?.winner && { predWinner: ko.winner }),
+        };
+      });
 
     if (preds.length === 0) {
       setMessage("Completá al menos una predicción");
@@ -290,6 +322,102 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
                       {match.awayTeam}
                     </span>
                   </div>
+
+                  {/* Knockout: extra time / penalties / winner */}
+                  {!match.group && canPredict && !matchLocked && (() => {
+                    const h = parseInt(pred?.home ?? "");
+                    const a = parseInt(pred?.away ?? "");
+                    const isDraw = !isNaN(h) && !isNaN(a) && h === a;
+                    if (!isDraw) return null;
+                    const ko = knockoutPreds[match.id] || {};
+                    return (
+                      <div className="mt-3 rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-2">
+                        <p className="text-xs font-bold text-accent">¿Cómo se define el partido?</p>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setKnockoutPreds(prev => ({
+                              ...prev,
+                              [match.id]: { ...prev[match.id], extraTime: true, penalties: false },
+                            }))}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                              ko.extraTime && !ko.penalties
+                                ? "bg-accent text-background"
+                                : "border border-surface-light text-foreground/60 hover:border-accent"
+                            }`}
+                          >
+                            ⏱️ Tiempo extra
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setKnockoutPreds(prev => ({
+                              ...prev,
+                              [match.id]: { ...prev[match.id], extraTime: true, penalties: true },
+                            }))}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                              ko.penalties
+                                ? "bg-accent text-background"
+                                : "border border-surface-light text-foreground/60 hover:border-accent"
+                            }`}
+                          >
+                            🥅 Penales
+                          </button>
+                        </div>
+                        {(ko.extraTime || ko.penalties) && (
+                          <div>
+                            <p className="text-xs text-foreground/50 mb-1">¿Quién avanza?</p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setKnockoutPreds(prev => ({
+                                  ...prev,
+                                  [match.id]: { ...prev[match.id], winner: match.homeTeam },
+                                }))}
+                                className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                                  ko.winner === match.homeTeam
+                                    ? "bg-gold text-background"
+                                    : "border border-surface-light text-foreground/60 hover:border-gold"
+                                }`}
+                              >
+                                <TeamFlag team={match.homeTeam} size={14} />
+                                {match.homeTeam}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setKnockoutPreds(prev => ({
+                                  ...prev,
+                                  [match.id]: { ...prev[match.id], winner: match.awayTeam },
+                                }))}
+                                className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                                  ko.winner === match.awayTeam
+                                    ? "bg-gold text-background"
+                                    : "border border-surface-light text-foreground/60 hover:border-gold"
+                                }`}
+                              >
+                                <TeamFlag team={match.awayTeam} size={14} />
+                                {match.awayTeam}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Knockout prediction display when locked */}
+                  {!match.group && matchLocked && existingPred?.predExtraTime != null && (
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-foreground/50">
+                      {existingPred.predPenalties
+                        ? <span className="rounded bg-accent/10 px-2 py-0.5">🥅 Penales</span>
+                        : <span className="rounded bg-accent/10 px-2 py-0.5">⏱️ Tiempo extra</span>
+                      }
+                      {existingPred.predWinner && (
+                        <span className="rounded bg-gold/10 px-2 py-0.5 flex items-center gap-1">
+                          Avanza: <TeamFlag team={existingPred.predWinner} size={12} /> {existingPred.predWinner}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Show all participants' predictions after match started */}
                   {matchLocked && match.allPredictions && match.allPredictions.length > 0 && (

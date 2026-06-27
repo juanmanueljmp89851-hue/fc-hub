@@ -471,6 +471,9 @@ export async function getAllPredictionsForWeek(prodeId: string, weekId: string) 
       matchId: true,
       predHomeScore: true,
       predAwayScore: true,
+      predExtraTime: true,
+      predPenalties: true,
+      predWinner: true,
       user: { select: { id: true, username: true, avatarUrl: true } },
     },
   });
@@ -479,7 +482,14 @@ export async function getAllPredictionsForWeek(prodeId: string, weekId: string) 
 export async function savePredictions(
   prodeId: string,
   weekId: string,
-  predictions: { matchId: string; predHomeScore: number; predAwayScore: number }[],
+  predictions: {
+    matchId: string;
+    predHomeScore: number;
+    predAwayScore: number;
+    predExtraTime?: boolean;
+    predPenalties?: boolean;
+    predWinner?: string;
+  }[],
 ) {
   const userId = await getAuthUserId();
   if (!userId) return { error: "No autenticado" };
@@ -540,6 +550,9 @@ export async function savePredictions(
         update: {
           predHomeScore: pred.predHomeScore,
           predAwayScore: pred.predAwayScore,
+          predExtraTime: pred.predExtraTime ?? null,
+          predPenalties: pred.predPenalties ?? null,
+          predWinner: pred.predWinner ?? null,
         },
         create: {
           prodeId,
@@ -547,6 +560,9 @@ export async function savePredictions(
           matchId: pred.matchId,
           predHomeScore: pred.predHomeScore,
           predAwayScore: pred.predAwayScore,
+          predExtraTime: pred.predExtraTime ?? null,
+          predPenalties: pred.predPenalties ?? null,
+          predWinner: pred.predWinner ?? null,
         },
       }),
     ),
