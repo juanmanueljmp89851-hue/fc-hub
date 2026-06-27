@@ -617,7 +617,7 @@ export async function getUserGroupPredictions(prodeId: string) {
 }
 
 export async function getAllGroupPredictionsForProde(prodeId: string) {
-  const [predictions, participants] = await Promise.all([
+  const [predictions, participants, matchPredictions] = await Promise.all([
     prisma.prodeGroupPrediction.findMany({
       where: { prodeId },
       include: {
@@ -628,6 +628,12 @@ export async function getAllGroupPredictionsForProde(prodeId: string) {
     prisma.prodeParticipant.findMany({
       where: { prodeId },
       include: { user: { select: { id: true, username: true, avatarUrl: true } } },
+    }),
+    prisma.prodePrediction.findMany({
+      where: { prodeId, match: { group: { not: null } } },
+      include: {
+        match: { select: { homeTeam: true, awayTeam: true, group: true } },
+      },
     }),
   ]);
 
@@ -640,11 +646,49 @@ export async function getAllGroupPredictionsForProde(prodeId: string) {
     third: string | null;
     fourth: string | null;
     pointsEarned: number;
+    simulated?: boolean;
   };
+
+  // Build simulated group order per user from match predictions
+  function simulateForUser(userId: string) {
+    const userPreds = matchPredictions.filter((p) => p.userId === userId);
+    if (userPreds.length === 0) return null;
+
+    const groups: Record<string, Record<string, { pts: number; gd: number; gf: number }>> = {};
+    for (const pred of userPreds) {
+      const g = pred.match.group!;
+      if (!groups[g]) groups[g] = {};
+      const home = pred.match.homeTeam;
+      const away = pred.match.awayTeam;
+      if (!groups[g][home]) groups[g][home] = { pts: 0, gd: 0, gf: 0 };
+      if (!groups[g][away]) groups[g][away] = { pts: 0, gd: 0, gf: 0 };
+
+      const h = pred.predHomeScore;
+      const a = pred.predAwayScore;
+      groups[g][home].gf += h;
+      groups[g][home].gd += h - a;
+      groups[g][away].gf += a;
+      groups[g][away].gd += a - h;
+
+      if (h > a) groups[g][home].pts += 3;
+      else if (h < a) groups[g][away].pts += 3;
+      else { groups[g][home].pts += 1; groups[g][away].pts += 1; }
+    }
+
+    const result: Record<string, { first: string; second: string; third: string; fourth: string }> = {};
+    for (const [g, teams] of Object.entries(groups)) {
+      const sorted = Object.entries(teams)
+        .sort(([, a], [, b]) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf)
+        .map(([name]) => name);
+      if (sorted.length >= 4) {
+        result[g] = { first: sorted[0], second: sorted[1], third: sorted[2], fourth: sorted[3] };
+      }
+    }
+    return result;
+  }
 
   const byGroup: Record<string, Entry[]> = {};
 
-  // Collect all group names from predictions
   const groupNames = new Set(predictions.map((p) => p.groupName));
 
   for (const g of groupNames) {
@@ -653,7 +697,6 @@ export async function getAllGroupPredictionsForProde(prodeId: string) {
 
     const entries: Entry[] = [];
 
-    // Users who predicted
     for (const p of groupPreds) {
       entries.push({
         userId: p.userId,
@@ -667,18 +710,20 @@ export async function getAllGroupPredictionsForProde(prodeId: string) {
       });
     }
 
-    // Users who didn't predict this group
     for (const part of participants) {
       if (!predUserIds.has(part.user.id)) {
+        const simulated = simulateForUser(part.user.id);
+        const sim = simulated?.[g];
         entries.push({
           userId: part.user.id,
           username: part.user.username,
           avatarUrl: part.user.avatarUrl,
-          first: null,
-          second: null,
-          third: null,
-          fourth: null,
+          first: sim?.first ?? null,
+          second: sim?.second ?? null,
+          third: sim?.third ?? null,
+          fourth: sim?.fourth ?? null,
           pointsEarned: 0,
+          simulated: !!sim,
         });
       }
     }

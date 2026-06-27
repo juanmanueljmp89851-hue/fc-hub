@@ -12,6 +12,7 @@ interface UserPrediction {
   third: string | null;
   fourth: string | null;
   pointsEarned: number;
+  simulated?: boolean;
 }
 
 interface GroupPredictionsTableProps {
@@ -124,9 +125,10 @@ export function GroupPredictionsTable({ predictions, realStandings }: GroupPredi
 
                         {/* User predictions */}
                         {preds.map((pred) => (
-                          <tr key={pred.userId} className="hover:bg-surface-light/20">
+                          <tr key={pred.userId} className={`hover:bg-surface-light/20 ${pred.simulated ? "opacity-60" : ""}`}>
                             <td className="py-1.5 font-medium text-foreground/70 truncate max-w-[96px]">
                               {pred.username}
+                              {pred.simulated && <span className="ml-1 text-[9px] text-foreground/30" title="Inferido desde predicciones de partidos">*</span>}
                             </td>
                             {pred.first === null ? (
                               <td colSpan={4} className="py-1.5 text-center text-xs text-foreground/30 italic">
@@ -159,6 +161,9 @@ export function GroupPredictionsTable({ predictions, realStandings }: GroupPredi
                 </div>
               );
             })}
+          </div>
+          <div className="px-4 py-2 border-t border-surface-light/50">
+            <p className="text-[9px] text-foreground/30">* Orden inferido desde predicciones de partidos (no completó predicción de grupo)</p>
           </div>
         </div>
       )}
