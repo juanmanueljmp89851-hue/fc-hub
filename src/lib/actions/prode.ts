@@ -617,40 +617,73 @@ export async function getUserGroupPredictions(prodeId: string) {
 }
 
 export async function getAllGroupPredictionsForProde(prodeId: string) {
-  const predictions = await prisma.prodeGroupPrediction.findMany({
-    where: { prodeId },
-    include: {
-      user: { select: { username: true, avatarUrl: true } },
-    },
-    orderBy: [{ groupName: "asc" }, { pointsEarned: "desc" }],
-  });
+  const [predictions, participants] = await Promise.all([
+    prisma.prodeGroupPrediction.findMany({
+      where: { prodeId },
+      include: {
+        user: { select: { username: true, avatarUrl: true } },
+      },
+      orderBy: [{ groupName: "asc" }, { pointsEarned: "desc" }],
+    }),
+    prisma.prodeParticipant.findMany({
+      where: { prodeId },
+      include: { user: { select: { id: true, username: true, avatarUrl: true } } },
+    }),
+  ]);
 
-  const byGroup: Record<
-    string,
-    {
-      userId: string;
-      username: string;
-      avatarUrl: string | null;
-      first: string;
-      second: string;
-      third: string;
-      fourth: string;
-      pointsEarned: number;
-    }[]
-  > = {};
+  type Entry = {
+    userId: string;
+    username: string;
+    avatarUrl: string | null;
+    first: string | null;
+    second: string | null;
+    third: string | null;
+    fourth: string | null;
+    pointsEarned: number;
+  };
 
-  for (const p of predictions) {
-    if (!byGroup[p.groupName]) byGroup[p.groupName] = [];
-    byGroup[p.groupName].push({
-      userId: p.userId,
-      username: p.user.username,
-      avatarUrl: p.user.avatarUrl,
-      first: p.first,
-      second: p.second,
-      third: p.third,
-      fourth: p.fourth,
-      pointsEarned: p.pointsEarned,
-    });
+  const byGroup: Record<string, Entry[]> = {};
+
+  // Collect all group names from predictions
+  const groupNames = new Set(predictions.map((p) => p.groupName));
+
+  for (const g of groupNames) {
+    const groupPreds = predictions.filter((p) => p.groupName === g);
+    const predUserIds = new Set(groupPreds.map((p) => p.userId));
+
+    const entries: Entry[] = [];
+
+    // Users who predicted
+    for (const p of groupPreds) {
+      entries.push({
+        userId: p.userId,
+        username: p.user.username,
+        avatarUrl: p.user.avatarUrl,
+        first: p.first,
+        second: p.second,
+        third: p.third,
+        fourth: p.fourth,
+        pointsEarned: p.pointsEarned,
+      });
+    }
+
+    // Users who didn't predict this group
+    for (const part of participants) {
+      if (!predUserIds.has(part.user.id)) {
+        entries.push({
+          userId: part.user.id,
+          username: part.user.username,
+          avatarUrl: part.user.avatarUrl,
+          first: null,
+          second: null,
+          third: null,
+          fourth: null,
+          pointsEarned: 0,
+        });
+      }
+    }
+
+    byGroup[g] = entries;
   }
 
   return byGroup;

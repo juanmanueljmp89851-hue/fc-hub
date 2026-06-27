@@ -7,10 +7,10 @@ interface UserPrediction {
   userId: string;
   username: string;
   avatarUrl: string | null;
-  first: string;
-  second: string;
-  third: string;
-  fourth: string;
+  first: string | null;
+  second: string | null;
+  third: string | null;
+  fourth: string | null;
   pointsEarned: number;
 }
 
@@ -128,18 +128,26 @@ export function GroupPredictionsTable({ predictions, realStandings }: GroupPredi
                             <td className="py-1.5 font-medium text-foreground/70 truncate max-w-[96px]">
                               {pred.username}
                             </td>
-                            <td className="py-1.5 text-center">
-                              <PositionCell team={pred.first} realTeam={real?.first} />
-                            </td>
-                            <td className="py-1.5 text-center">
-                              <PositionCell team={pred.second} realTeam={real?.second} />
-                            </td>
-                            <td className="py-1.5 text-center">
-                              <PositionCell team={pred.third} realTeam={real?.third} />
-                            </td>
-                            <td className="py-1.5 text-center">
-                              <PositionCell team={pred.fourth} realTeam={real?.fourth} />
-                            </td>
+                            {pred.first === null ? (
+                              <td colSpan={4} className="py-1.5 text-center text-xs text-foreground/30 italic">
+                                No predijo
+                              </td>
+                            ) : (
+                              <>
+                                <td className="py-1.5 text-center">
+                                  <PositionCell team={pred.first} realTeam={real?.first} />
+                                </td>
+                                <td className="py-1.5 text-center">
+                                  <PositionCell team={pred.second!} realTeam={real?.second} />
+                                </td>
+                                <td className="py-1.5 text-center">
+                                  <PositionCell team={pred.third!} realTeam={real?.third} />
+                                </td>
+                                <td className="py-1.5 text-center">
+                                  <PositionCell team={pred.fourth!} realTeam={real?.fourth} />
+                                </td>
+                              </>
+                            )}
                             <td className="py-1.5 text-right">
                               <PointsBadge points={pred.pointsEarned} />
                             </td>
