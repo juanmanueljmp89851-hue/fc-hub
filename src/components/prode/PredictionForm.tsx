@@ -323,6 +323,13 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
                     </span>
                   </div>
 
+                  {/* Knockout hint */}
+                  {!match.group && canPredict && !matchLocked && (
+                    <p className="mt-1 text-center text-[10px] text-foreground/30">
+                      Si predecís empate, podés elegir tiempo extra, penales y quién avanza
+                    </p>
+                  )}
+
                   {/* Knockout: extra time / penalties / winner */}
                   {!match.group && canPredict && !matchLocked && (() => {
                     const h = parseInt(pred?.home ?? "");
@@ -334,34 +341,42 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
                       <div className="mt-3 rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-2">
                         <p className="text-xs font-bold text-accent">¿Cómo se define el partido?</p>
                         <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setKnockoutPreds(prev => ({
-                              ...prev,
-                              [match.id]: { ...prev[match.id], extraTime: true, penalties: false },
-                            }))}
-                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                              ko.extraTime && !ko.penalties
-                                ? "bg-accent text-background"
-                                : "border border-surface-light text-foreground/60 hover:border-accent"
-                            }`}
-                          >
+                          <label className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
+                            ko.extraTime ? "bg-accent text-background" : "border border-surface-light text-foreground/60 hover:border-accent"
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={!!ko.extraTime}
+                              onChange={(e) => setKnockoutPreds(prev => ({
+                                ...prev,
+                                [match.id]: {
+                                  ...prev[match.id],
+                                  extraTime: e.target.checked,
+                                  ...(e.target.checked ? {} : { penalties: false }),
+                                },
+                              }))}
+                              className="sr-only"
+                            />
                             ⏱️ Tiempo extra
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setKnockoutPreds(prev => ({
-                              ...prev,
-                              [match.id]: { ...prev[match.id], extraTime: true, penalties: true },
-                            }))}
-                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                              ko.penalties
-                                ? "bg-accent text-background"
-                                : "border border-surface-light text-foreground/60 hover:border-accent"
-                            }`}
-                          >
+                          </label>
+                          <label className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
+                            ko.penalties ? "bg-accent text-background" : "border border-surface-light text-foreground/60 hover:border-accent"
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={!!ko.penalties}
+                              onChange={(e) => setKnockoutPreds(prev => ({
+                                ...prev,
+                                [match.id]: {
+                                  ...prev[match.id],
+                                  penalties: e.target.checked,
+                                  ...(e.target.checked ? { extraTime: true } : {}),
+                                },
+                              }))}
+                              className="sr-only"
+                            />
                             🥅 Penales
-                          </button>
+                          </label>
                         </div>
                         {(ko.extraTime || ko.penalties) && (
                           <div>
@@ -407,10 +422,12 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
                   {/* Knockout prediction display when locked */}
                   {!match.group && matchLocked && existingPred?.predExtraTime != null && (
                     <div className="mt-2 flex flex-wrap gap-2 text-xs text-foreground/50">
-                      {existingPred.predPenalties
-                        ? <span className="rounded bg-accent/10 px-2 py-0.5">🥅 Penales</span>
-                        : <span className="rounded bg-accent/10 px-2 py-0.5">⏱️ Tiempo extra</span>
-                      }
+                      {existingPred.predExtraTime && (
+                        <span className="rounded bg-accent/10 px-2 py-0.5">⏱️ Tiempo extra</span>
+                      )}
+                      {existingPred.predPenalties && (
+                        <span className="rounded bg-accent/10 px-2 py-0.5">🥅 Penales</span>
+                      )}
                       {existingPred.predWinner && (
                         <span className="rounded bg-gold/10 px-2 py-0.5 flex items-center gap-1">
                           Avanza: <TeamFlag team={existingPred.predWinner} size={12} /> {existingPred.predWinner}
