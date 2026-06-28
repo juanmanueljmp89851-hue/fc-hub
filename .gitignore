@@ -32,8 +32,9 @@ yarn-error.log*
 # vercel
 .vercel
 
-# scripts & dev artifacts
-/scripts/
+# scripts & dev artifacts (allow scraper for GitHub Actions)
+/scripts/*
+!/scripts/scrape-futbin.ts
 build-log.txt
 prisma/dev.db
 
