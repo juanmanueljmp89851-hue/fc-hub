@@ -85,16 +85,6 @@ export function GroupPredictionsTable({ predictions, realStandings }: GroupPredi
 
       {open && (
         <div className="border-t border-surface-light">
-          {/* Scoring legend */}
-          <div className="px-4 py-2 bg-surface-light/20 border-b border-surface-light/50">
-            <p className="text-[10px] text-foreground/40">
-              Puntos por acertar orden: <span className="font-bold text-gold">+10</span> (4/4) ·{" "}
-              <span className="font-bold text-accent">+6</span> (3/4) ·{" "}
-              <span className="font-bold">+3</span> (2/4) ·{" "}
-              <span className="font-bold">+1</span> (1/4)
-            </p>
-          </div>
-
           <div className="space-y-0 divide-y divide-surface-light/30">
             {groups.map((groupName) => {
               const real = realStandings[groupName];
