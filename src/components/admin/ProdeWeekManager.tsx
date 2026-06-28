@@ -15,6 +15,9 @@ interface Match {
   status: string;
   externalId: number | null;
   group: string | null;
+  extraTime: boolean | null;
+  penalties: boolean | null;
+  winnerTeam: string | null;
 }
 
 interface Week {
@@ -41,6 +44,7 @@ export function ProdeWeekManager({ weeks }: { weeks: Week[] }) {
   const [expandedWeek, setExpandedWeek] = useState<string | null>(null);
   const [loading, setLoading] = useState("");
   const [editScores, setEditScores] = useState<Record<string, { home: string; away: string }>>({});
+  const [knockoutData, setKnockoutData] = useState<Record<string, { extraTime: boolean; penalties: boolean; winnerTeam: string }>>({});
 
   async function handleStatusChange(weekId: string, status: string) {
     setLoading(weekId);
@@ -70,6 +74,11 @@ export function ProdeWeekManager({ weeks }: { weeks: Week[] }) {
       matchId: m.id,
       homeScore: parseInt(editScores[m.id].home),
       awayScore: parseInt(editScores[m.id].away),
+      ...(!m.group && knockoutData[m.id] ? {
+        extraTime: knockoutData[m.id].extraTime,
+        penalties: knockoutData[m.id].penalties,
+        winnerTeam: knockoutData[m.id].winnerTeam,
+      } : {}),
     }));
 
     await scoreProdeWeek(weekId, results);
@@ -79,13 +88,22 @@ export function ProdeWeekManager({ weeks }: { weeks: Week[] }) {
 
   function initEditScores(matches: Match[]) {
     const initial: Record<string, { home: string; away: string }> = {};
+    const initialKnockout: Record<string, { extraTime: boolean; penalties: boolean; winnerTeam: string }> = {};
     for (const m of matches) {
       initial[m.id] = {
         home: m.homeScore !== null ? String(m.homeScore) : "",
         away: m.awayScore !== null ? String(m.awayScore) : "",
       };
+      if (!m.group) {
+        initialKnockout[m.id] = {
+          extraTime: m.extraTime ?? false,
+          penalties: m.penalties ?? false,
+          winnerTeam: m.winnerTeam ?? m.homeTeam,
+        };
+      }
     }
     setEditScores(initial);
+    setKnockoutData(initialKnockout);
   }
 
   return (
@@ -139,49 +157,99 @@ export function ProdeWeekManager({ weeks }: { weeks: Week[] }) {
                 {/* Matches */}
                 <div className="space-y-2">
                   {week.matches.map((match) => (
-                    <div key={match.id} className="flex items-center gap-3 rounded-lg bg-background p-3 text-sm">
-                      <span className="w-8 text-center text-xs text-foreground/30">
-                        {match.group ? `G${match.group}` : ""}
+                    <div key={match.id} className="rounded-lg bg-background p-3 text-sm">
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 text-center text-xs text-foreground/30">
+                          {match.group ? `G${match.group}` : "KO"}
+                        </span>
+                        <span className="flex-1 text-right">{match.homeTeam}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={editScores[match.id]?.home ?? ""}
+                          onChange={(e) =>
+                            setEditScores((prev) => ({
+                              ...prev,
+                              [match.id]: { ...prev[match.id], home: e.target.value },
+                            }))
+                          }
+                          className="w-10 rounded border border-surface-light bg-surface px-1 py-0.5 text-center font-bold focus:border-accent focus:outline-none"
+                        />
+                        <span className="text-foreground/30">-</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={editScores[match.id]?.away ?? ""}
+                          onChange={(e) =>
+                            setEditScores((prev) => ({
+                              ...prev,
+                              [match.id]: { ...prev[match.id], away: e.target.value },
+                            }))
+                          }
+                          className="w-10 rounded border border-surface-light bg-surface px-1 py-0.5 text-center font-bold focus:border-accent focus:outline-none"
+                        />
+                        <span className="flex-1">{match.awayTeam}</span>
+                        <span className={`text-xs ${match.status === "FINISHED" ? "text-green-400" : "text-foreground/30"}`}>
+                          {match.status === "FINISHED" ? "✓" : match.status === "IN_PROGRESS" ? "●" : "—"}
                       </span>
-                      <span className="flex-1 text-right">{match.homeTeam}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="20"
-                        value={editScores[match.id]?.home ?? ""}
-                        onChange={(e) =>
-                          setEditScores((prev) => ({
-                            ...prev,
-                            [match.id]: { ...prev[match.id], home: e.target.value },
-                          }))
-                        }
-                        className="w-10 rounded border border-surface-light bg-surface px-1 py-0.5 text-center font-bold focus:border-accent focus:outline-none"
-                      />
-                      <span className="text-foreground/30">-</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="20"
-                        value={editScores[match.id]?.away ?? ""}
-                        onChange={(e) =>
-                          setEditScores((prev) => ({
-                            ...prev,
-                            [match.id]: { ...prev[match.id], away: e.target.value },
-                          }))
-                        }
-                        className="w-10 rounded border border-surface-light bg-surface px-1 py-0.5 text-center font-bold focus:border-accent focus:outline-none"
-                      />
-                      <span className="flex-1">{match.awayTeam}</span>
-                      <span className={`text-xs ${match.status === "FINISHED" ? "text-green-400" : "text-foreground/30"}`}>
-                        {match.status === "FINISHED" ? "✓" : match.status === "IN_PROGRESS" ? "●" : "—"}
-                      </span>
-                      <button
-                        onClick={() => handleScoreSave(match.id)}
-                        disabled={loading === match.id}
-                        className="rounded bg-accent/20 px-2 py-0.5 text-xs text-accent hover:bg-accent/30"
-                      >
-                        {loading === match.id ? "..." : "Guardar"}
-                      </button>
+                        <button
+                          onClick={() => handleScoreSave(match.id)}
+                          disabled={loading === match.id}
+                          className="rounded bg-accent/20 px-2 py-0.5 text-xs text-accent hover:bg-accent/30"
+                        >
+                          {loading === match.id ? "..." : "Guardar"}
+                        </button>
+                      </div>
+                      {!match.group && knockoutData[match.id] && (
+                        <div className="mt-2 flex flex-wrap items-center gap-3 pl-8 text-xs">
+                          <label className="flex items-center gap-1.5 text-foreground/60">
+                            <input
+                              type="checkbox"
+                              checked={knockoutData[match.id].extraTime}
+                              onChange={(e) =>
+                                setKnockoutData((prev) => ({
+                                  ...prev,
+                                  [match.id]: { ...prev[match.id], extraTime: e.target.checked },
+                                }))
+                              }
+                              className="accent-accent"
+                            />
+                            ⏱️ Extra time
+                          </label>
+                          <label className="flex items-center gap-1.5 text-foreground/60">
+                            <input
+                              type="checkbox"
+                              checked={knockoutData[match.id].penalties}
+                              onChange={(e) =>
+                                setKnockoutData((prev) => ({
+                                  ...prev,
+                                  [match.id]: { ...prev[match.id], penalties: e.target.checked },
+                                }))
+                              }
+                              className="accent-accent"
+                            />
+                            🥅 Penales
+                          </label>
+                          <label className="flex items-center gap-1.5 text-foreground/60">
+                            🏆 Avanza:
+                            <select
+                              value={knockoutData[match.id].winnerTeam}
+                              onChange={(e) =>
+                                setKnockoutData((prev) => ({
+                                  ...prev,
+                                  [match.id]: { ...prev[match.id], winnerTeam: e.target.value },
+                                }))
+                              }
+                              className="rounded border border-surface-light bg-surface px-2 py-0.5 text-xs focus:border-accent focus:outline-none"
+                            >
+                              <option value={match.homeTeam}>{match.homeTeam}</option>
+                              <option value={match.awayTeam}>{match.awayTeam}</option>
+                            </select>
+                          </label>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

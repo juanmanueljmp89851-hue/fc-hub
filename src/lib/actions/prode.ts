@@ -1091,22 +1091,45 @@ export async function getProdeLeaderboard(prodeId: string) {
 
 // ─── Admin/Creator: Score week ──────────────────────────────
 
-export async function scoreProdeWeek(weekId: string, results: { matchId: string; homeScore: number; awayScore: number }[]) {
+export async function scoreProdeWeek(
+  weekId: string,
+  results: {
+    matchId: string;
+    homeScore: number;
+    awayScore: number;
+    extraTime?: boolean;
+    penalties?: boolean;
+    winnerTeam?: string;
+  }[],
+) {
   const userId = await getAuthUserId();
   if (!userId) return { error: "No autenticado" };
 
-  // Only admins can score (for now)
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
   if (user?.role !== "ADMIN") return { error: "Solo admins pueden puntuar" };
 
   await prisma.$transaction(async (tx) => {
     for (const result of results) {
+      const match = await tx.prodeMatch.findUnique({
+        where: { id: result.matchId },
+        select: { group: true },
+      });
+      const isKnockout = !match?.group;
+
       await tx.prodeMatch.update({
         where: { id: result.matchId },
-        data: { homeScore: result.homeScore, awayScore: result.awayScore, status: "FINISHED" },
+        data: {
+          homeScore: result.homeScore,
+          awayScore: result.awayScore,
+          status: "FINISHED",
+          ...(isKnockout && {
+            extraTime: result.extraTime ?? false,
+            penalties: result.penalties ?? false,
+            winnerTeam: result.winnerTeam ?? null,
+          }),
+        },
       });
 
-      // Score all predictions for this match (across all prodes)
       const predictions = await tx.prodePrediction.findMany({
         where: { matchId: result.matchId },
       });
@@ -1120,6 +1143,18 @@ export async function scoreProdeWeek(weekId: string, results: { matchId: string;
           const realOutcome = result.homeScore > result.awayScore ? "H" : result.homeScore < result.awayScore ? "A" : "D";
           const predOutcome = pred.predHomeScore > pred.predAwayScore ? "H" : pred.predHomeScore < pred.predAwayScore ? "A" : "D";
           if (realOutcome === predOutcome) points = PRODE.CORRECT_WINNER;
+        }
+
+        if (isKnockout) {
+          if (pred.predExtraTime !== null && pred.predExtraTime === (result.extraTime ?? false)) {
+            points += PRODE.KNOCKOUT_EXTRA_TIME;
+          }
+          if (pred.predPenalties !== null && pred.predPenalties === (result.penalties ?? false)) {
+            points += PRODE.KNOCKOUT_PENALTIES;
+          }
+          if (pred.predWinner && result.winnerTeam && pred.predWinner === result.winnerTeam) {
+            points += PRODE.KNOCKOUT_WINNER;
+          }
         }
 
         await tx.prodePrediction.update({
