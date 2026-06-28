@@ -11,6 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    services:
+      flaresolverr:
+        image: ghcr.io/flaresolverr/flaresolverr:latest
+        ports:
+          - 8191:8191
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -27,11 +33,21 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Run scraper (ScraperAPI mode)
+      - name: Wait for FlareSolverr
+        run: |
+          echo "Waiting for FlareSolverr to be ready..."
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:8191/ > /dev/null 2>&1; then
+              echo "FlareSolverr ready!"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run scraper (FlareSolverr mode)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
-        run: npx tsx scripts/scrape-futbin.ts --bee --rotate --pages 1
+        run: npx tsx scripts/scrape-futbin.ts --flare --rotate --pages 1
 
       - name: Summary
         if: always()

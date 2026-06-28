@@ -15,6 +15,9 @@ import { PrismaClient } from "@prisma/client";
 // ScraperAPI mode: use cheerio for HTML parsing, no browser needed
 const USE_SCRAPER_API = process.argv.includes("--bee");
 const SCRAPER_API_KEY = process.env.SCRAPERAPI_KEY ?? "";
+// FlareSolverr mode: local Docker container that solves Cloudflare challenges
+const USE_FLARESOLVERR = process.argv.includes("--flare");
+const FLARESOLVERR_URL = process.env.FLARESOLVERR_URL ?? "http://localhost:8191/v1";
 // Rotation mode: scrape a subset of squads per day to stay within credit budget
 const USE_ROTATION = process.argv.includes("--rotate");
 const SQUADS_PER_DAY = 3;
@@ -26,7 +29,7 @@ type Page = import("playwright").Page;
 let cheerioLoad: any;
 
 async function loadDeps() {
-  if (USE_SCRAPER_API) {
+  if (USE_SCRAPER_API || USE_FLARESOLVERR) {
     const cheerioMod = await import("cheerio");
     cheerioLoad = cheerioMod.load;
   } else {
@@ -186,6 +189,35 @@ async function fetchWithScraperAPI(url: string): Promise<string> {
     throw new Error(`ScraperAPI error ${res.status}: ${body.slice(0, 200)}`);
   }
   return res.text();
+}
+
+// ─── FLARESOLVERR FETCH ─────────────────────────────────────
+
+async function fetchWithFlareSolverr(url: string): Promise<string> {
+  const res = await fetch(FLARESOLVERR_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      cmd: "request.get",
+      url,
+      maxTimeout: 60000,
+    }),
+    signal: AbortSignal.timeout(90000),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`FlareSolverr HTTP error ${res.status}: ${body.slice(0, 200)}`);
+  }
+
+  const data = await res.json() as { status: string; message: string; solution?: { response: string } };
+  if (data.status !== "ok") {
+    throw new Error(`FlareSolverr error: ${data.message}`);
+  }
+  if (!data.solution?.response) {
+    throw new Error("FlareSolverr: empty response");
+  }
+  return data.solution.response;
 }
 
 function parsePlayerListHtml(html: string, sourceUrl: string): ScrapedCard[] {
@@ -852,6 +884,7 @@ async function main() {
 
   console.log(`\n🔍 Scraper FUTBIN FC 26 — ${new Date().toLocaleString("es-AR")}`);
   if (USE_SCRAPER_API) console.log(`   🐝 Modo ScraperAPI (IPs residenciales)`);
+  if (USE_FLARESOLVERR) console.log(`   🔥 Modo FlareSolverr (bypass Cloudflare)`);
   if (USE_ROTATION) console.log(`   🔄 Rotación: ${SQUADS_PER_DAY} squads/día`);
   if (AUTO_VERSIONS) console.log(`   🤖 Modo automático: descubrimiento de versiones`);
   if (SCRAPE_DAILY) console.log(`   📅 Daily: /home-tab/new-players`);
@@ -862,6 +895,75 @@ async function main() {
 
   if (USE_SCRAPER_API && !SCRAPER_API_KEY) {
     throw new Error("SCRAPERAPI_KEY no configurada. Setear como env var o secret.");
+  }
+
+  // ─── FLARESOLVERR MODE ──────────────────────────────────────────
+  if (USE_FLARESOLVERR) {
+    let allCards: ScrapedCard[] = [];
+    const seen = new Set<string>();
+
+    try {
+      const squadsToScrape = USE_ROTATION
+        ? getRotationSquads()
+        : hasSquads
+          ? FUTBIN_SQUADS
+          : Object.keys(SQUAD_MAP);
+
+      const targets = squadsToScrape.map((squad) => ({
+        label: `Squad: ${squad}`,
+        urlFn: (p: number) => futbinSquadUrl(squad, p),
+        forcePromo: SQUAD_MAP[squad],
+      }));
+
+      for (const target of targets) {
+        console.log(`\n🏷️  ${target.label}`);
+
+        for (let p = 1; p <= maxPages; p++) {
+          const url = target.urlFn(p);
+          console.log(`\n📄 [${target.label}] Página ${p}/${maxPages}`);
+
+          const html = await fetchWithFlareSolverr(url);
+          console.log(`  🔥 FlareSolverr fetch OK`);
+
+          const cards = parsePlayerListHtml(html, url);
+          console.log(`  ✓ ${cards.length} cartas extraídas`);
+
+          if (target.forcePromo) {
+            for (const card of cards) {
+              card.cardType = target.forcePromo.cardType;
+              card.promo = target.forcePromo.promo;
+              card.promoOrder = target.forcePromo.order;
+            }
+          }
+
+          let added = 0;
+          for (const card of cards) {
+            const key = `${card.eaId}:${card.cardType}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              allCards.push(card);
+              added++;
+            }
+          }
+          console.log(`  ✓ ${added} nuevas (${cards.length - added} duplicadas)`);
+
+          if (cards.length === 0 || (added === 0 && cards.length > 0)) {
+            console.log(`  ⏭️  ${cards.length === 0 ? "Página vacía" : "Sin cartas nuevas"}, saltando resto de ${target.label}`);
+            break;
+          }
+        }
+      }
+
+      console.log(`\n📊 Total: ${allCards.length} cartas únicas (FlareSolverr)`);
+
+      await saveCards(allCards);
+    } catch (error) {
+      console.error("❌ Error en scraper:", error);
+      process.exitCode = 1;
+    } finally {
+      await prisma.$disconnect();
+    }
+    return;
   }
 
   // ─── SCRAPINGBEE MODE ─────────────────────────────────────────
