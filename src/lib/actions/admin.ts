@@ -398,6 +398,144 @@ export async function searchUsersForNotification(query: string) {
   });
 }
 
+// ─── Bracket propagation ─────────────────────────────────
+
+export async function propagateBracket() {
+  await requireAdmin();
+
+  const weeks = await prisma.prodeWeek.findMany({
+    where: {
+      title: { in: ["16avos de Final", "Octavos de Final", "Cuartos de Final", "Semifinales", "Final"] },
+    },
+    include: { matches: { orderBy: { matchDate: "asc" } } },
+  });
+
+  const weekMap = new Map(weeks.map((w) => [w.title, w]));
+  const r32 = weekMap.get("16avos de Final")?.matches ?? [];
+  const r16 = weekMap.get("Octavos de Final")?.matches ?? [];
+  const qf = weekMap.get("Cuartos de Final")?.matches ?? [];
+  const sf = weekMap.get("Semifinales")?.matches ?? [];
+  const finalWeek = weekMap.get("Final")?.matches ?? [];
+
+  function getWinner(m: { homeTeam: string; awayTeam: string; homeScore: number | null; awayScore: number | null; winnerTeam: string | null; status: string }) {
+    if (m.status !== "FINISHED") return null;
+    if (m.winnerTeam) return m.winnerTeam;
+    if (m.homeScore === null || m.awayScore === null) return null;
+    if (m.homeScore > m.awayScore) return m.homeTeam;
+    if (m.awayScore > m.homeScore) return m.awayTeam;
+    return null;
+  }
+
+  function getLoser(m: Parameters<typeof getWinner>[0]) {
+    const winner = getWinner(m);
+    if (!winner) return null;
+    return winner === m.homeTeam ? m.awayTeam : m.homeTeam;
+  }
+
+  function isPlaceholder(team: string) {
+    return team.startsWith("G.") || team.startsWith("P.") || team.includes("Octavos") || team.includes("Cuartos") || team.includes("Semi");
+  }
+
+  let updates = 0;
+  const log: string[] = [];
+
+  async function propagateRound(source: typeof r32, target: typeof r16, label: string) {
+    if (source.length === 0 || target.length === 0) return;
+    const pairsCount = target.length;
+    for (let i = 0; i < pairsCount; i++) {
+      const m1 = source[i * 2];
+      const m2 = source[i * 2 + 1];
+      if (!m1 || !m2) continue;
+      const t = target[i];
+      const w1 = getWinner(m1);
+      const w2 = getWinner(m2);
+      if (w1 && isPlaceholder(t.homeTeam)) {
+        await prisma.prodeMatch.update({ where: { id: t.id }, data: { homeTeam: w1 } });
+        log.push(`${label} ${i + 1} home: ${w1}`);
+        updates++;
+      }
+      if (w2 && isPlaceholder(t.awayTeam)) {
+        await prisma.prodeMatch.update({ where: { id: t.id }, data: { awayTeam: w2 } });
+        log.push(`${label} ${i + 1} away: ${w2}`);
+        updates++;
+      }
+    }
+  }
+
+  await propagateRound(r32, r16, "Octavos");
+  await propagateRound(r16, qf, "Cuartos");
+  await propagateRound(qf, sf, "Semis");
+
+  // Semis → Final + 3er puesto
+  if (sf.length === 2 && finalWeek.length >= 2) {
+    const final = finalWeek.find((m) => m.stage === "Final");
+    const tercero = finalWeek.find((m) => m.stage === "Tercer Puesto");
+
+    if (final) {
+      const w1 = getWinner(sf[0]);
+      const w2 = getWinner(sf[1]);
+      if (w1 && isPlaceholder(final.homeTeam)) {
+        await prisma.prodeMatch.update({ where: { id: final.id }, data: { homeTeam: w1 } });
+        log.push(`Final home: ${w1}`);
+        updates++;
+      }
+      if (w2 && isPlaceholder(final.awayTeam)) {
+        await prisma.prodeMatch.update({ where: { id: final.id }, data: { awayTeam: w2 } });
+        log.push(`Final away: ${w2}`);
+        updates++;
+      }
+    }
+
+    if (tercero) {
+      const l1 = getLoser(sf[0]);
+      const l2 = getLoser(sf[1]);
+      if (l1 && isPlaceholder(tercero.homeTeam)) {
+        await prisma.prodeMatch.update({ where: { id: tercero.id }, data: { homeTeam: l1 } });
+        log.push(`3er puesto home: ${l1}`);
+        updates++;
+      }
+      if (l2 && isPlaceholder(tercero.awayTeam)) {
+        await prisma.prodeMatch.update({ where: { id: tercero.id }, data: { awayTeam: l2 } });
+        log.push(`3er puesto away: ${l2}`);
+        updates++;
+      }
+    }
+  }
+
+  revalidatePath("/admin/prode");
+  revalidatePath("/prode");
+  return { success: true, updates, log };
+}
+
+// ─── Group teams for scoring ─────────────────────────────
+
+export async function getGroupsForScoring() {
+  await requireAdmin();
+
+  const matches = await prisma.prodeMatch.findMany({
+    where: { group: { not: null } },
+    select: { group: true, homeTeam: true, awayTeam: true },
+  });
+
+  const groups: Record<string, string[]> = {};
+  for (const m of matches) {
+    if (!m.group) continue;
+    if (!groups[m.group]) groups[m.group] = [];
+    if (!groups[m.group].includes(m.homeTeam)) groups[m.group].push(m.homeTeam);
+    if (!groups[m.group].includes(m.awayTeam)) groups[m.group].push(m.awayTeam);
+  }
+
+  // Check which groups already scored
+  const scored = await prisma.prodeGroupPrediction.findMany({
+    where: { pointsEarned: { gt: 0 } },
+    select: { groupName: true },
+    distinct: ["groupName"],
+  });
+  const scoredGroups = new Set(scored.map((s) => s.groupName));
+
+  return { groups, scoredGroups: Array.from(scoredGroups) };
+}
+
 export async function deleteLobbyMessagesBulk(messageIds: string[]) {
   await requireAdmin();
 

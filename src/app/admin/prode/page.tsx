@@ -1,6 +1,7 @@
 import { getProdeWeeksAdmin, getAllProdesAdmin } from "@/lib/actions/admin";
 import { ProdeWeekManager } from "@/components/admin/ProdeWeekManager";
 import { AdminProdeList } from "@/components/admin/AdminProdeList";
+import { ProdeTools } from "@/components/admin/ProdeTools";
 
 export default async function AdminProdePage() {
   const [weeks, prodes] = await Promise.all([
@@ -37,6 +38,12 @@ export default async function AdminProdePage() {
 
       {/* Prodes list */}
       <AdminProdeList prodes={serializedProdes} />
+
+      {/* Bracket & Group tools */}
+      <div className="mt-8">
+        <h2 className="mb-4 text-lg font-bold">Herramientas</h2>
+        <ProdeTools />
+      </div>
 
       {/* Week manager */}
       <div className="mt-8">
