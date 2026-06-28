@@ -32,6 +32,7 @@ function shortWeekTitle(title: string) {
   // "Fecha 1 — Fase de Grupos" → "F1"
   const match = title.match(/Fecha\s+(\d+)/i);
   if (match) return `F${match[1]}`;
+  if (title.toLowerCase().includes("16avos")) return "16°";
   if (title.toLowerCase().includes("octavos")) return "8vos";
   if (title.toLowerCase().includes("cuartos")) return "4tos";
   if (title.toLowerCase().includes("semi")) return "Semi";

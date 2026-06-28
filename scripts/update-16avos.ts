@@ -7,26 +7,26 @@ const prisma = new PrismaClient();
 // Solo se actualizan los que tienen "Por definir" en el nombre.
 
 const UPDATES: { oldHome: string; oldAway: string; newHome?: string; newAway?: string }[] = [
-  // Martes 30 — México vs 3° (Escocia/Ecuador)
-  // { oldHome: "México", oldAway: "Por definir (3°C/E)", newAway: "Ecuador" },
+  // Martes 30 — México vs 3°C/E → Ecuador (3°E clasifica)
+  { oldHome: "México", oldAway: "Por definir (3°C/E)", newAway: "Ecuador" },
 
-  // Miércoles 1 — 1°L vs 3°
-  // { oldHome: "Por definir (1°L)", oldAway: "Por definir (3°)", newHome: "Inglaterra", newAway: "Senegal" },
+  // Miércoles 1 — 1°L vs 3° → Inglaterra vs RD Congo
+  { oldHome: "Por definir (1°L)", oldAway: "Por definir (3°)", newHome: "Inglaterra", newAway: "RD Congo" },
 
-  // Miércoles 1 — Bélgica vs 3°
-  // { oldHome: "Bélgica", oldAway: "Por definir (3°)", newAway: "Corea del Sur" },
+  // Miércoles 1 — Bélgica vs 3° → Senegal
+  { oldHome: "Bélgica", oldAway: "Por definir (3°)", newAway: "Senegal" },
 
-  // Jueves 2 — España vs 2°J
-  // { oldHome: "España", oldAway: "Por definir (2°J)", newAway: "Austria" },
+  // Jueves 2 — España vs 2°J → Austria
+  { oldHome: "España", oldAway: "Por definir (2°J)", newAway: "Austria" },
 
-  // Jueves 2 — 2°K vs 2°L
-  // { oldHome: "Por definir (2°K)", oldAway: "Por definir (2°L)", newHome: "Portugal", newAway: "Ghana" },
+  // Jueves 2 — 2°K vs 2°L → Portugal vs Croacia
+  { oldHome: "Por definir (2°K)", oldAway: "Por definir (2°L)", newHome: "Portugal", newAway: "Croacia" },
 
-  // Viernes 3 — Suiza vs 3°
-  // { oldHome: "Suiza", oldAway: "Por definir (3°)", newAway: "Irán" },
+  // Viernes 3 — Suiza vs 3° → Argelia
+  { oldHome: "Suiza", oldAway: "Por definir (3°)", newAway: "Argelia" },
 
-  // Viernes 3 — 1°K vs 3°
-  // { oldHome: "Por definir (1°K)", oldAway: "Por definir (3°)", newHome: "Colombia", newAway: "Croacia" },
+  // Viernes 3 — 1°K vs 3° → Colombia vs Ghana
+  { oldHome: "Por definir (1°K)", oldAway: "Por definir (3°)", newHome: "Colombia", newAway: "Ghana" },
 ];
 
 async function main() {
