@@ -21,11 +21,11 @@ export const PRODE = {
   EXACT_RESULT: 5,
   CORRECT_WINNER: 3,
   INCORRECT: 0,
-  // Group order scoring
-  GROUP_ALL_4_CORRECT: 10,
-  GROUP_3_CORRECT: 6,
-  GROUP_2_CORRECT: 3,
-  GROUP_1_CORRECT: 1,
+  // Group order scoring (disabled — no points awarded)
+  GROUP_ALL_4_CORRECT: 0,
+  GROUP_3_CORRECT: 0,
+  GROUP_2_CORRECT: 0,
+  GROUP_1_CORRECT: 0,
   // Knockout bonus
   KNOCKOUT_EXTRA_TIME: 2,
   KNOCKOUT_PENALTIES: 2,

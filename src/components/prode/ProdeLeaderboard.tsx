@@ -98,7 +98,6 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
               ))}
               {showDetail && (
                 <>
-                  <th className="px-1.5 py-2 text-center" title="Grupos">Grp</th>
                   <th className="px-1.5 py-2 text-center" title="Avance">Av</th>
                 </>
               )}
@@ -145,9 +144,6 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
                 {showDetail && (
                   <>
                     <td className="px-1.5 py-2 text-center text-xs text-foreground/60">
-                      {entry.groupPoints || "-"}
-                    </td>
-                    <td className="px-1.5 py-2 text-center text-xs text-foreground/60">
                       {entry.advancePoints || "-"}
                     </td>
                   </>
@@ -166,7 +162,6 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-foreground/40">
           <span>🎯 Exacto: <span className="font-bold text-gold">5</span></span>
           <span>✅ Ganador: <span className="font-bold text-accent">3</span></span>
-          <span>📊 Grupo: <span className="font-bold text-gold">+10</span>(4/4) · <span className="font-bold text-accent">+6</span>(3/4) · +3(2/4) · +1(1/4)</span>
           <span>🔮 Campeón: <span className="font-bold text-accent">10</span></span>
         </div>
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-foreground/40">

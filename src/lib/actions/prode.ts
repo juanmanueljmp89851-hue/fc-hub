@@ -1099,9 +1099,8 @@ export async function getProdeLeaderboard(prodeId: string) {
 
   const leaderboard = participants.map((p) => {
     const mp = matchMap.get(p.userId);
-    const gp = groupMap.get(p.userId) ?? 0;
     const ap = advanceMap.get(p.userId) ?? 0;
-    const total = (mp?.sum ?? 0) + gp + ap;
+    const total = (mp?.sum ?? 0) + ap;
 
     return {
       userId: p.userId,
@@ -1109,7 +1108,7 @@ export async function getProdeLeaderboard(prodeId: string) {
       avatarUrl: p.user.avatarUrl,
       totalPoints: total,
       matchPoints: mp?.sum ?? 0,
-      groupPoints: gp,
+      groupPoints: 0,
       advancePoints: ap,
       predictions: mp?.count ?? 0,
       exactResults: exactMap.get(p.userId) ?? 0,
@@ -1573,16 +1572,15 @@ export async function getProdeLeaderboardDetailed(prodeId: string) {
   const leaderboard = participants.map((p) => {
     const wp = weeklyPoints[p.userId] ?? {};
     const matchTotal = Object.values(wp).reduce((a, b) => a + b, 0);
-    const gp = groupMap.get(p.userId) ?? 0;
     const ap = advanceMap.get(p.userId) ?? 0;
 
     return {
       userId: p.userId,
       username: p.user.username,
       avatarUrl: p.user.avatarUrl,
-      totalPoints: matchTotal + gp + ap,
+      totalPoints: matchTotal + ap,
       matchPoints: matchTotal,
-      groupPoints: gp,
+      groupPoints: 0,
       advancePoints: ap,
       exactResults: exactMap.get(p.userId) ?? 0,
       weeklyPoints: wp,
