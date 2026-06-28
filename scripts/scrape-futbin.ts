@@ -176,7 +176,6 @@ async function fetchWithScraperAPI(url: string): Promise<string> {
   apiUrl.searchParams.set("api_key", SCRAPER_API_KEY);
   apiUrl.searchParams.set("url", url);
   apiUrl.searchParams.set("render", "true");
-  apiUrl.searchParams.set("ultra_premium", "true");
   apiUrl.searchParams.set("wait_for_selector", "tr.player-row");
   apiUrl.searchParams.set("country_code", "us");
 

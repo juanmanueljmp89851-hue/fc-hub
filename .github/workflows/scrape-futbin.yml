@@ -24,16 +24,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
-
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Run scraper (rotation mode)
+      - name: Run scraper (ScraperAPI mode)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx tsx scripts/scrape-futbin.ts --rotate --daily --pages 3
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
+        run: npx tsx scripts/scrape-futbin.ts --bee --rotate --pages 1
 
       - name: Summary
         if: always()
