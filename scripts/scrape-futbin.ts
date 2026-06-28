@@ -17,7 +17,7 @@ const USE_SCRAPER_API = process.argv.includes("--bee");
 const SCRAPER_API_KEY = process.env.SCRAPERAPI_KEY ?? "";
 // Rotation mode: scrape a subset of squads per day to stay within credit budget
 const USE_ROTATION = process.argv.includes("--rotate");
-const SQUADS_PER_DAY = 6;
+const SQUADS_PER_DAY = 3;
 
 // Lazy-loaded modules (conditional on mode)
 let chromium: any;
@@ -176,6 +176,7 @@ async function fetchWithScraperAPI(url: string): Promise<string> {
   apiUrl.searchParams.set("api_key", SCRAPER_API_KEY);
   apiUrl.searchParams.set("url", url);
   apiUrl.searchParams.set("render", "true");
+  apiUrl.searchParams.set("premium", "true");
   apiUrl.searchParams.set("wait_for_selector", "tr.player-row");
   apiUrl.searchParams.set("country_code", "us");
 
