@@ -1073,14 +1073,6 @@ export async function getProdeLeaderboard(prodeId: string) {
   });
   const matchMap = new Map(matchPoints.map((m) => [m.userId, { sum: m._sum.pointsEarned ?? 0, count: m._count.id }]));
 
-  // Group predictions points
-  const groupPoints = await prisma.prodeGroupPrediction.groupBy({
-    by: ["userId"],
-    where: { prodeId, userId: { in: userIds } },
-    _sum: { pointsEarned: true },
-  });
-  const groupMap = new Map(groupPoints.map((g) => [g.userId, g._sum.pointsEarned ?? 0]));
-
   // Advance predictions points
   const advancePoints = await prisma.prodeAdvancePrediction.groupBy({
     by: ["userId"],
@@ -1546,14 +1538,7 @@ export async function getProdeLeaderboardDetailed(prodeId: string) {
     weeklyPoints[uid][wid] = (weeklyPoints[uid][wid] ?? 0) + pred.pointsEarned;
   }
 
-  // Group + advance totals
-  const groupPoints = await prisma.prodeGroupPrediction.groupBy({
-    by: ["userId"],
-    where: { prodeId, userId: { in: userIds } },
-    _sum: { pointsEarned: true },
-  });
-  const groupMap = new Map(groupPoints.map((g) => [g.userId, g._sum.pointsEarned ?? 0]));
-
+  // Advance totals
   const advancePoints = await prisma.prodeAdvancePrediction.groupBy({
     by: ["userId"],
     where: { prodeId, userId: { in: userIds } },
