@@ -386,9 +386,39 @@ export async function getProdeByShareCode(code: string) {
   });
 }
 
+// ─── Auto-transition week statuses ─────────────────────────
+
+async function autoTransitionWeekStatuses() {
+  const now = new Date();
+
+  const weeks = await prisma.prodeWeek.findMany({
+    where: { status: { in: ["UPCOMING", "OPEN"] } },
+    include: { matches: { select: { matchDate: true, status: true }, orderBy: { matchDate: "asc" } } },
+  });
+
+  for (const week of weeks) {
+    if (week.matches.length === 0) continue;
+
+    const firstMatch = week.matches[0].matchDate;
+    const allStarted = week.matches.every(
+      (m) => now >= m.matchDate || m.status === "FINISHED" || m.status === "IN_PROGRESS",
+    );
+
+    if (week.status === "UPCOMING") {
+      const openThreshold = new Date(firstMatch.getTime() - 48 * 60 * 60_000);
+      if (now >= openThreshold) {
+        await prisma.prodeWeek.update({ where: { id: week.id }, data: { status: "OPEN" } });
+      }
+    } else if (week.status === "OPEN" && allStarted) {
+      await prisma.prodeWeek.update({ where: { id: week.id }, data: { status: "CLOSED" } });
+    }
+  }
+}
+
 // ─── Prode weeks (global, shared) ───────────────────────────
 
 export async function getProdeWeeks() {
+  await autoTransitionWeekStatuses();
   return prisma.prodeWeek.findMany({
     orderBy: { deadline: "asc" },
     include: {
@@ -409,6 +439,7 @@ export async function getProdeWeek(weekId: string) {
 }
 
 export async function getActiveWeek() {
+  await autoTransitionWeekStatuses();
   let week = await prisma.prodeWeek.findFirst({
     where: { status: "OPEN" },
     orderBy: { deadline: "asc" },
