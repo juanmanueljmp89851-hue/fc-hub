@@ -57,7 +57,8 @@ export function ProdeWeekManager({ weeks }: { weeks: Week[] }) {
     const scores = editScores[matchId];
     if (!scores || scores.home === "" || scores.away === "") return;
     setLoading(matchId);
-    await updateMatchScore(matchId, parseInt(scores.home), parseInt(scores.away));
+    const ko = knockoutData[matchId];
+    await updateMatchScore(matchId, parseInt(scores.home), parseInt(scores.away), ko ?? undefined);
     router.refresh();
     setLoading("");
   }

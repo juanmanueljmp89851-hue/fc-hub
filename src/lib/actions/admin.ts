@@ -129,15 +129,34 @@ export async function updateWeekStatus(weekId: string, status: "UPCOMING" | "OPE
   return { success: true };
 }
 
-export async function updateMatchScore(matchId: string, homeScore: number, awayScore: number) {
+export async function updateMatchScore(
+  matchId: string,
+  homeScore: number,
+  awayScore: number,
+  knockout?: { extraTime: boolean; penalties: boolean; winnerTeam: string },
+) {
   await requireAdmin();
+
+  const match = await prisma.prodeMatch.findUnique({
+    where: { id: matchId },
+    select: { group: true },
+  });
+  const isKnockout = !match?.group;
 
   await prisma.prodeMatch.update({
     where: { id: matchId },
-    data: { homeScore, awayScore, status: "FINISHED" },
+    data: {
+      homeScore,
+      awayScore,
+      status: "FINISHED",
+      ...(isKnockout && knockout && {
+        extraTime: knockout.extraTime,
+        penalties: knockout.penalties,
+        winnerTeam: knockout.winnerTeam,
+      }),
+    },
   });
 
-  // Recalculate points for all predictions on this match
   const predictions = await prisma.prodePrediction.findMany({
     where: { matchId },
   });
@@ -152,6 +171,17 @@ export async function updateMatchScore(matchId: string, homeScore: number, awayS
     } else {
       const predOutcome = pred.predHomeScore > pred.predAwayScore ? "H" : pred.predHomeScore < pred.predAwayScore ? "A" : "D";
       if (realOutcome === predOutcome) points = PRODE.CORRECT_WINNER;
+    }
+    if (isKnockout && knockout) {
+      if (pred.predExtraTime !== null && pred.predExtraTime === knockout.extraTime) {
+        points += PRODE.KNOCKOUT_EXTRA_TIME;
+      }
+      if (pred.predPenalties !== null && pred.predPenalties === knockout.penalties) {
+        points += PRODE.KNOCKOUT_PENALTIES;
+      }
+      if (pred.predWinner && pred.predWinner === knockout.winnerTeam) {
+        points += PRODE.KNOCKOUT_WINNER;
+      }
     }
     await prisma.prodePrediction.update({
       where: { id: pred.id },
