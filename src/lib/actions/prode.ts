@@ -1684,16 +1684,14 @@ export async function getTopScorerPredictions(prodeId: string) {
   });
 }
 
-export async function scoreTopScorerPredictions(prodeId: string, realTopScorer: string) {
+export async function scoreTopScorerPredictions(realTopScorer: string) {
   const userId = await getAuthUserId();
   if (!userId) return { error: "No autenticado" };
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
   if (user?.role !== "ADMIN") return { error: "Solo admins" };
 
-  const predictions = await prisma.prodeTopScorerPrediction.findMany({
-    where: { prodeId },
-  });
+  const predictions = await prisma.prodeTopScorerPrediction.findMany({});
 
   let scored = 0;
   for (const pred of predictions) {
@@ -1705,7 +1703,6 @@ export async function scoreTopScorerPredictions(prodeId: string, realTopScorer: 
     if (points > 0) scored++;
   }
 
-  revalidatePath(`/prode/${prodeId}`);
   revalidatePath("/prode");
   return { success: true, scored, total: predictions.length };
 }

@@ -42,7 +42,7 @@ export default async function AdminProdePage() {
       {/* Bracket & Group tools */}
       <div className="mt-8">
         <h2 className="mb-4 text-lg font-bold">Herramientas</h2>
-        <ProdeTools prodeIds={serializedProdes.map((p) => ({ id: p.id, name: p.name }))} />
+        <ProdeTools />
       </div>
 
       {/* Week manager */}

@@ -15,11 +15,11 @@ const TOP_SCORER_OPTIONS = [
   "Mikel Oyarzabal",
 ];
 
-export function ProdeTools({ prodeIds }: { prodeIds?: { id: string; name: string }[] }) {
+export function ProdeTools() {
   return (
     <div className="space-y-6">
       <BracketPropagator />
-      {prodeIds && prodeIds.length > 0 && <TopScorerScorer prodeIds={prodeIds} />}
+      <TopScorerScorer />
     </div>
   );
 }
@@ -75,9 +75,8 @@ function BracketPropagator() {
   );
 }
 
-function TopScorerScorer({ prodeIds }: { prodeIds: { id: string; name: string }[] }) {
+function TopScorerScorer() {
   const router = useRouter();
-  const [selectedProde, setSelectedProde] = useState(prodeIds[0]?.id ?? "");
   const [selectedPlayer, setSelectedPlayer] = useState(TOP_SCORER_OPTIONS[0]);
   const [customPlayer, setCustomPlayer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -85,10 +84,10 @@ function TopScorerScorer({ prodeIds }: { prodeIds: { id: string; name: string }[
 
   async function handleScore() {
     const player = customPlayer || selectedPlayer;
-    if (!player || !selectedProde) return;
+    if (!player) return;
     setLoading(true);
     setResult(null);
-    const res = await scoreTopScorerPredictions(selectedProde, player);
+    const res = await scoreTopScorerPredictions(player);
     if ("scored" in res) {
       setResult({ scored: res.scored!, total: res.total! });
     }
@@ -100,21 +99,9 @@ function TopScorerScorer({ prodeIds }: { prodeIds: { id: string; name: string }[
     <div className="rounded-xl border border-surface-light bg-surface p-4">
       <h3 className="mb-2 font-bold">⚽ Asignar goleador del torneo</h3>
       <p className="mb-3 text-xs text-foreground/50">
-        Seleccioná el goleador real y puntuá las predicciones (+15 pts al que acertó)
+        Seleccioná el goleador real y puntuá las predicciones de todos los prodes (+15 pts al que acertó)
       </p>
       <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <label className="mb-1 block text-xs text-foreground/50">Prode</label>
-          <select
-            value={selectedProde}
-            onChange={(e) => setSelectedProde(e.target.value)}
-            className="rounded border border-surface-light bg-background px-3 py-1.5 text-sm focus:border-accent focus:outline-none"
-          >
-            {prodeIds.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
         <div>
           <label className="mb-1 block text-xs text-foreground/50">Goleador</label>
           <select

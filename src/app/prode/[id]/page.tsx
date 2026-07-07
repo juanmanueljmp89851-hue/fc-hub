@@ -156,6 +156,11 @@ export default async function ProdeDetailPage({ params }: PageProps) {
         {/* Top 5 leaderboard */}
         <ProdeLeaderboard prodeId={prode.id} maxRows={5} />
 
+        {/* Top scorer prediction + predictions list */}
+        <div className="mt-6">
+          <TopScorerPredictions prodeId={prode.id} />
+        </div>
+
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* Left: Weeks + predictions */}
           <div className="space-y-6 lg:col-span-2">
@@ -233,11 +238,6 @@ export default async function ProdeDetailPage({ params }: PageProps) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Top scorer predictions */}
-        <div className="mt-6">
-          <TopScorerPredictions prodeId={prode.id} />
         </div>
 
         {/* Group predictions comparison */}
