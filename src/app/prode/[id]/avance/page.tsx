@@ -10,6 +10,8 @@ import {
   getAdvanceRoundStatus,
   getAdvancedTeams,
   getSimulatedGroupOrder,
+  saveTopScorerPrediction,
+  getUserTopScorerPrediction,
 } from "@/lib/actions/prode";
 import { TEAM_CODES } from "@/lib/teamFlags";
 
@@ -40,6 +42,16 @@ const ALL_TEAMS = [
   "Inglaterra", "Croacia", "Ghana", "Panamá",
 ];
 
+const TOP_SCORER_OPTIONS = [
+  "Lionel Messi",
+  "Erling Haaland",
+  "Kylian Mbappé",
+  "Ousmane Dembélé",
+  "Harry Kane",
+  "Jude Bellingham",
+  "Mikel Oyarzabal",
+];
+
 const ROUNDS = [
   { key: "ROUND_32", label: "Clasificados a Octavos de Final (32)", teamsNeeded: 32, pts: 1, prevLabel: "" },
   { key: "ROUND_16", label: "Octavos de final (16)", teamsNeeded: 16, pts: 2, prevLabel: "la fase de grupos" },
@@ -60,14 +72,17 @@ export default function AvancePredictionPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
+  const [topScorer, setTopScorer] = useState<string>("");
+  const [topScorerSaved, setTopScorerSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const [existing, status, advanced, simulated] = await Promise.all([
+      const [existing, status, advanced, simulated, savedTopScorer] = await Promise.all([
         getUserAdvancePredictions(prodeId),
         getAdvanceRoundStatus(),
         getAdvancedTeams(),
         getSimulatedGroupOrder(prodeId),
+        getUserTopScorerPrediction(prodeId),
       ]);
 
       const preds: Record<string, string[]> = {};
@@ -94,6 +109,10 @@ export default function AvancePredictionPage() {
       setPredictions(preds);
       setRoundStatus(status);
       setAdvancedTeams(advanced);
+      if (savedTopScorer) {
+        setTopScorer(savedTopScorer.playerName);
+        setTopScorerSaved(true);
+      }
       setInitialLoading(false);
     }
     load();
@@ -141,11 +160,22 @@ export default function AvancePredictionPage() {
       return;
     }
 
+    // Save top scorer if selected
+    if (topScorer) {
+      const tsResult = await saveTopScorerPrediction(prodeId, topScorer);
+      if (tsResult.error) {
+        setMessage(tsResult.error);
+        setLoading(false);
+        return;
+      }
+      setTopScorerSaved(true);
+    }
+
     const result = await saveAdvancePredictions(prodeId, rounds);
     if (result.error) {
       setMessage(result.error);
     } else {
-      setMessage("¡Predicciones de avance guardadas!");
+      setMessage("¡Predicciones guardadas!");
       router.refresh();
     }
     setLoading(false);
@@ -288,6 +318,51 @@ export default function AvancePredictionPage() {
               })}
             </div>
           )}
+        </div>
+
+        {/* Top Scorer Prediction */}
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span>⚽</span>
+                  Goleador del torneo
+                </span>
+                <span className="text-sm font-normal text-gold">+15 pts</span>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-4 pb-4">
+              {topScorerSaved ? (
+                <div className="rounded-lg border border-gold/30 bg-gold/5 p-3">
+                  <p className="text-sm font-medium text-gold">🔒 Tu predicción: {topScorer}</p>
+                  <p className="mt-1 text-xs text-foreground/40">No se puede cambiar una vez elegido</p>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-3 text-xs text-foreground/50">
+                    Elegí quién creés que será el goleador del Mundial 2026.
+                    <span className="font-bold text-gold"> Una vez guardado no se puede cambiar.</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {TOP_SCORER_OPTIONS.map((player) => (
+                      <button
+                        key={player}
+                        onClick={() => setTopScorer(player)}
+                        className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                          topScorer === player
+                            ? "border-gold bg-gold/20 text-gold"
+                            : "border-surface-light bg-surface/30 text-foreground/70 hover:border-gold/50 hover:text-gold"
+                        }`}
+                      >
+                        {player}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
         </div>
 
         {/* Save button — only if there are open rounds */}

@@ -1089,10 +1089,18 @@ export async function getProdeLeaderboard(prodeId: string) {
   });
   const exactMap = new Map(exactCounts.map((e) => [e.userId, e._count.id]));
 
+  // Top scorer points
+  const topScorerPoints = await prisma.prodeTopScorerPrediction.findMany({
+    where: { prodeId, userId: { in: userIds } },
+    select: { userId: true, pointsEarned: true },
+  });
+  const topScorerMap = new Map(topScorerPoints.map((t) => [t.userId, t.pointsEarned]));
+
   const leaderboard = participants.map((p) => {
     const mp = matchMap.get(p.userId);
     const ap = advanceMap.get(p.userId) ?? 0;
-    const total = (mp?.sum ?? 0) + ap;
+    const tsp = topScorerMap.get(p.userId) ?? 0;
+    const total = (mp?.sum ?? 0) + ap + tsp;
 
     return {
       userId: p.userId,
@@ -1102,6 +1110,7 @@ export async function getProdeLeaderboard(prodeId: string) {
       matchPoints: mp?.sum ?? 0,
       groupPoints: 0,
       advancePoints: ap,
+      topScorerPoints: tsp,
       predictions: mp?.count ?? 0,
       exactResults: exactMap.get(p.userId) ?? 0,
     };
@@ -1554,19 +1563,28 @@ export async function getProdeLeaderboardDetailed(prodeId: string) {
   });
   const exactMap = new Map(exactCounts.map((e) => [e.userId, e._count.id]));
 
+  // Top scorer points
+  const topScorerPoints = await prisma.prodeTopScorerPrediction.findMany({
+    where: { prodeId, userId: { in: userIds } },
+    select: { userId: true, pointsEarned: true },
+  });
+  const topScorerMap = new Map(topScorerPoints.map((t) => [t.userId, t.pointsEarned]));
+
   const leaderboard = participants.map((p) => {
     const wp = weeklyPoints[p.userId] ?? {};
     const matchTotal = Object.values(wp).reduce((a, b) => a + b, 0);
     const ap = advanceMap.get(p.userId) ?? 0;
+    const tsp = topScorerMap.get(p.userId) ?? 0;
 
     return {
       userId: p.userId,
       username: p.user.username,
       avatarUrl: p.user.avatarUrl,
-      totalPoints: matchTotal + ap,
+      totalPoints: matchTotal + ap + tsp,
       matchPoints: matchTotal,
       groupPoints: 0,
       advancePoints: ap,
+      topScorerPoints: tsp,
       exactResults: exactMap.get(p.userId) ?? 0,
       weeklyPoints: wp,
     };
@@ -1622,4 +1640,72 @@ export async function setParticipantRole(
   });
 
   return { success: true };
+}
+
+// ─── TOP SCORER PREDICTION ─────────────────────────────────
+
+export async function saveTopScorerPrediction(prodeId: string, playerName: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado" };
+
+  const participant = await prisma.prodeParticipant.findFirst({
+    where: { prodeId, userId },
+  });
+  if (!participant) return { error: "No participás de este prode" };
+
+  const existing = await prisma.prodeTopScorerPrediction.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+  });
+  if (existing) return { error: "Ya elegiste goleador. No se puede cambiar." };
+
+  await prisma.prodeTopScorerPrediction.create({
+    data: { prodeId, userId, playerName },
+  });
+
+  revalidatePath(`/prode/${prodeId}`);
+  return { success: true };
+}
+
+export async function getUserTopScorerPrediction(prodeId: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return null;
+
+  return prisma.prodeTopScorerPrediction.findUnique({
+    where: { prodeId_userId: { prodeId, userId } },
+    select: { playerName: true, pointsEarned: true },
+  });
+}
+
+export async function getTopScorerPredictions(prodeId: string) {
+  return prisma.prodeTopScorerPrediction.findMany({
+    where: { prodeId },
+    include: { user: { select: { username: true, avatarUrl: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+export async function scoreTopScorerPredictions(prodeId: string, realTopScorer: string) {
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado" };
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (user?.role !== "ADMIN") return { error: "Solo admins" };
+
+  const predictions = await prisma.prodeTopScorerPrediction.findMany({
+    where: { prodeId },
+  });
+
+  let scored = 0;
+  for (const pred of predictions) {
+    const points = pred.playerName === realTopScorer ? PRODE.TOP_SCORER : 0;
+    await prisma.prodeTopScorerPrediction.update({
+      where: { id: pred.id },
+      data: { pointsEarned: points },
+    });
+    if (points > 0) scored++;
+  }
+
+  revalidatePath(`/prode/${prodeId}`);
+  revalidatePath("/prode");
+  return { success: true, scored, total: predictions.length };
 }

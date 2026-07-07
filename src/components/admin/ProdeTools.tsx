@@ -3,11 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { propagateBracket } from "@/lib/actions/admin";
+import { scoreTopScorerPredictions } from "@/lib/actions/prode";
 
-export function ProdeTools() {
+const TOP_SCORER_OPTIONS = [
+  "Lionel Messi",
+  "Erling Haaland",
+  "Kylian Mbappé",
+  "Ousmane Dembélé",
+  "Harry Kane",
+  "Jude Bellingham",
+  "Mikel Oyarzabal",
+];
+
+export function ProdeTools({ prodeIds }: { prodeIds?: { id: string; name: string }[] }) {
   return (
     <div className="space-y-6">
       <BracketPropagator />
+      {prodeIds && prodeIds.length > 0 && <TopScorerScorer prodeIds={prodeIds} />}
     </div>
   );
 }
@@ -63,3 +75,86 @@ function BracketPropagator() {
   );
 }
 
+function TopScorerScorer({ prodeIds }: { prodeIds: { id: string; name: string }[] }) {
+  const router = useRouter();
+  const [selectedProde, setSelectedProde] = useState(prodeIds[0]?.id ?? "");
+  const [selectedPlayer, setSelectedPlayer] = useState(TOP_SCORER_OPTIONS[0]);
+  const [customPlayer, setCustomPlayer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ scored: number; total: number } | null>(null);
+
+  async function handleScore() {
+    const player = customPlayer || selectedPlayer;
+    if (!player || !selectedProde) return;
+    setLoading(true);
+    setResult(null);
+    const res = await scoreTopScorerPredictions(selectedProde, player);
+    if ("scored" in res) {
+      setResult({ scored: res.scored!, total: res.total! });
+    }
+    router.refresh();
+    setLoading(false);
+  }
+
+  return (
+    <div className="rounded-xl border border-surface-light bg-surface p-4">
+      <h3 className="mb-2 font-bold">⚽ Asignar goleador del torneo</h3>
+      <p className="mb-3 text-xs text-foreground/50">
+        Seleccioná el goleador real y puntuá las predicciones (+15 pts al que acertó)
+      </p>
+      <div className="flex flex-wrap items-end gap-3">
+        <div>
+          <label className="mb-1 block text-xs text-foreground/50">Prode</label>
+          <select
+            value={selectedProde}
+            onChange={(e) => setSelectedProde(e.target.value)}
+            className="rounded border border-surface-light bg-background px-3 py-1.5 text-sm focus:border-accent focus:outline-none"
+          >
+            {prodeIds.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-foreground/50">Goleador</label>
+          <select
+            value={selectedPlayer}
+            onChange={(e) => { setSelectedPlayer(e.target.value); setCustomPlayer(""); }}
+            className="rounded border border-surface-light bg-background px-3 py-1.5 text-sm focus:border-accent focus:outline-none"
+          >
+            {TOP_SCORER_OPTIONS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+            <option value="__custom__">Otro...</option>
+          </select>
+        </div>
+        {selectedPlayer === "__custom__" && (
+          <div>
+            <label className="mb-1 block text-xs text-foreground/50">Nombre</label>
+            <input
+              type="text"
+              value={customPlayer}
+              onChange={(e) => setCustomPlayer(e.target.value)}
+              placeholder="Nombre del goleador"
+              className="rounded border border-surface-light bg-background px-3 py-1.5 text-sm focus:border-accent focus:outline-none"
+            />
+          </div>
+        )}
+        <button
+          onClick={handleScore}
+          disabled={loading || (!customPlayer && selectedPlayer === "__custom__")}
+          className="rounded-lg bg-gold px-4 py-2 text-sm font-bold text-background hover:opacity-90 disabled:opacity-50"
+        >
+          {loading ? "Puntuando..." : "Puntuar"}
+        </button>
+      </div>
+      {result && (
+        <div className="mt-3 rounded-lg bg-background p-3 text-xs">
+          <p className="font-bold text-green-400">
+            ✅ {result.scored}/{result.total} participantes acertaron (+15 pts)
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
