@@ -33,9 +33,11 @@ export function ArenaChat({ matchId, messages, currentUserId, isPlayer, player1I
   const [invoked, setInvoked] = useState(false);
   const [error, setError] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = chatContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   // Auto-refresh every 10s
@@ -94,7 +96,7 @@ export function ArenaChat({ matchId, messages, currentUserId, isPlayer, player1I
       </div>
 
       {/* Messages */}
-      <div className="max-h-64 min-h-[120px] overflow-y-auto rounded-lg border border-surface-light bg-background p-3">
+      <div ref={chatContainerRef} className="max-h-64 min-h-[120px] overflow-y-auto rounded-lg border border-surface-light bg-background p-3">
         {messages.length === 0 ? (
           <p className="py-6 text-center text-xs text-foreground/30">
             Sin mensajes. Coordiná con tu rival acá.

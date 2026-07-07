@@ -20,8 +20,10 @@ export function ProdeChat({ prodeId, currentUserId }: { prodeId: string; current
   const bottomRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval>>();
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, []);
 
   // Initial load
@@ -107,7 +109,7 @@ export function ProdeChat({ prodeId, currentUserId }: { prodeId: string; current
       </div>
 
       {/* Messages */}
-      <div className="flex h-80 flex-col overflow-y-auto px-3 py-2">
+      <div ref={containerRef} className="flex h-80 flex-col overflow-y-auto px-3 py-2">
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
             <span className="text-sm text-foreground/30">Cargando...</span>
