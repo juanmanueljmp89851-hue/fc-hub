@@ -77,7 +77,7 @@ export function TopScorerPredictions({ prodeId }: { prodeId: string }) {
     <div className="rounded-xl border border-surface-light bg-surface/30 overflow-hidden">
       <div className="px-4 py-3 border-b border-surface-light flex items-center justify-between">
         <h3 className="text-sm font-bold">⚽ Goleador del torneo</h3>
-        <span className="text-xs font-medium text-gold">+15 pts</span>
+        <span className="text-xs font-medium text-gold">+10 pts</span>
       </div>
 
       <div className="p-4 space-y-4">
@@ -151,7 +151,7 @@ export function TopScorerPredictions({ prodeId }: { prodeId: string }) {
       {predictions.length > 0 && (
         <div className="px-4 py-2 border-t border-surface-light/50">
           <p className="text-[10px] text-foreground/30">
-            {predictions.length} predicciones · +15 pts si acertás al goleador
+            {predictions.length} predicciones · +10 pts si acertás al goleador
           </p>
         </div>
       )}

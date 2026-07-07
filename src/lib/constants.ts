@@ -37,7 +37,7 @@ export const PRODE = {
   ADVANCE_SEMIS: 5,
   ADVANCE_FINAL: 7,
   ADVANCE_CHAMPION: 10,
-  TOP_SCORER: 15,
+  TOP_SCORER: 10,
 } as const;
 
 export const TOURNAMENT = {

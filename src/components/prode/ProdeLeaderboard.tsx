@@ -163,7 +163,7 @@ export function ProdeLeaderboard({ prodeId, maxRows }: { prodeId: string; maxRow
           <span>🎯 Exacto: <span className="font-bold text-gold">5</span></span>
           <span>✅ Ganador: <span className="font-bold text-accent">3</span></span>
           <span>🔮 Campeón: <span className="font-bold text-accent">10</span></span>
-          <span>⚽ Goleador: <span className="font-bold text-gold">15</span></span>
+          <span>⚽ Goleador: <span className="font-bold text-gold">10</span></span>
         </div>
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-foreground/40">
           <span className="font-medium text-foreground/50">Desde 16avos:</span>
