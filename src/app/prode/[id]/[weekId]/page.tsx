@@ -68,6 +68,7 @@ export default async function ProdeWeekPage({ params }: PageProps) {
             predExtraTime: pred.predExtraTime,
             predPenalties: pred.predPenalties,
             predWinner: pred.predWinner,
+            pointsEarned: pred.pointsEarned,
           }]
         : undefined,
       allPredictions: allPredsMap.get(m.id) ?? [],

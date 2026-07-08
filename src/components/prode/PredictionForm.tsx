@@ -36,6 +36,7 @@ interface MatchWithPrediction {
     predExtraTime?: boolean | null;
     predPenalties?: boolean | null;
     predWinner?: string | null;
+    pointsEarned?: number;
   }[];
   allPredictions?: OtherPrediction[];
 }
@@ -300,6 +301,7 @@ export function PredictionForm({ prodeId, weekId, weekStatus, matches }: Predict
                             <PointsBadge
                               pred={existingPred}
                               real={{ home: match.homeScore!, away: match.awayScore! }}
+                              match={{ group: match.group, extraTime: match.extraTime, penalties: match.penalties, winnerTeam: match.winnerTeam }}
                             />
                           </div>
                         )}
@@ -529,16 +531,13 @@ function OtherPredictions({
 function PointsBadge({
   pred,
   real,
+  match,
 }: {
-  pred: { predHomeScore: number; predAwayScore: number };
+  pred: { predHomeScore: number; predAwayScore: number; predWinner?: string | null; pointsEarned?: number };
   real: { home: number; away: number };
+  match?: { group?: string | null; extraTime?: boolean | null; penalties?: boolean | null; winnerTeam?: string | null };
 }) {
   const isExact = pred.predHomeScore === real.home && pred.predAwayScore === real.away;
-
-  if (isExact) {
-    return <span className="rounded bg-gold/20 px-1.5 py-0.5 font-bold text-gold">+5 Exacto!</span>;
-  }
-
   const realOutcome = real.home > real.away ? "home" : real.home < real.away ? "away" : "draw";
   const predOutcome =
     pred.predHomeScore > pred.predAwayScore
@@ -546,10 +545,46 @@ function PointsBadge({
       : pred.predHomeScore < pred.predAwayScore
         ? "away"
         : "draw";
+  const isWinner = realOutcome === predOutcome;
 
-  if (realOutcome === predOutcome) {
-    return <span className="rounded bg-accent/20 px-1.5 py-0.5 font-bold text-accent">+3 Ganador</span>;
+  const isKnockout = match && !match.group && match.winnerTeam;
+  const predDraw = pred.predHomeScore === pred.predAwayScore;
+
+  const parts: string[] = [];
+  let total = 0;
+
+  if (isExact) {
+    parts.push("+5 Exacto");
+    total += 5;
+  } else if (isWinner) {
+    parts.push("+3 Ganador");
+    total += 3;
   }
 
-  return <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-red-400">+0</span>;
+  if (isKnockout) {
+    if (match.extraTime && predDraw) {
+      parts.push("+2 Tiempo extra");
+      total += 2;
+    }
+    if (match.penalties && predDraw) {
+      parts.push("+2 Penales");
+      total += 2;
+    }
+    if (pred.predWinner && pred.predWinner === match.winnerTeam) {
+      parts.push("+3 Avanza");
+      total += 3;
+    }
+  }
+
+  if (total === 0) {
+    return <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-red-400">+0</span>;
+  }
+
+  const color = isExact ? "text-gold bg-gold/20" : "text-accent bg-accent/20";
+
+  return (
+    <span className={`rounded px-1.5 py-0.5 font-bold ${color}`}>
+      {parts.join(" · ")}
+    </span>
+  );
 }
