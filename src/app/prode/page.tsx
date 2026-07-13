@@ -91,7 +91,7 @@ export default async function ProdePage() {
               <span className="font-bold text-accent">+3</span> Ganador correcto
             </div>
             <div>
-              <span className="font-bold text-accent">+10</span> Acertar campeón
+              <span className="font-bold text-accent">+5</span> Acertar campeón
             </div>
             <div>
               <span className="font-bold text-gold">+10</span> Acertar goleador

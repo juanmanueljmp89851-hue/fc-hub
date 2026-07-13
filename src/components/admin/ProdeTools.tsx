@@ -170,7 +170,7 @@ function ChampionScorer() {
     <div className="rounded-xl border border-surface-light bg-surface p-4">
       <h3 className="mb-2 font-bold">🏆 Asignar campeón del torneo</h3>
       <p className="mb-3 text-xs text-foreground/50">
-        Seleccioná el campeón real y puntuá las predicciones de todos los prodes (+10 pts al que acertó)
+        Seleccioná el campeón real y puntuá las predicciones de todos los prodes (+5 pts al que acertó)
       </p>
       <div className="flex flex-wrap items-end gap-3">
         <div>
@@ -196,7 +196,7 @@ function ChampionScorer() {
       {result && (
         <div className="mt-3 rounded-lg bg-background p-3 text-xs">
           <p className="font-bold text-green-400">
-            ✅ {result.scored}/{result.total} participantes acertaron (+10 pts)
+            ✅ {result.scored}/{result.total} participantes acertaron (+5 pts)
           </p>
         </div>
       )}
