@@ -57,6 +57,7 @@ model User {
   prodeGroupPredictions ProdeGroupPrediction[]
   prodeAdvancePredictions ProdeAdvancePrediction[]
   prodeTopScorerPredictions ProdeTopScorerPrediction[]
+  prodeChampionPredictions ProdeChampionPrediction[]
   notifications         Notification[]
   influencerComments    InfluencerComment[]
   lobbyMessages         LobbyMessage[]
@@ -513,6 +514,7 @@ model Prode {
   groupPredictions   ProdeGroupPrediction[]
   advancePredictions ProdeAdvancePrediction[]
   topScorerPredictions ProdeTopScorerPrediction[]
+  championPredictions ProdeChampionPrediction[]
   joinRequests       ProdeJoinRequest[]
   messages           ProdeMessage[]
 
@@ -692,6 +694,21 @@ model ProdeTopScorerPrediction {
 
   @@unique([prodeId, userId])
   @@map("prode_top_scorer_predictions")
+}
+
+model ProdeChampionPrediction {
+  id           String   @id @default(uuid())
+  prodeId      String   @map("prode_id")
+  userId       String   @map("user_id")
+  teamName     String   @map("team_name")
+  pointsEarned Int      @default(0) @map("points_earned")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  prode Prode @relation(fields: [prodeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([prodeId, userId])
+  @@map("prode_champion_predictions")
 }
 
 model ProdeMessage {

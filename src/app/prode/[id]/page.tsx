@@ -31,6 +31,7 @@ import { ProdeParticipants } from "@/components/prode/ProdeParticipants";
 import { Suspense } from "react";
 import { GroupPredictionsSection } from "@/components/prode/GroupPredictionsSection";
 import { TopScorerPredictions } from "@/components/prode/TopScorerPredictions";
+import { ChampionPredictions } from "@/components/prode/ChampionPredictions";
 
 function getWeekStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string }> = {
@@ -159,6 +160,11 @@ export default async function ProdeDetailPage({ params }: PageProps) {
         {/* Top scorer prediction + predictions list */}
         <div className="mt-6">
           <TopScorerPredictions prodeId={prode.id} />
+        </div>
+
+        {/* Champion prediction */}
+        <div className="mt-6">
+          <ChampionPredictions prodeId={prode.id} />
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
