@@ -45,8 +45,10 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
   const { w, h } = SIZES[size];
   const s = w / 185; // scale factor (md = 1x)
 
-  const hasCardBg = !!player.cardImageId && !bgErr;
-  const style = getCardStyle(player.cardImageId);
+  // Fondo real: URL directa de fut.gg (cardBgImageUrl) o id FUTBIN legacy (cardImageId)
+  const bgSrc = player.cardBgImageUrl ?? (player.cardImageId ? cardBgUrl(player.cardImageId) : null);
+  const hasCardBg = !!bgSrc && !bgErr;
+  const style = getCardStyle(player.cardImageId ?? player.cardType);
   const fallbackColors = CARD_COLORS[player.cardType] ?? CARD_COLORS["special"];
 
   const isGK = player.position === "GK";
@@ -97,7 +99,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
       >
         {hasCardBg && (
           <img
-            src={cardBgUrl(player.cardImageId!)}
+            src={bgSrc!}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
             style={{ borderRadius: 12 * s }}

@@ -61,6 +61,7 @@ export interface FutPlayer {
   // CDN
   imageUrl?: string;
   cardImageId?: string;
+  cardBgImageUrl?: string;
   // Prices
   pricePs?: number;
   pricePc?: number;

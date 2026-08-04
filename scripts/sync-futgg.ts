@@ -65,6 +65,7 @@ interface FutggPlayer {
   createdAt: string;
   url: string | null;
   imageUrl: string | null;
+  rarityImageUrl: string | null;
   faceStatsV2: FutggFaceStats | null;
   club: { name: string } | null;
   league: { name: string } | null;
@@ -175,6 +176,7 @@ async function upsertPlayer(p: FutggPlayer): Promise<"created" | "updated" | "sk
     promoOrder,
     releaseDate,
     imageUrl: p.imageUrl ?? undefined,
+    cardBgImageUrl: p.rarityImageUrl ?? undefined,
     skillMoves: p.skillMoves ?? undefined,
     weakFoot: p.weakFoot ?? undefined,
     foot: p.foot ?? undefined,

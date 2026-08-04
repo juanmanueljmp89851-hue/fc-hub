@@ -59,6 +59,7 @@ export default async function JugadoresPage() {
     skillMoves: c.skillMoves ?? undefined,
     imageUrl: c.imageUrl ?? undefined,
     cardImageId: c.cardImageId ?? undefined,
+    cardBgImageUrl: c.cardBgImageUrl ?? undefined,
     pricePs: c.pricePs ?? undefined,
     pricePc: c.pricePc ?? undefined,
     futbinRating: c.futbinRating ?? undefined,
