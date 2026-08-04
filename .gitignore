@@ -35,6 +35,7 @@ yarn-error.log*
 # scripts & dev artifacts (allow scraper for GitHub Actions)
 /scripts/*
 !/scripts/scrape-futbin.ts
+!/scripts/sync-futgg.ts
 build-log.txt
 prisma/dev.db
 
