@@ -33,14 +33,12 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
   // Requisitos únicos de todos los challenges
   const reqs = [...new Set(sbc.challenges.flatMap((c) => c.requirements))];
   const cheapest = sbc.cheapestTotal;
-  // Link a la solución: si 1 challenge, directo; si varios, a la página del SBC
-  // Todos los desafíos con solución → página propia (uuids coma-separados).
-  const uuids = sbc.challenges.map((c) => c.solutionUuid).filter((u): u is string => !!u);
-  const internalSolution = uuids.length > 0 ? `/sbc/solucion/${uuids.join(",")}` : null;
-  const externalSolution = !internalSolution && sbc.url ? `https://www.fut.gg${sbc.url}` : null;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40">
+    <Link
+      href={`/sbc/${sbc.slug}`}
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40"
+    >
       {/* Badges */}
       <div className="absolute left-3 top-3 z-10 flex gap-1.5">
         {sbc.isNew && (
@@ -107,25 +105,11 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
           )}
         </div>
 
-        {internalSolution ? (
-          <Link
-            href={internalSolution}
-            className="mt-1 rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors hover:bg-accent hover:text-background"
-          >
-            Ver solución →
-          </Link>
-        ) : externalSolution ? (
-          <a
-            href={externalSolution}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 rounded-lg bg-surface-light py-1.5 text-center text-xs font-bold text-foreground/70 transition-colors hover:text-accent"
-          >
-            Ver solución (fut.gg) →
-          </a>
-        ) : null}
+        <span className="mt-1 rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-background">
+          Ver SBC →
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }
 

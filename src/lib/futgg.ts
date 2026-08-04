@@ -14,7 +14,9 @@ export interface SbcAwardPlayer {
 
 export interface SbcChallenge {
   name: string;
+  description: string;
   requirements: string[];
+  awards: string[];
   cheapestCoins: number | null;
   cheapestPc: number | null;
   solutionUrl: string | null;
@@ -33,6 +35,8 @@ export interface SbcSet {
   isRepeatable: boolean;
   isExpired: boolean;
   challengesCount: number;
+  numberOfRepeats: number;
+  repeatRefreshText: string | null;
   url: string | null;
   slug: string;
   rewardPlayer: SbcAwardPlayer | null;
@@ -42,6 +46,8 @@ export interface SbcSet {
 }
 
 interface RawAward {
+  pack?: string | null;
+  evolutionName?: string | null;
   player?: {
     commonName: string | null;
     cardName: string | null;
@@ -53,10 +59,12 @@ interface RawAward {
 
 interface RawChallenge {
   name: string;
+  description: string | null;
   requirementsText: string[] | null;
   cheapestSolutionPrice: number | null;
   cheapestSolutionPricePc: number | null;
   cheapestSolutionUrl: string | null;
+  awards: RawAward[] | null;
 }
 
 interface RawSbc {
@@ -71,6 +79,8 @@ interface RawSbc {
   isRepeatable: boolean;
   isExpired: boolean;
   challengesCount: number;
+  numberOfRepeats: number;
+  repeatRefreshIntervalText: string | null;
   url: string | null;
   slug: string;
   hasPlayerAward: boolean;
@@ -132,11 +142,62 @@ function translateReq(s: string): string {
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
+// Traduce descripciones libres de SBC/desafío (plantillas comunes).
+const SBC_DESC_REPLACEMENTS: [RegExp, string][] = [
+  [/Earn a pack containing/gi, "Ganá un sobre con"],
+  [/Exchange a Squad featuring/gi, "Entregá un equipo con"],
+  [/Exchange an? ([0-9]+)-Rated Squad/gi, "Entregá un equipo de media $1"],
+  [/Exchange an?/gi, "Entregá un"],
+  [/Complete this squad/gi, "Completá este equipo"],
+  [/Rare Gold Player Items/gi, "jugadores oro raros"],
+  [/Gold Player Items/gi, "jugadores oro"],
+  [/Player Items/gi, "jugadores"],
+  [/rated ([0-9]+) or higher/gi, "de $1 o más"],
+  [/\bfeaturing\b/gi, "con"],
+  [/\bSquad\b/gi, "equipo"],
+  [/\bPlayers\b/gi, "jugadores"],
+  [/\bPlayer\b/gi, "jugador"],
+  [/\bRare\b/gi, "raros"],
+  [/\bGold\b/gi, "oro"],
+  [/\bSilver\b/gi, "plata"],
+  [/\bBronze\b/gi, "bronce"],
+];
+
+function translateDesc(s: string | null): string {
+  if (!s) return "";
+  let out = s;
+  for (const [re, rep] of SBC_DESC_REPLACEMENTS) out = out.replace(re, rep);
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
+// Traduce recompensas (packs, jugadores, evos).
+function translateAward(a: RawAward): string | null {
+  if (a.player?.commonName) return `Jugador: ${a.player.commonName} ${a.player.overall}`;
+  if (a.evolutionName) return `Evolución: ${a.evolutionName}`;
+  if (a.pack) {
+    return a.pack
+      .replace(/Players Pack/gi, "sobre de jugadores")
+      .replace(/Player Pack/gi, "sobre de jugador")
+      .replace(/\bPack\b/gi, "sobre")
+      .replace(/\bGold\b/gi, "oro")
+      .replace(/\bSilver\b/gi, "plata")
+      .replace(/\bBronze\b/gi, "bronce")
+      .replace(/\bRare\b/gi, "raro")
+      .replace(/\bPremium\b/gi, "premium")
+      .replace(/\bSmall\b/gi, "pequeño")
+      .replace(/\bJumbo\b/gi, "jumbo")
+      .replace(/\bMega\b/gi, "mega");
+  }
+  return null;
+}
+
 function mapSbc(r: RawSbc): SbcSet {
   const rp = r.awards?.find((a) => a.player)?.player ?? null;
   const challenges: SbcChallenge[] = (r.challenges ?? []).map((c) => ({
     name: c.name,
+    description: translateDesc(c.description),
     requirements: (c.requirementsText ?? []).map(translateReq),
+    awards: (c.awards ?? []).map(translateAward).filter((x): x is string => !!x),
     cheapestCoins: c.cheapestSolutionPrice,
     cheapestPc: c.cheapestSolutionPricePc,
     solutionUrl: c.cheapestSolutionUrl ? `https://www.fut.gg${c.cheapestSolutionUrl}` : null,
@@ -155,7 +216,7 @@ function mapSbc(r: RawSbc): SbcSet {
   return {
     id: r.id,
     name: r.name,
-    description: r.description,
+    description: translateDesc(r.description),
     imageUrl: r.imageUrl,
     cost: r.cost,
     costPc: r.costPc,
@@ -164,6 +225,8 @@ function mapSbc(r: RawSbc): SbcSet {
     isRepeatable: r.isRepeatable,
     isExpired: r.isExpired,
     challengesCount: r.challengesCount,
+    numberOfRepeats: r.numberOfRepeats ?? 0,
+    repeatRefreshText: r.repeatRefreshIntervalText ?? null,
     url: r.url,
     slug: r.slug,
     rewardPlayer: rp
@@ -206,6 +269,12 @@ export async function getActiveSbcs(): Promise<SbcSet[]> {
     if (json.next === null || page >= json.totalPages) break;
   }
   return all;
+}
+
+/** Trae un SBC por slug (busca en los activos). */
+export async function getSbcBySlug(slug: string): Promise<SbcSet | null> {
+  const all = await getActiveSbcs();
+  return all.find((s) => s.slug === slug) ?? null;
 }
 
 // ─── Solución de SBC (squad de fut.gg, renderizado propio) ───
