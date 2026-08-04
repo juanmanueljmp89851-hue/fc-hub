@@ -14,10 +14,11 @@ const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/actualidad", label: "Actualidad" },
   { href: "/jugadores", label: "Cartas FC26" },
+  { href: "/sbc", label: "SBC" },
+  { href: "/evoluciones", label: "Evoluciones" },
   { href: "/torneos", label: "Arena" },
   { href: "/jugar", label: "Duelos" },
   { href: "/ranking", label: "Clasificación" },
-  { href: "/sbc", label: "SBC" },
   { href: "/escena", label: "Competitivo" },
   { href: "/influencers", label: "Streamers" },
 ];

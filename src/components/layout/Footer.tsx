@@ -4,6 +4,7 @@ const platformLinks = [
   { href: "/jugar", label: "Jugar" },
   { href: "/torneos", label: "Torneos" },
   { href: "/sbc", label: "SBC" },
+  { href: "/evoluciones", label: "Evoluciones" },
   { href: "/ranking", label: "Ranking" },
   { href: "/influencers", label: "Influencers" },
 ];
