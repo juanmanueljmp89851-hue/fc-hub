@@ -3,7 +3,7 @@ import Link from "next/link";
 const platformLinks = [
   { href: "/jugar", label: "Jugar" },
   { href: "/torneos", label: "Torneos" },
-  { href: "/prode", label: "Prode" },
+  { href: "/sbc", label: "SBC" },
   { href: "/ranking", label: "Ranking" },
   { href: "/influencers", label: "Influencers" },
 ];
@@ -37,7 +37,7 @@ export function Footer() {
               <span className="text-xl font-bold text-foreground">FOSA</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-foreground/50">
-              La comunidad competitiva de EA FC para Argentina y Latinoamérica. Torneos, ranking, prodes
+              La comunidad competitiva de EA FC para Argentina y Latinoamérica. Torneos, ranking, cartas, SBC
               y stream de los creadores que rompen la fosa.
             </p>
 
