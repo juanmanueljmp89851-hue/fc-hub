@@ -83,11 +83,59 @@ interface SbcResponse {
   data: RawSbc[];
 }
 
+// Traduce un requisito de SBC (texto libre en inglés) a español.
+// Reemplazos ordenados: frases largas primero, luego palabras y países.
+const SBC_REQ_REPLACEMENTS: [RegExp, string][] = [
+  [/from the same Nation/gi, "de la misma nacionalidad"],
+  [/from the same League/gi, "de la misma liga"],
+  [/from the same Club/gi, "del mismo club"],
+  [/Squad Total Chemistry Points/gi, "puntos de química del equipo"],
+  [/Nationalities in Squad/gi, "nacionalidades en el equipo"],
+  [/Leagues in Squad/gi, "ligas en el equipo"],
+  [/Clubs in Squad/gi, "clubes en el equipo"],
+  [/Team Rating/gi, "media del equipo"],
+  [/Player quality/gi, "calidad del jugador"],
+  [/Number of players/gi, "cantidad de jugadores"],
+  [/with OVR of/gi, "con general de"],
+  [/Players from/gi, "jugadores de"],
+  [/Player from/gi, "jugador de"],
+  [/\bPlayers\b/gi, "jugadores"],
+  [/\bPlayer\b/gi, "jugador"],
+  [/\bExactly\b/gi, "exactamente"],
+  [/\bExact\b/gi, "exacto"],
+  [/\bMin\./gi, "mín."],
+  [/\bMax\./gi, "máx."],
+  [/\bRare\b/gi, "raras"],
+  [/\bGold\b/gi, "oro"],
+  [/\bSilver\b/gi, "plata"],
+  [/\bBronze\b/gi, "bronce"],
+  [/\bAny\b/gi, "cualquier"],
+  [/\bOVR\b/gi, "general"],
+  [/ OR /g, " o "],
+  // Países comunes
+  [/\bBrazil\b/g, "Brasil"],
+  [/\bSpain\b/g, "España"],
+  [/\bNetherlands\b/g, "Países Bajos"],
+  [/\bFrance\b/g, "Francia"],
+  [/\bEngland\b/g, "Inglaterra"],
+  [/\bNorway\b/g, "Noruega"],
+  [/\bGermany\b/g, "Alemania"],
+  [/\bItaly\b/g, "Italia"],
+  [/\bBelgium\b/g, "Bélgica"],
+];
+
+function translateReq(s: string): string {
+  let out = s;
+  for (const [re, rep] of SBC_REQ_REPLACEMENTS) out = out.replace(re, rep);
+  // Capitaliza primera letra
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
 function mapSbc(r: RawSbc): SbcSet {
   const rp = r.awards?.find((a) => a.player)?.player ?? null;
   const challenges: SbcChallenge[] = (r.challenges ?? []).map((c) => ({
     name: c.name,
-    requirements: c.requirementsText ?? [],
+    requirements: (c.requirementsText ?? []).map(translateReq),
     cheapestCoins: c.cheapestSolutionPrice,
     cheapestPc: c.cheapestSolutionPricePc,
     solutionUrl: c.cheapestSolutionUrl ? `https://www.fut.gg${c.cheapestSolutionUrl}` : null,
