@@ -45,6 +45,70 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
   const { w, h } = SIZES[size];
   const s = w / 185; // scale factor (md = 1x)
 
+  const displayNameTop = player.commonName ?? player.name.split(" ").pop() ?? player.name;
+  const statsForHover = player.position === "GK"
+    ? [
+        { l: "DIV", v: player.gkDiving ?? 0 }, { l: "MAN", v: player.gkHandling ?? 0 },
+        { l: "SAQ", v: player.gkKicking ?? 0 }, { l: "REF", v: player.gkReflexes ?? 0 },
+        { l: "VEL", v: player.gkSpeed ?? 0 }, { l: "POS", v: player.gkPositioning ?? 0 },
+      ]
+    : [
+        { l: "RIT", v: player.pace }, { l: "TIR", v: player.shooting }, { l: "PAS", v: player.passing },
+        { l: "REG", v: player.dribbling }, { l: "DEF", v: player.defending }, { l: "FÍS", v: player.physical },
+      ];
+
+  // Carta completa pre-renderizada (fut.gg) → look real del juego, sin componer.
+  if (player.cardFullUrl && !faceImgErr) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="group relative block flex-shrink-0 transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.03] focus:outline-none"
+        style={{ width: w, height: h }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={player.cardFullUrl}
+          alt={player.name}
+          width={w}
+          height={h}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-contain"
+          onError={() => setFaceImgErr(true)}
+          draggable={false}
+        />
+        {/* Hover stats overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 z-30 hidden flex-col items-center justify-center rounded-xl bg-black/85 backdrop-blur-sm opacity-0 transition-opacity duration-200 sm:flex group-hover:opacity-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-1 text-center text-xs font-bold text-white">
+            {displayNameTop} <span className="text-accent">{player.overall}</span>
+          </div>
+          <div className="w-full space-y-0.5 px-3">
+            {statsForHover.map((st) => (
+              <div key={st.l} className="flex items-center gap-1">
+                <span className="w-6 text-[8px] font-bold uppercase text-white/50">{st.l}</span>
+                <span className="w-5 text-right text-[9px] font-black tabular-nums text-white">{st.v}</span>
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${st.v}%`,
+                      background:
+                        st.v >= 90 ? "#22c55e" : st.v >= 80 ? "#a3e635" : st.v >= 70 ? "#fbbf24" : st.v >= 60 ? "#fb923c" : "#ef4444",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </button>
+    );
+  }
+
   // Fondo real: URL directa de fut.gg (cardBgImageUrl) o id FUTBIN legacy (cardImageId)
   const bgSrc = player.cardBgImageUrl ?? (player.cardImageId ? cardBgUrl(player.cardImageId) : null);
   const hasCardBg = !!bgSrc && !bgErr;

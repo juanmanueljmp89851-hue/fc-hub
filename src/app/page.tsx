@@ -79,6 +79,7 @@ export default async function HomePage() {
     imageUrl: c.imageUrl ?? undefined,
     cardImageId: c.cardImageId ?? undefined,
     cardBgImageUrl: c.cardBgImageUrl ?? undefined,
+    cardFullUrl: c.cardFullUrl ?? undefined,
     skillMoves: c.skillMoves ?? undefined,
     weakFoot: c.weakFoot ?? undefined,
   }));

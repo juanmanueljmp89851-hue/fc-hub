@@ -1080,6 +1080,7 @@ model FutCard {
   // Visual
   cardImageId    String?  @map("card_image_id") // FUTBIN card bg id (e.g. "124_ucl_rttf")
   cardBgImageUrl String?  @map("card_bg_image_url") // Direct card-bg URL (fut.gg rarity art)
+  cardFullUrl    String?  @map("card_full_url")     // Full pre-rendered card (fut.gg) — real look
   imageUrl       String?  @map("image_url")     // Player face CDN URL
 
   // Meta
