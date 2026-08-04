@@ -18,6 +18,7 @@ export interface SbcChallenge {
   cheapestCoins: number | null;
   cheapestPc: number | null;
   solutionUrl: string | null;
+  solutionUuid: string | null;
 }
 
 export interface SbcSet {
@@ -139,6 +140,7 @@ function mapSbc(r: RawSbc): SbcSet {
     cheapestCoins: c.cheapestSolutionPrice,
     cheapestPc: c.cheapestSolutionPricePc,
     solutionUrl: c.cheapestSolutionUrl ? `https://www.fut.gg${c.cheapestSolutionUrl}` : null,
+    solutionUuid: c.cheapestSolutionUrl?.match(/squad-builder\/([a-f0-9-]+)/)?.[1] ?? null,
   }));
   // Suma de la solución más barata de cada challenge (null si algún tramo no tiene precio)
   const sum = (key: "cheapestCoins" | "cheapestPc"): number | null => {
@@ -204,4 +206,134 @@ export async function getActiveSbcs(): Promise<SbcSet[]> {
     if (json.next === null || page >= json.totalPages) break;
   }
   return all;
+}
+
+// ─── Solución de SBC (squad de fut.gg, renderizado propio) ───
+
+export interface SolutionPlayer {
+  eaId: number;
+  name: string;
+  commonName?: string;
+  position: string;
+  overall: number;
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
+  club: string;
+  league: string;
+  nation: string;
+  skillMoves?: number;
+  weakFoot?: number;
+  cardFullUrl?: string;
+  imageUrl?: string;
+  price: number | null;
+}
+
+export interface SbcSolution {
+  uuid: string;
+  formation: string | null;
+  players: SolutionPlayer[];
+  total: number | null;
+}
+
+interface RawSquadResponse {
+  data?: {
+    data?: {
+      activeFormationId?: string | null;
+      activeGroupPositions?: { playerEaId: number; positionIdx: number }[];
+    };
+  };
+}
+
+interface RawPlayerItem {
+  eaId: number;
+  commonName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  cardName: string | null;
+  overall: number;
+  position: string;
+  faceStatsV2: FutggFaceStats | null;
+  club: { name: string } | null;
+  league: { name: string } | null;
+  nation: { name: string } | null;
+  skillMoves: number | null;
+  weakFoot: number | null;
+  cardImageUrl: string | null;
+  imageUrl: string | null;
+  price: number | null;
+  hasPrice: boolean;
+}
+interface FutggFaceStats {
+  facePace: number; faceShooting: number; facePassing: number;
+  faceDribbling: number; faceDefending: number; facePhysicality: number;
+}
+
+async function fetchJson<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)", Accept: "application/json" },
+      next: { revalidate: 900 },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+/** Trae el squad-solución de fut.gg por uuid y lo arma con datos de jugadores. */
+export async function getSbcSolution(uuid: string): Promise<SbcSolution | null> {
+  const squad = await fetchJson<RawSquadResponse>(`https://www.fut.gg/api/squads/${uuid}/`);
+  const inner = squad?.data?.data;
+  const positions = inner?.activeGroupPositions ?? [];
+  if (positions.length === 0) return null;
+
+  const ids = positions.map((p) => p.playerEaId);
+  const items = await fetchJson<{ data: RawPlayerItem[] }>(
+    `https://www.fut.gg/api/fut/26/player-items/?ids=${ids.join(",")}`,
+  );
+  const byId = new Map((items?.data ?? []).map((p) => [p.eaId, p]));
+
+  const players: SolutionPlayer[] = [];
+  let total = 0;
+  let hasAnyPrice = false;
+  for (const id of ids) {
+    const p = byId.get(id);
+    if (!p) continue;
+    const fs = p.faceStatsV2;
+    const price = p.hasPrice ? p.price : null;
+    if (price != null) { total += price; hasAnyPrice = true; }
+    players.push({
+      eaId: p.eaId,
+      name: p.commonName ?? [p.firstName, p.lastName].filter(Boolean).join(" ").trim() ?? p.cardName ?? `#${p.eaId}`,
+      commonName: p.commonName ?? undefined,
+      position: p.position,
+      overall: p.overall,
+      pace: fs?.facePace ?? 0,
+      shooting: fs?.faceShooting ?? 0,
+      passing: fs?.facePassing ?? 0,
+      dribbling: fs?.faceDribbling ?? 0,
+      defending: fs?.faceDefending ?? 0,
+      physical: fs?.facePhysicality ?? 0,
+      club: p.club?.name ?? "",
+      league: p.league?.name ?? "",
+      nation: p.nation?.name ?? "",
+      skillMoves: p.skillMoves ?? undefined,
+      weakFoot: p.weakFoot ?? undefined,
+      cardFullUrl: (p.cardImageUrl ?? undefined)?.replace("width=300", "width=500"),
+      imageUrl: p.imageUrl ?? undefined,
+      price,
+    });
+  }
+
+  return {
+    uuid,
+    formation: inner?.activeFormationId ?? null,
+    players,
+    total: hasAnyPrice ? total : null,
+  };
 }

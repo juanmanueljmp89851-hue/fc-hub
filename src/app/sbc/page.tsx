@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { getActiveSbcs, type SbcSet } from "@/lib/futgg";
 
@@ -33,12 +34,12 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
   const reqs = [...new Set(sbc.challenges.flatMap((c) => c.requirements))];
   const cheapest = sbc.cheapestTotal;
   // Link a la solución: si 1 challenge, directo; si varios, a la página del SBC
-  const solutionUrl =
-    sbc.challenges.length === 1
-      ? sbc.challenges[0].solutionUrl
-      : sbc.url
-        ? `https://www.fut.gg${sbc.url}`
-        : sbc.challenges.find((c) => c.solutionUrl)?.solutionUrl ?? null;
+  // 1 desafío con uuid → solución propia interna; varios → link externo fut.gg
+  const singleUuid = sbc.challenges.length === 1 ? sbc.challenges[0].solutionUuid : null;
+  const internalSolution = singleUuid ? `/sbc/solucion/${singleUuid}` : null;
+  const externalSolution = sbc.url
+    ? `https://www.fut.gg${sbc.url}`
+    : sbc.challenges.find((c) => c.solutionUrl)?.solutionUrl ?? null;
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40">
@@ -108,16 +109,23 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
           )}
         </div>
 
-        {solutionUrl && (
-          <a
-            href={solutionUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+        {internalSolution ? (
+          <Link
+            href={internalSolution}
             className="mt-1 rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors hover:bg-accent hover:text-background"
           >
             Ver solución →
+          </Link>
+        ) : externalSolution ? (
+          <a
+            href={externalSolution}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 rounded-lg bg-surface-light py-1.5 text-center text-xs font-bold text-foreground/70 transition-colors hover:text-accent"
+          >
+            Ver solución (fut.gg) →
           </a>
-        )}
+        ) : null}
       </div>
     </div>
   );
