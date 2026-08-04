@@ -6,7 +6,7 @@ import { FutCard } from "@/components/jugadores/FutCard";
 import { getSbcSolution } from "@/lib/futgg";
 import type { FutPlayer } from "@/types/player";
 
-export const revalidate = 900;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Solución de SBC | Modo Fosa",

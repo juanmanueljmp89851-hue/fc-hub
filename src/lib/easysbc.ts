@@ -82,13 +82,15 @@ const LABEL_ES: Record<string, string> = {
   "Role++": "Rol++",
 };
 
-function tLabel(label: string): string {
-  return LABEL_ES[label] ?? label;
+function tLabel(label: unknown): string {
+  const s = String(label ?? "");
+  return LABEL_ES[s] ?? s;
 }
 
-// Traduce valores: "Max 95" → "Máx 95", "+30 (max 96)" → "+30 (máx 96)", "Any" → "Cualquier"
-function tValue(value: string): string {
-  return value
+// Traduce valores: "Max 95" → "Máx 95", "+30 (max 96)" → "+30 (máx 96)", "Any" → "Cualquier".
+// Coerce a string: algunos valores de la API vienen como número.
+function tValue(value: unknown): string {
+  return String(value ?? "")
     .replace(/\bMax\b/g, "Máx")
     .replace(/\bmax\b/g, "máx")
     .replace(/\bMin\b/g, "Mín")

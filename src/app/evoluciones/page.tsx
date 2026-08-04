@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { getEvolutions, type Evolution } from "@/lib/easysbc";
 
-export const revalidate = 1800; // 30 min
+export const dynamic = "force-dynamic"; // API externa: render por request, sin prerender en build
 
 export const metadata: Metadata = {
   title: "Evoluciones — EA FC 26 | Modo Fosa",
