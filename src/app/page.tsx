@@ -28,10 +28,10 @@ const quickLinks = [
     icon: "📰",
   },
   {
-    href: "/prode",
-    title: "Prode",
-    description: "Predicciones del Mundial 2026",
-    icon: "⚽",
+    href: "/sbc",
+    title: "Resolver SBC",
+    description: "SBC activos de FC 26: costo y premio",
+    icon: "🧩",
   },
   {
     href: "/jugadores",

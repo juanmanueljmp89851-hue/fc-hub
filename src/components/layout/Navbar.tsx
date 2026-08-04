@@ -17,7 +17,7 @@ const navLinks = [
   { href: "/torneos", label: "Arena" },
   { href: "/jugar", label: "Duelos" },
   { href: "/ranking", label: "Clasificación" },
-  { href: "/prode", label: "Prode" },
+  { href: "/sbc", label: "SBC" },
   { href: "/escena", label: "Competitivo" },
   { href: "/influencers", label: "Streamers" },
 ];
