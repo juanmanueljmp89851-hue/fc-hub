@@ -12,6 +12,14 @@ export interface SbcAwardPlayer {
   imageUrl: string | null;
 }
 
+export interface SbcChallenge {
+  name: string;
+  requirements: string[];
+  cheapestCoins: number | null;
+  cheapestPc: number | null;
+  solutionUrl: string | null;
+}
+
 export interface SbcSet {
   id: number;
   name: string;
@@ -27,6 +35,9 @@ export interface SbcSet {
   url: string | null;
   slug: string;
   rewardPlayer: SbcAwardPlayer | null;
+  challenges: SbcChallenge[];
+  cheapestTotal: number | null;
+  cheapestTotalPc: number | null;
 }
 
 interface RawAward {
@@ -37,6 +48,14 @@ interface RawAward {
     rarityName: string | null;
     imageUrl: string | null;
   } | null;
+}
+
+interface RawChallenge {
+  name: string;
+  requirementsText: string[] | null;
+  cheapestSolutionPrice: number | null;
+  cheapestSolutionPricePc: number | null;
+  cheapestSolutionUrl: string | null;
 }
 
 interface RawSbc {
@@ -55,6 +74,7 @@ interface RawSbc {
   slug: string;
   hasPlayerAward: boolean;
   awards: RawAward[] | null;
+  challenges: RawChallenge[] | null;
 }
 
 interface SbcResponse {
@@ -65,6 +85,23 @@ interface SbcResponse {
 
 function mapSbc(r: RawSbc): SbcSet {
   const rp = r.awards?.find((a) => a.player)?.player ?? null;
+  const challenges: SbcChallenge[] = (r.challenges ?? []).map((c) => ({
+    name: c.name,
+    requirements: c.requirementsText ?? [],
+    cheapestCoins: c.cheapestSolutionPrice,
+    cheapestPc: c.cheapestSolutionPricePc,
+    solutionUrl: c.cheapestSolutionUrl ? `https://www.fut.gg${c.cheapestSolutionUrl}` : null,
+  }));
+  // Suma de la solución más barata de cada challenge (null si algún tramo no tiene precio)
+  const sum = (key: "cheapestCoins" | "cheapestPc"): number | null => {
+    if (challenges.length === 0) return null;
+    let total = 0;
+    for (const c of challenges) {
+      if (c[key] == null) return null;
+      total += c[key] as number;
+    }
+    return total;
+  };
   return {
     id: r.id,
     name: r.name,
@@ -88,6 +125,9 @@ function mapSbc(r: RawSbc): SbcSet {
           imageUrl: rp.imageUrl,
         }
       : null,
+    challenges,
+    cheapestTotal: sum("cheapestCoins"),
+    cheapestTotalPc: sum("cheapestPc"),
   };
 }
 

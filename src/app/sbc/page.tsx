@@ -29,6 +29,17 @@ function timeLeft(endTime: string | null): string {
 }
 
 function SbcCard({ sbc }: { sbc: SbcSet }) {
+  // Requisitos únicos de todos los challenges
+  const reqs = [...new Set(sbc.challenges.flatMap((c) => c.requirements))];
+  const cheapest = sbc.cheapestTotal;
+  // Link a la solución: si 1 challenge, directo; si varios, a la página del SBC
+  const solutionUrl =
+    sbc.challenges.length === 1
+      ? sbc.challenges[0].solutionUrl
+      : sbc.url
+        ? `https://www.fut.gg${sbc.url}`
+        : sbc.challenges.find((c) => c.solutionUrl)?.solutionUrl ?? null;
+
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40">
       {/* Badges */}
@@ -63,10 +74,23 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="text-sm font-bold leading-tight">{sbc.name}</h3>
 
+        {/* Requisitos */}
+        {reqs.length > 0 && (
+          <ul className="space-y-0.5 text-[11px] text-foreground/60">
+            {reqs.slice(0, 4).map((r, i) => (
+              <li key={i} className="flex gap-1.5">
+                <span className="text-accent">›</span>
+                <span className="leading-tight">{r}</span>
+              </li>
+            ))}
+            {reqs.length > 4 && <li className="text-foreground/30">+{reqs.length - 4} más</li>}
+          </ul>
+        )}
+
         <div className="mt-auto grid grid-cols-2 gap-2 text-xs">
           <div className="rounded-lg bg-background/50 px-2.5 py-1.5">
-            <span className="block text-[10px] uppercase text-foreground/40">Costo</span>
-            <span className="font-bold text-gold">{fmtCoins(sbc.cost)}</span>
+            <span className="block text-[10px] uppercase text-foreground/40">Solución + barata</span>
+            <span className="font-bold text-gold">{cheapest != null ? fmtCoins(cheapest) : fmtCoins(sbc.cost)}</span>
           </div>
           <div className="rounded-lg bg-background/50 px-2.5 py-1.5">
             <span className="block text-[10px] uppercase text-foreground/40">Vence</span>
@@ -75,11 +99,25 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-foreground/50">
-          <span>{sbc.challengesCount} desafío{sbc.challengesCount !== 1 ? "s" : ""}</span>
+          <span>
+            {sbc.challengesCount} desafío{sbc.challengesCount !== 1 ? "s" : ""}
+            {sbc.isRepeatable ? "" : ""}
+          </span>
           {sbc.rewardPlayer && (
             <span className="font-bold text-accent">{sbc.rewardPlayer.overall} OVR</span>
           )}
         </div>
+
+        {solutionUrl && (
+          <a
+            href={solutionUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors hover:bg-accent hover:text-background"
+          >
+            Ver solución →
+          </a>
+        )}
       </div>
     </div>
   );
