@@ -1,9 +1,9 @@
-name: Scrape FUTBIN Daily
+name: Scrape FUTBIN Daily (DEPRECATED)
 
+# DEPRECADO: reemplazado por sync-futgg.yml (API fut.gg).
+# Cron desactivado — su lógica globalMax+n reasignaría promoOrder por encima
+# de las cartas futgg y las volvería a enterrar. Solo manual si hace falta.
 on:
-  schedule:
-    # 14:10 Argentina (UTC-3) = 17:10 UTC
-    - cron: "10 17 * * *"
   workflow_dispatch:
 
 jobs:
