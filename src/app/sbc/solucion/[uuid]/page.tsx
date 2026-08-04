@@ -3,14 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { FutCard } from "@/components/jugadores/FutCard";
-import { getSbcSolution } from "@/lib/futgg";
+import { getSbcSolution, type SbcSolution } from "@/lib/futgg";
 import type { FutPlayer } from "@/types/player";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Solución de SBC | Modo Fosa",
-  description: "Solución más barata para completar el SBC, con los 11 jugadores y el costo total.",
+  description: "Solución más barata para completar el SBC, con los jugadores y el costo total.",
   robots: { index: false },
 };
 
@@ -20,9 +20,57 @@ function fmtCoins(n: number): string {
   return String(n);
 }
 
+function toFutPlayer(p: SbcSolution["players"][number]): FutPlayer {
+  return {
+    id: String(p.eaId),
+    eaId: p.eaId,
+    name: p.name,
+    commonName: p.commonName,
+    position: p.position,
+    alternatePositions: [],
+    overall: p.overall,
+    pace: p.pace,
+    shooting: p.shooting,
+    passing: p.passing,
+    dribbling: p.dribbling,
+    defending: p.defending,
+    physical: p.physical,
+    club: p.club,
+    league: p.league,
+    nation: p.nation,
+    cardType: "special",
+    cardFullUrl: p.cardFullUrl,
+    imageUrl: p.imageUrl,
+    skillMoves: p.skillMoves,
+    weakFoot: p.weakFoot,
+  };
+}
+
+function SquadGrid({ sol }: { sol: SbcSolution }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {sol.players.map((p) => (
+        <div key={p.eaId} className="flex flex-col items-center gap-1.5">
+          <FutCard player={toFutPlayer(p)} size="sm" />
+          <span className="text-xs font-medium text-gold">
+            {p.price != null ? fmtCoins(p.price) : "—"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function SolucionPage({ params }: { params: { uuid: string } }) {
-  const sol = await getSbcSolution(params.uuid);
-  if (!sol || sol.players.length === 0) notFound();
+  const uuids = decodeURIComponent(params.uuid).split(",").map((u) => u.trim()).filter(Boolean);
+  const sols = (await Promise.all(uuids.map((u) => getSbcSolution(u)))).filter(
+    (s): s is SbcSolution => !!s && s.players.length > 0,
+  );
+  if (sols.length === 0) notFound();
+
+  const multi = sols.length > 1;
+  const grandTotal = sols.reduce((sum, s) => sum + (s.total ?? 0), 0);
+  const anyPrice = sols.some((s) => s.total != null);
 
   return (
     <div className="min-h-screen">
@@ -36,52 +84,41 @@ export default async function SolucionPage({ params }: { params: { uuid: string 
           <div>
             <h1 className="text-2xl font-black">🧩 Solución más barata</h1>
             <p className="mt-1 text-sm text-foreground/50">
-              {sol.players.length} jugadores{sol.formation ? ` · Formación ${sol.formation}` : ""}
+              {multi ? `${sols.length} desafíos` : `${sols[0].players.length} jugadores`}
             </p>
           </div>
-          {sol.total != null && (
+          {anyPrice && (
             <div className="rounded-xl border border-gold/30 bg-gold/5 px-4 py-2 text-right">
-              <span className="block text-[10px] uppercase text-foreground/40">Costo total</span>
-              <span className="text-xl font-black text-gold">{fmtCoins(sol.total)}</span>
+              <span className="block text-[10px] uppercase text-foreground/40">
+                {multi ? "Costo total (todos)" : "Costo total"}
+              </span>
+              <span className="text-xl font-black text-gold">{fmtCoins(grandTotal)}</span>
             </div>
           )}
         </header>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {sol.players.map((p) => {
-            const fp: FutPlayer = {
-              id: String(p.eaId),
-              eaId: p.eaId,
-              name: p.name,
-              commonName: p.commonName,
-              position: p.position,
-              alternatePositions: [],
-              overall: p.overall,
-              pace: p.pace,
-              shooting: p.shooting,
-              passing: p.passing,
-              dribbling: p.dribbling,
-              defending: p.defending,
-              physical: p.physical,
-              club: p.club,
-              league: p.league,
-              nation: p.nation,
-              cardType: "special",
-              cardFullUrl: p.cardFullUrl,
-              imageUrl: p.imageUrl,
-              skillMoves: p.skillMoves,
-              weakFoot: p.weakFoot,
-            };
-            return (
-              <div key={p.eaId} className="flex flex-col items-center gap-1.5">
-                <FutCard player={fp} size="sm" />
-                <span className="text-xs font-medium text-gold">
-                  {p.price != null ? fmtCoins(p.price) : "—"}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        {multi ? (
+          <div className="space-y-8">
+            {sols.map((sol, i) => (
+              <section key={sol.uuid}>
+                <div className="mb-3 flex items-center justify-between border-b border-surface-light pb-2">
+                  <h2 className="text-sm font-bold">
+                    Desafío {i + 1}
+                    <span className="ml-2 font-normal text-foreground/40">
+                      {sol.formation ? `Formación ${sol.formation}` : ""}
+                    </span>
+                  </h2>
+                  {sol.total != null && (
+                    <span className="text-sm font-bold text-gold">{fmtCoins(sol.total)}</span>
+                  )}
+                </div>
+                <SquadGrid sol={sol} />
+              </section>
+            ))}
+          </div>
+        ) : (
+          <SquadGrid sol={sols[0]} />
+        )}
 
         <p className="mt-6 text-center text-[11px] text-foreground/30">
           Solución calculada por fut.gg. Precios aproximados, pueden variar.

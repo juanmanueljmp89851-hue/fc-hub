@@ -34,12 +34,10 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
   const reqs = [...new Set(sbc.challenges.flatMap((c) => c.requirements))];
   const cheapest = sbc.cheapestTotal;
   // Link a la solución: si 1 challenge, directo; si varios, a la página del SBC
-  // 1 desafío con uuid → solución propia interna; varios → link externo fut.gg
-  const singleUuid = sbc.challenges.length === 1 ? sbc.challenges[0].solutionUuid : null;
-  const internalSolution = singleUuid ? `/sbc/solucion/${singleUuid}` : null;
-  const externalSolution = sbc.url
-    ? `https://www.fut.gg${sbc.url}`
-    : sbc.challenges.find((c) => c.solutionUrl)?.solutionUrl ?? null;
+  // Todos los desafíos con solución → página propia (uuids coma-separados).
+  const uuids = sbc.challenges.map((c) => c.solutionUuid).filter((u): u is string => !!u);
+  const internalSolution = uuids.length > 0 ? `/sbc/solucion/${uuids.join(",")}` : null;
+  const externalSolution = !internalSolution && sbc.url ? `https://www.fut.gg${sbc.url}` : null;
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40">
