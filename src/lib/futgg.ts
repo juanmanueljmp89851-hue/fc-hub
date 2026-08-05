@@ -411,3 +411,167 @@ export async function getSbcSolution(uuid: string): Promise<SbcSolution | null> 
     total: hasAnyPrice ? total : null,
   };
 }
+
+// ─── Detalle de jugador (sub-atributos, accelerate, precio) ───
+
+export interface PlayerSubStat {
+  name: string;
+  value: number;
+}
+
+export interface PlayerStatGroup {
+  group: string;
+  groupEs: string;
+  overall: number;
+  stats: PlayerSubStat[];
+}
+
+export interface PlayerDetail {
+  accelerateType: string | null;
+  totalIgs: number;
+  price: number | null;
+  isSbc: boolean;
+  sbcPrice: number | null;
+  foot: string | null;
+  weakFoot: number | null;
+  skillMoves: number | null;
+  height: number | null;
+  statGroups: PlayerStatGroup[];
+  playStyleIds: number[];
+  playStylePlusIds: number[];
+  rolesPlusPlus: number[];
+}
+
+const STAT_GROUP_ES: Record<string, string> = {
+  PACE: "Ritmo",
+  SHOOTING: "Tiro",
+  PASSING: "Pase",
+  DRIBBLING: "Regate",
+  DEFENDING: "Defensa",
+  PHYSICALITY: "Físico",
+};
+
+const STAT_NAME_ES: Record<string, string> = {
+  Acceleration: "Aceleración",
+  "Sprint Speed": "Velocidad",
+  Positioning: "Posición",
+  Finishing: "Definición",
+  "Shot Power": "Potencia",
+  "Long Shots": "Tiro lejano",
+  Volleys: "Voleas",
+  Penalties: "Penales",
+  Vision: "Visión",
+  Crossing: "Centros",
+  "FK Accuracy": "Tiro libre",
+  "Short Passing": "Pase corto",
+  "Long Passing": "Pase largo",
+  Curve: "Efecto",
+  Agility: "Agilidad",
+  Balance: "Equilibrio",
+  Reactions: "Reacciones",
+  "Ball Control": "Control",
+  Dribbling: "Regate",
+  Composure: "Compostura",
+  Interceptions: "Intercepciones",
+  "Heading Accuracy": "Cabezazo",
+  "Defensive Awareness": "Marcaje",
+  "Standing Tackle": "Entrada",
+  "Sliding Tackle": "Barrida",
+  Jumping: "Salto",
+  Stamina: "Resistencia",
+  Strength: "Fuerza",
+  Aggression: "Agresividad",
+};
+
+interface RawStatGroupEntry {
+  stats: { name: string; value: number }[];
+  groupOverall: number;
+}
+
+interface RawPlayerDetail {
+  data: {
+    attributeGroups?: Record<string, RawStatGroupEntry>;
+    currentPrice?: number | null;
+    isSbc?: boolean;
+    sbcPrice?: number | null;
+    foot?: string | null;
+    weakFoot?: number | null;
+    skillMoves?: number | null;
+  };
+}
+
+// ─── Community Chemistry Styles (votación de fut.gg) ───
+
+const CHEM_STYLE_NAMES: Record<number, string> = {
+  1: "Basic", 2: "Sniper", 3: "Finisher", 4: "Deadeye", 5: "Marksman",
+  6: "Hawk", 7: "Artist", 8: "Architect", 9: "Powerhouse", 10: "Maestro",
+  11: "Engine", 12: "Sentinel", 13: "Guardian", 14: "Gladiator", 15: "Backbone",
+  16: "Anchor", 17: "Hunter", 18: "Catalyst", 19: "Shadow",
+  // GK
+  20: "Wall", 21: "Shield", 22: "Cat", 23: "Glove", 24: "GK Basic",
+};
+
+export interface ChemStyleVote {
+  id: number;
+  name: string;
+  pct: number;
+}
+
+export async function getCommunityChemStyles(eaId: number): Promise<ChemStyleVote[]> {
+  const raw = await fetchJson<{ data: { top3ChemistryStyles: [number, number][] } }>(
+    `https://www.fut.gg/api/fut/players/26/${eaId}/chemistry-style/`,
+  );
+  if (!raw?.data?.top3ChemistryStyles) return [];
+  return raw.data.top3ChemistryStyles.map(([id, pct]) => ({
+    id,
+    name: CHEM_STYLE_NAMES[id] ?? `Style ${id}`,
+    pct,
+  }));
+}
+
+export async function getPlayerDetail(eaId: number): Promise<PlayerDetail | null> {
+  const raw = await fetchJson<RawPlayerDetail>(
+    `https://www.fut.gg/api/fut/player-items/26-${eaId}/`,
+  );
+  if (!raw?.data?.attributeGroups) return null;
+
+  const bulk = await fetchJson<{ data: { accelerateType?: string; totalIgs?: number; playStyleEaIds?: number[]; playStylePlusEaIds?: number[]; rolesPlusPlus?: number[] }[] }>(
+    `https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`,
+  );
+  const bulkData = bulk?.data?.[0];
+
+  const groupOrder = ["PACE", "SHOOTING", "PASSING", "DRIBBLING", "DEFENDING", "PHYSICALITY"];
+  const statGroups: PlayerStatGroup[] = [];
+  let totalIgs = 0;
+
+  for (const key of groupOrder) {
+    const g = raw.data.attributeGroups[key];
+    if (!g) continue;
+    const stats = g.stats.map((s) => {
+      totalIgs += s.value;
+      return { name: STAT_NAME_ES[s.name] ?? s.name, value: s.value };
+    });
+    statGroups.push({
+      group: key,
+      groupEs: STAT_GROUP_ES[key] ?? key,
+      overall: g.groupOverall,
+      stats,
+    });
+  }
+
+  return {
+    accelerateType: bulkData?.accelerateType ?? null,
+    totalIgs: bulkData?.totalIgs ?? totalIgs,
+    price: raw.data.currentPrice ?? null,
+    isSbc: raw.data.isSbc ?? false,
+    sbcPrice: raw.data.sbcPrice ?? null,
+    foot: raw.data.foot ?? null,
+    weakFoot: raw.data.weakFoot ?? null,
+    skillMoves: raw.data.skillMoves ?? null,
+    height: null,
+    statGroups,
+    playStyleIds: bulkData?.playStyleEaIds ?? [],
+    playStylePlusIds: bulkData?.playStylePlusEaIds ?? [],
+    rolesPlusPlus: bulkData?.rolesPlusPlus ?? [],
+  };
+}
