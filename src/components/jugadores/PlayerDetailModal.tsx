@@ -1,6 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import type { FutPlayer } from "@/types/player";
+
+function toSlug(name: string, eaId: number): string {
+  return `${name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}-${eaId}`;
+}
 
 function formatPrice(price?: number): string {
   if (!price) return "—";
@@ -150,24 +155,35 @@ export function PlayerDetailModal({ player, onClose }: Props) {
           ))}
         </div>
 
-        {/* External links */}
-        <div className="mt-4 flex gap-2">
-          <a
-            href={`https://www.futbin.com/players?search=${encodeURIComponent(player.commonName ?? player.name)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 rounded-lg bg-[#1a2332] px-3 py-2 text-center text-xs font-bold text-[#57c7ff] transition-opacity hover:opacity-80"
-          >
-            Ver en FUTBIN →
-          </a>
-          <a
-            href={`https://www.fut.gg/players/?q=${encodeURIComponent(player.commonName ?? player.name)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 rounded-lg bg-[#0f1923] px-3 py-2 text-center text-xs font-bold text-[#00ff87] transition-opacity hover:opacity-80"
-          >
-            Ver en FUT.GG →
-          </a>
+        {/* Link to card page */}
+        <div className="mt-4">
+          {player.eaId ? (
+            <Link
+              href={`/carta/${toSlug(player.commonName ?? player.name, player.eaId)}`}
+              className="block w-full rounded-lg bg-accent/10 px-3 py-2.5 text-center text-sm font-bold text-accent transition-opacity hover:opacity-80"
+            >
+              Ver carta completa →
+            </Link>
+          ) : (
+            <div className="flex gap-2">
+              <a
+                href={`https://www.futbin.com/players?search=${encodeURIComponent(player.commonName ?? player.name)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-lg bg-[#1a2332] px-3 py-2 text-center text-xs font-bold text-[#57c7ff] transition-opacity hover:opacity-80"
+              >
+                Ver en FUTBIN →
+              </a>
+              <a
+                href={`https://www.fut.gg/players/?q=${encodeURIComponent(player.commonName ?? player.name)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-lg bg-[#0f1923] px-3 py-2 text-center text-xs font-bold text-[#00ff87] transition-opacity hover:opacity-80"
+              >
+                Ver en FUT.GG →
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>
