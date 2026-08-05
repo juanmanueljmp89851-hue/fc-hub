@@ -77,7 +77,7 @@ const POS_ES: Record<string, string> = {
   GK: "POR", RB: "LD", RWB: "CDD", CB: "DFC", LB: "LI", LWB: "CDI",
   CDM: "MCD", CM: "MC", CAM: "MCO", RM: "MD", LM: "MI",
   RW: "ED", LW: "EI", RF: "DLD", LF: "DLI", CF: "MP",
-  ST: "DC", RB: "LD", LB: "LI",
+  ST: "DC",
 };
 
 const FOOT_ES: Record<string, string> = {
@@ -373,7 +373,7 @@ export default async function CartaPage({ params }: { params: { slug: string } }
         {/* Comentarios */}
         <CardComments
           cardEaId={c.eaId}
-          initialComments={comments as Parameters<typeof CardComments>[0]["initialComments"]}
+          initialComments={comments as unknown as Parameters<typeof CardComments>[0]["initialComments"]}
           currentUserId={currentUserId}
         />
       </main>

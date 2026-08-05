@@ -153,7 +153,7 @@ export function CardComments({
     startTransition(async () => {
       const { getCardComments } = await import("@/lib/actions/card-comments");
       const fresh = await getCardComments(cardEaId);
-      setComments(fresh as Comment[]);
+      setComments(fresh as unknown as Comment[]);
     });
   };
 
