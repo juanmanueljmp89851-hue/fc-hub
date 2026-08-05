@@ -61,6 +61,7 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
             className="h-40 w-auto object-contain drop-shadow-lg"
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
           />
         ) : (
           <div className="flex h-40 w-28 items-center justify-center rounded-lg bg-surface-light text-3xl">🎁</div>

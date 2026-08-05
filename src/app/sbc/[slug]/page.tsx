@@ -123,6 +123,7 @@ export default async function SbcDetailPage({ params }: { params: { slug: string
                 alt={sbc.name}
                 className="mx-auto h-44 w-auto object-contain drop-shadow-lg sm:mx-0"
                 loading="lazy"
+                referrerPolicy="no-referrer"
               />
             )}
             <div className="flex-1">
