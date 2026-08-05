@@ -169,11 +169,7 @@ export function CardComments({
   };
 
   return (
-    <section className="mt-10">
-      <h2 className="mb-4 text-lg font-bold">
-        Comentarios {comments.length > 0 && <span className="text-foreground/40">({comments.length})</span>}
-      </h2>
-
+    <div>
       {currentUserId ? (
         <div className="mb-6 flex gap-3">
           <input
@@ -212,6 +208,6 @@ export function CardComments({
           ))}
         </div>
       )}
-    </section>
+    </div>
   );
 }

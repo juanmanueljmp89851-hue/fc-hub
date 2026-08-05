@@ -336,11 +336,29 @@ export default async function CartaPage({ params }: { params: { slug: string } }
                 ))}
               </div>
               <p className="mt-3 text-center text-[11px] text-foreground/30">
-                Votación de la comunidad en fut.gg
+                Votación de la comunidad
               </p>
             </div>
           </section>
         )}
+
+        {/* Comentarios */}
+        <section className="mt-10">
+          <div className="mb-4 flex items-center gap-3">
+            <h2 className="text-lg font-bold">Comentarios</h2>
+            <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-[11px] font-bold text-accent">
+              Dejá tu opinión
+            </span>
+          </div>
+          <p className="mb-4 text-sm text-foreground/50">
+            ¿Qué te parece esta carta? ¿La usaste? Contale a la comunidad tu experiencia.
+          </p>
+          <CardComments
+            cardEaId={c.eaId}
+            initialComments={comments as unknown as Parameters<typeof CardComments>[0]["initialComments"]}
+            currentUserId={currentUserId}
+          />
+        </section>
 
         {/* Otras versiones */}
         {otherVersions.length > 0 && (
@@ -369,13 +387,6 @@ export default async function CartaPage({ params }: { params: { slug: string } }
             </div>
           </section>
         )}
-
-        {/* Comentarios */}
-        <CardComments
-          cardEaId={c.eaId}
-          initialComments={comments as unknown as Parameters<typeof CardComments>[0]["initialComments"]}
-          currentUserId={currentUserId}
-        />
       </main>
     </div>
   );

@@ -503,12 +503,12 @@ interface RawPlayerDetail {
 // ─── Community Chemistry Styles (votación de fut.gg) ───
 
 const CHEM_STYLE_NAMES: Record<number, string> = {
-  1: "Basic", 2: "Sniper", 3: "Finisher", 4: "Deadeye", 5: "Marksman",
-  6: "Hawk", 7: "Artist", 8: "Architect", 9: "Powerhouse", 10: "Maestro",
-  11: "Engine", 12: "Sentinel", 13: "Guardian", 14: "Gladiator", 15: "Backbone",
-  16: "Anchor", 17: "Hunter", 18: "Catalyst", 19: "Shadow",
-  // GK
-  20: "Wall", 21: "Shield", 22: "Cat", 23: "Glove", 24: "GK Basic",
+  1: "Básico", 2: "Francotirador", 3: "Finalizador", 4: "Certero", 5: "Tirador",
+  6: "Halcón", 7: "Artista", 8: "Arquitecto", 9: "Potencia", 10: "Maestro",
+  11: "Motor", 12: "Centinela", 13: "Guardián", 14: "Gladiador", 15: "Columna",
+  16: "Ancla", 17: "Cazador", 18: "Catalizador", 19: "Sombra",
+  // POR
+  20: "Muro", 21: "Escudo", 22: "Gato", 23: "Guante", 24: "Básico POR",
 };
 
 export interface ChemStyleVote {
