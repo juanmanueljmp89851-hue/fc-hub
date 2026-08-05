@@ -46,16 +46,45 @@ export interface SbcSet {
   cheapestTotalPc: number | null;
 }
 
+interface RawAwardPlayer {
+  eaId: number;
+  commonName: string | null;
+  cardName: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  overall: number;
+  position?: string;
+  alternativePositions?: string[] | null;
+  rarityName: string | null;
+  imageUrl: string | null;
+  cardImageUrl?: string | null;
+  rarityImageUrl?: string | null;
+  isIcon?: boolean;
+  isHero?: boolean;
+  isSpecial?: boolean;
+  foot?: string | null;
+  weakFoot?: number | null;
+  skillMoves?: number | null;
+  height?: number | null;
+  price?: number | null;
+  hasPrice?: boolean;
+  createdAt?: string;
+  faceStatsV2?: {
+    facePace: number; faceShooting: number; facePassing: number;
+    faceDribbling: number; faceDefending: number; facePhysicality: number;
+    gkFaceDiving?: number; gkFaceHandling?: number; gkFaceKicking?: number;
+    gkFaceReflexes?: number; gkFaceSpeed?: number; gkFacePositioning?: number;
+  } | null;
+  club?: { name: string } | null;
+  league?: { name: string } | null;
+  nation?: { name: string } | null;
+}
+
 interface RawAward {
   pack?: string | null;
   evolutionName?: string | null;
-  player?: {
-    commonName: string | null;
-    cardName: string | null;
-    overall: number;
-    rarityName: string | null;
-    imageUrl: string | null;
-  } | null;
+  playerEaId?: number | null;
+  player?: RawAwardPlayer | null;
 }
 
 interface RawChallenge {
@@ -682,6 +711,24 @@ export interface LiveCard {
 }
 
 export async function getLatestCardsLive(pages = 3): Promise<LiveCard[]> {
+  const [apiCards, sbcCards] = await Promise.all([
+    fetchLivePages(pages),
+    getSbcRewardCards(),
+  ]);
+
+  const seen = new Set(apiCards.map((c) => c.eaId));
+  for (const sc of sbcCards) {
+    if (!seen.has(sc.eaId)) {
+      apiCards.push(sc);
+      seen.add(sc.eaId);
+    }
+  }
+
+  apiCards.sort((a, b) => b.promoOrder - a.promoOrder);
+  return apiCards;
+}
+
+async function fetchLivePages(pages: number): Promise<LiveCard[]> {
   const cards: LiveCard[] = [];
   for (let page = 1; page <= pages; page++) {
     const res = await fetchJson<LiveApiResponse>(
@@ -732,6 +779,66 @@ export async function getLatestCardsLive(pages = 3): Promise<LiveCard[]> {
     }
     if (res.next === null) break;
   }
-  cards.sort((a, b) => b.promoOrder - a.promoOrder);
+  return cards;
+}
+
+async function getSbcRewardCards(): Promise<LiveCard[]> {
+  const cards: LiveCard[] = [];
+  for (let page = 1; page <= 3; page++) {
+    const res = await fetchJson<SbcResponse>(`${SBC_API}?page=${page}`);
+    if (!res?.data?.length) break;
+    for (const sbc of res.data) {
+      if (sbc.isExpired) continue;
+      const allAwards = [
+        ...(sbc.awards ?? []),
+        ...(sbc.challenges ?? []).flatMap((c) => c.awards ?? []),
+      ];
+      for (const award of allAwards) {
+        const p = award.player;
+        if (!p?.eaId || !p.faceStatsV2 || !p.position) continue;
+        const fs = p.faceStatsV2;
+        const isGK = p.position === "GK";
+        const created = p.createdAt ?? new Date().toISOString();
+        const releaseDate = new Date(created);
+        const fullName = [p.firstName, p.lastName].filter(Boolean).join(" ").trim();
+        const name = p.commonName ?? (fullName || p.cardName || `Player ${p.eaId}`);
+        cards.push({
+          eaId: p.eaId,
+          name,
+          commonName: p.commonName ?? undefined,
+          overall: p.overall,
+          position: p.position,
+          altPositions: p.alternativePositions ?? [],
+          pace: fs.facePace,
+          shooting: fs.faceShooting,
+          passing: fs.facePassing,
+          dribbling: fs.faceDribbling,
+          defending: fs.faceDefending,
+          physical: fs.facePhysicality,
+          gkDiving: isGK ? fs.gkFaceDiving : undefined,
+          gkHandling: isGK ? fs.gkFaceHandling : undefined,
+          gkKicking: isGK ? fs.gkFaceKicking : undefined,
+          gkReflexes: isGK ? fs.gkFaceReflexes : undefined,
+          gkSpeed: isGK ? fs.gkFaceSpeed : undefined,
+          gkPositioning: isGK ? fs.gkFacePositioning : undefined,
+          club: p.club?.name ?? "",
+          league: p.league?.name ?? "",
+          nation: p.nation?.name ?? "",
+          cardType: liveMapCardType(p as unknown as FutggLivePlayer),
+          promo: p.rarityName ?? undefined,
+          promoOrder: Math.floor(releaseDate.getTime() / 60_000),
+          height: p.height ?? undefined,
+          foot: p.foot ?? undefined,
+          weakFoot: p.weakFoot ?? undefined,
+          skillMoves: p.skillMoves ?? undefined,
+          imageUrl: p.imageUrl ?? undefined,
+          cardBgImageUrl: p.rarityImageUrl ?? undefined,
+          cardFullUrl: p.cardImageUrl?.replace("width=300", "width=500") ?? undefined,
+          createdAt: created,
+        });
+      }
+    }
+    if (res.next === null || page >= res.totalPages) break;
+  }
   return cards;
 }
