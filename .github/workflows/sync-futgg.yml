@@ -2,8 +2,10 @@ name: Sync fut.gg Cards Daily
 
 on:
   schedule:
-    # 15:10 Argentina (UTC-3) = 18:10 UTC — después de la actualización del juego (15h AR)
-    - cron: "10 18 * * *"
+    # 16:00 Argentina (UTC-3) = 19:00 UTC — después del drop diario de EA (15h AR)
+    - cron: "0 19 * * *"
+    # 18:00 Argentina (UTC-3) = 21:00 UTC — segunda pasada para cartas tardías
+    - cron: "0 21 * * *"
   workflow_dispatch:
     inputs:
       days:
