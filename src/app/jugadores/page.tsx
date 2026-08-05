@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { getLatestCardsLive } from "@/lib/futgg";
 import { JugadoresClient } from "./JugadoresClient";
 import { AdSlot } from "@/components/ads/AdSlot";
 import type { FutPlayer } from "@/types/player";
@@ -19,14 +20,15 @@ export const metadata: Metadata = {
 };
 
 export default async function JugadoresPage() {
-  // Fetch cards from DB grouped by promo, newest first
-  const cards = await prisma.futCard.findMany({
-    orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
-    take: 1000,
-  });
+  const [cards, liveCards] = await Promise.all([
+    prisma.futCard.findMany({
+      orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
+      take: 1000,
+    }),
+    getLatestCardsLive(3).catch(() => []),
+  ]);
 
-  // Map Prisma model → FutPlayer type
-  const players: FutPlayer[] = cards.map((c) => ({
+  const dbPlayers: FutPlayer[] = cards.map((c) => ({
     id: c.id,
     eaId: c.eaId,
     name: c.name,
@@ -67,8 +69,52 @@ export default async function JugadoresPage() {
     addedAt: c.createdAt.toISOString(),
   }));
 
-  // Get unique promos in order (for filter dropdown)
-  const promos = [...new Set(cards.map((c) => c.promo).filter(Boolean))] as string[];
+  const dbEaIds = new Set(dbPlayers.map((c) => c.eaId));
+  const liveFut: FutPlayer[] = liveCards
+    .filter((lc) => !dbEaIds.has(lc.eaId))
+    .map((lc) => ({
+      id: `live-${lc.eaId}`,
+      eaId: lc.eaId,
+      name: lc.name,
+      commonName: lc.commonName,
+      position: lc.position,
+      alternatePositions: lc.altPositions,
+      overall: lc.overall,
+      pace: lc.pace,
+      shooting: lc.shooting,
+      passing: lc.passing,
+      dribbling: lc.dribbling,
+      defending: lc.defending,
+      physical: lc.physical,
+      gkDiving: lc.gkDiving,
+      gkHandling: lc.gkHandling,
+      gkKicking: lc.gkKicking,
+      gkReflexes: lc.gkReflexes,
+      gkSpeed: lc.gkSpeed,
+      gkPositioning: lc.gkPositioning,
+      club: lc.club,
+      league: lc.league,
+      nation: lc.nation,
+      cardType: lc.cardType as FutPlayer["cardType"],
+      promo: lc.promo,
+      promoOrder: lc.promoOrder,
+      height: lc.height,
+      foot: lc.foot,
+      weakFoot: lc.weakFoot,
+      skillMoves: lc.skillMoves,
+      imageUrl: lc.imageUrl,
+      cardBgImageUrl: lc.cardBgImageUrl,
+      cardFullUrl: lc.cardFullUrl,
+      pricePs: lc.pricePs,
+      pricePc: lc.pricePc,
+      addedAt: lc.createdAt,
+    }));
+
+  const players = [...liveFut, ...dbPlayers]
+    .sort((a, b) => (b.promoOrder ?? 0) - (a.promoOrder ?? 0));
+
+  const allPromos = [...new Set([...liveCards.map((c) => c.promo), ...cards.map((c) => c.promo)].filter(Boolean))] as string[];
+  const promos = allPromos;
 
   const jsonLd = {
     "@context": "https://schema.org",

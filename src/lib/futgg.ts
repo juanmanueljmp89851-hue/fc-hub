@@ -575,3 +575,163 @@ export async function getPlayerDetail(eaId: number): Promise<PlayerDetail | null
     rolesPlusPlus: bulkData?.rolesPlusPlus ?? [],
   };
 }
+
+// ─── Live card fetch (like SBC model — no DB, no cron) ───
+
+interface FutggLivePlayer {
+  eaId: number;
+  overall: number;
+  commonName: string | null;
+  cardName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  rarityName: string | null;
+  isIcon: boolean;
+  isHero: boolean;
+  isSpecial: boolean;
+  isEvolutionPlayerItem: boolean;
+  position: string;
+  alternativePositions: string[] | null;
+  foot: string | null;
+  weakFoot: number | null;
+  skillMoves: number | null;
+  height: number | null;
+  price: number | null;
+  hasPrice: boolean;
+  createdAt: string;
+  url: string | null;
+  imageUrl: string | null;
+  rarityImageUrl: string | null;
+  cardImageUrl: string | null;
+  faceStatsV2: {
+    facePace: number; faceShooting: number; facePassing: number;
+    faceDribbling: number; faceDefending: number; facePhysicality: number;
+    gkFaceDiving: number; gkFaceHandling: number; gkFaceKicking: number;
+    gkFaceReflexes: number; gkFaceSpeed: number; gkFacePositioning: number;
+  } | null;
+  club: { name: string } | null;
+  league: { name: string } | null;
+  nation: { name: string; countryCode: string } | null;
+}
+
+interface LiveApiResponse {
+  next: number | null;
+  currentPage: number;
+  total: number;
+  data: FutggLivePlayer[];
+}
+
+function liveMapCardType(p: FutggLivePlayer): string {
+  if (p.isIcon) return "icon";
+  if (p.isHero) return "hero";
+  const r = (p.rarityName ?? "").toLowerCase();
+  if (r.includes("tots") || r.includes("team of the season")) return "tots";
+  if (r.includes("toty") || r.includes("team of the year")) return "toty";
+  if (r.includes("end of") && r.includes("era")) return "end_of_era";
+  if (r.includes("path to glory")) return "path_to_glory";
+  if (r.includes("national pride") && r.includes("red")) return "national_pride_red";
+  if (r.includes("national pride")) return "national_pride";
+  if (r.includes("showdown")) return "showdown";
+  if (p.isSpecial) return "special";
+  if (r.includes("rare")) return "gold_rare";
+  if (r.includes("common")) return "gold_common";
+  return "gold_rare";
+}
+
+function liveDisplayName(p: FutggLivePlayer): string {
+  if (p.commonName) return p.commonName;
+  const full = [p.firstName, p.lastName].filter(Boolean).join(" ").trim();
+  return full || p.cardName || `Player ${p.eaId}`;
+}
+
+export interface LiveCard {
+  eaId: number;
+  name: string;
+  commonName?: string;
+  overall: number;
+  position: string;
+  altPositions: string[];
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
+  gkDiving?: number;
+  gkHandling?: number;
+  gkKicking?: number;
+  gkReflexes?: number;
+  gkSpeed?: number;
+  gkPositioning?: number;
+  club: string;
+  league: string;
+  nation: string;
+  cardType: string;
+  promo?: string;
+  promoOrder: number;
+  height?: number;
+  foot?: string;
+  weakFoot?: number;
+  skillMoves?: number;
+  imageUrl?: string;
+  cardBgImageUrl?: string;
+  cardFullUrl?: string;
+  pricePs?: number;
+  pricePc?: number;
+  createdAt: string;
+}
+
+export async function getLatestCardsLive(pages = 3): Promise<LiveCard[]> {
+  const cards: LiveCard[] = [];
+  for (let page = 1; page <= pages; page++) {
+    const res = await fetchJson<LiveApiResponse>(
+      `https://www.fut.gg/api/fut/players/v2/${GAME}/?page=${page}`,
+    );
+    if (!res?.data?.length) break;
+    for (const p of res.data) {
+      if (p.isEvolutionPlayerItem || !p.faceStatsV2) continue;
+      const fs = p.faceStatsV2;
+      const isGK = p.position === "GK";
+      const releaseDate = new Date(p.createdAt);
+      cards.push({
+        eaId: p.eaId,
+        name: liveDisplayName(p),
+        commonName: p.commonName ?? undefined,
+        overall: p.overall,
+        position: p.position,
+        altPositions: p.alternativePositions ?? [],
+        pace: fs.facePace,
+        shooting: fs.faceShooting,
+        passing: fs.facePassing,
+        dribbling: fs.faceDribbling,
+        defending: fs.faceDefending,
+        physical: fs.facePhysicality,
+        gkDiving: isGK ? fs.gkFaceDiving : undefined,
+        gkHandling: isGK ? fs.gkFaceHandling : undefined,
+        gkKicking: isGK ? fs.gkFaceKicking : undefined,
+        gkReflexes: isGK ? fs.gkFaceReflexes : undefined,
+        gkSpeed: isGK ? fs.gkFaceSpeed : undefined,
+        gkPositioning: isGK ? fs.gkFacePositioning : undefined,
+        club: p.club?.name ?? "",
+        league: p.league?.name ?? "",
+        nation: p.nation?.name ?? "",
+        cardType: liveMapCardType(p),
+        promo: p.rarityName ?? undefined,
+        promoOrder: Math.floor(releaseDate.getTime() / 60_000),
+        height: p.height ?? undefined,
+        foot: p.foot ?? undefined,
+        weakFoot: p.weakFoot ?? undefined,
+        skillMoves: p.skillMoves ?? undefined,
+        imageUrl: p.imageUrl ?? undefined,
+        cardBgImageUrl: p.rarityImageUrl ?? undefined,
+        cardFullUrl: p.cardImageUrl?.replace("width=300", "width=500") ?? undefined,
+        pricePs: p.hasPrice && p.price ? p.price : undefined,
+        pricePc: p.hasPrice && p.price ? p.price : undefined,
+        createdAt: p.createdAt,
+      });
+    }
+    if (res.next === null) break;
+  }
+  cards.sort((a, b) => b.promoOrder - a.promoOrder);
+  return cards;
+}

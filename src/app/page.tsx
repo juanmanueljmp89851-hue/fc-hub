@@ -18,6 +18,7 @@ import { LatestCards } from "@/components/home/LatestCards";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Onboarding } from "@/components/home/Onboarding";
 import { prisma } from "@/lib/db";
+import { getLatestCardsLive } from "@/lib/futgg";
 import type { FutPlayer } from "@/types/player";
 
 const quickLinks = [
@@ -48,15 +49,17 @@ const quickLinks = [
 ];
 
 export default async function HomePage() {
-  // Fetch top 15 cards — highest promoOrder first (featured/newest promos)
-  const latestRaw = await prisma.futCard.findMany({
-    orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
-    take: 15,
-  });
+  const [latestRaw, liveCards] = await Promise.all([
+    prisma.futCard.findMany({
+      orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
+      take: 15,
+    }),
+    getLatestCardsLive(3).catch(() => []),
+  ]);
 
   const lastUpdated = latestRaw[0]?.updatedAt?.toISOString() ?? null;
 
-  const latestCards: FutPlayer[] = latestRaw.map((c) => ({
+  const dbCards: FutPlayer[] = latestRaw.map((c) => ({
     id: c.id,
     eaId: c.eaId,
     name: c.name,
@@ -83,6 +86,50 @@ export default async function HomePage() {
     skillMoves: c.skillMoves ?? undefined,
     weakFoot: c.weakFoot ?? undefined,
   }));
+
+  const dbEaIds = new Set(dbCards.map((c) => c.eaId));
+  const liveFut: FutPlayer[] = liveCards
+    .filter((lc) => !dbEaIds.has(lc.eaId))
+    .map((lc) => ({
+      id: `live-${lc.eaId}`,
+      eaId: lc.eaId,
+      name: lc.name,
+      commonName: lc.commonName,
+      position: lc.position,
+      alternatePositions: lc.altPositions,
+      overall: lc.overall,
+      pace: lc.pace,
+      shooting: lc.shooting,
+      passing: lc.passing,
+      dribbling: lc.dribbling,
+      defending: lc.defending,
+      physical: lc.physical,
+      gkDiving: lc.gkDiving,
+      gkHandling: lc.gkHandling,
+      gkKicking: lc.gkKicking,
+      gkReflexes: lc.gkReflexes,
+      gkSpeed: lc.gkSpeed,
+      gkPositioning: lc.gkPositioning,
+      club: lc.club,
+      league: lc.league,
+      nation: lc.nation,
+      cardType: lc.cardType as FutPlayer["cardType"],
+      promo: lc.promo,
+      promoOrder: lc.promoOrder,
+      height: lc.height,
+      foot: lc.foot,
+      weakFoot: lc.weakFoot,
+      skillMoves: lc.skillMoves,
+      imageUrl: lc.imageUrl,
+      cardBgImageUrl: lc.cardBgImageUrl,
+      cardFullUrl: lc.cardFullUrl,
+      pricePs: lc.pricePs,
+      pricePc: lc.pricePc,
+    }));
+
+  const latestCards = [...liveFut, ...dbCards]
+    .sort((a, b) => (b.promoOrder ?? 0) - (a.promoOrder ?? 0))
+    .slice(0, 15);
 
   return (
     <div className="min-h-screen">
