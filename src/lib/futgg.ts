@@ -28,6 +28,7 @@ export interface SbcSet {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  iconUrl: string | null;
   cost: number;
   costPc: number;
   endTime: string | null;
@@ -72,6 +73,7 @@ interface RawSbc {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  imagePath: string | null;
   cost: number;
   costPc: number;
   endTime: string | null;
@@ -218,6 +220,9 @@ function mapSbc(r: RawSbc): SbcSet {
     name: r.name,
     description: translateDesc(r.description),
     imageUrl: r.imageUrl,
+    iconUrl: r.imagePath
+      ? `https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/${r.imagePath}`
+      : null,
     cost: r.cost,
     costPc: r.costPc,
     endTime: r.endTime,

@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { FutCard } from "@/components/jugadores/FutCard";
+import { SolutionPitch } from "@/components/sbc/SolutionPitch";
 import { getSbcSolution, type SbcSolution } from "@/lib/futgg";
-import type { FutPlayer } from "@/types/player";
 
 export const dynamic = "force-dynamic";
 
@@ -18,47 +17,6 @@ function fmtCoins(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(2).replace(/\.?0+$/, "") + "M";
   if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
   return String(n);
-}
-
-function toFutPlayer(p: SbcSolution["players"][number]): FutPlayer {
-  return {
-    id: String(p.eaId),
-    eaId: p.eaId,
-    name: p.name,
-    commonName: p.commonName,
-    position: p.position,
-    alternatePositions: [],
-    overall: p.overall,
-    pace: p.pace,
-    shooting: p.shooting,
-    passing: p.passing,
-    dribbling: p.dribbling,
-    defending: p.defending,
-    physical: p.physical,
-    club: p.club,
-    league: p.league,
-    nation: p.nation,
-    cardType: "special",
-    cardFullUrl: p.cardFullUrl,
-    imageUrl: p.imageUrl,
-    skillMoves: p.skillMoves,
-    weakFoot: p.weakFoot,
-  };
-}
-
-function SquadGrid({ sol }: { sol: SbcSolution }) {
-  return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-      {sol.players.map((p) => (
-        <div key={p.eaId} className="flex flex-col items-center gap-1.5">
-          <FutCard player={toFutPlayer(p)} size="sm" />
-          <span className="text-xs font-medium text-gold">
-            {p.price != null ? fmtCoins(p.price) : "—"}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
 }
 
 export default async function SolucionPage({ params }: { params: { uuid: string } }) {
@@ -112,12 +70,12 @@ export default async function SolucionPage({ params }: { params: { uuid: string 
                     <span className="text-sm font-bold text-gold">{fmtCoins(sol.total)}</span>
                   )}
                 </div>
-                <SquadGrid sol={sol} />
+                <SolutionPitch players={sol.players} />
               </section>
             ))}
           </div>
         ) : (
-          <SquadGrid sol={sols[0]} />
+          <SolutionPitch players={sols[0].players} />
         )}
 
         <p className="mt-6 text-center text-[11px] text-foreground/30">

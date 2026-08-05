@@ -53,10 +53,10 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
 
       {/* Reward player image */}
       <div className="flex items-center justify-center bg-gradient-to-b from-surface-light/30 to-transparent px-4 pt-6 pb-2">
-        {sbc.imageUrl ? (
+        {sbc.imageUrl ?? sbc.iconUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={sbc.imageUrl}
+            src={(sbc.imageUrl ?? sbc.iconUrl)!}
             alt={sbc.rewardPlayer?.commonName ?? sbc.name}
             className="h-40 w-auto object-contain drop-shadow-lg"
             loading="lazy"

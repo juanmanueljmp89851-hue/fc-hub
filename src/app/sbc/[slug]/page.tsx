@@ -116,10 +116,10 @@ export default async function SbcDetailPage({ params }: { params: { slug: string
           </div>
 
           <div className="flex flex-col gap-4 p-5 sm:flex-row">
-            {sbc.imageUrl && (
+            {(sbc.imageUrl ?? sbc.iconUrl) && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={sbc.imageUrl}
+                src={(sbc.imageUrl ?? sbc.iconUrl)!}
                 alt={sbc.name}
                 className="mx-auto h-44 w-auto object-contain drop-shadow-lg sm:mx-0"
                 loading="lazy"
