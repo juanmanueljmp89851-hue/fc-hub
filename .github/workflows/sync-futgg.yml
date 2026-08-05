@@ -2,8 +2,8 @@ name: Sync fut.gg Cards Daily
 
 on:
   schedule:
-    # 15:30 Argentina (UTC-3) = 18:30 UTC — después de la actualización del juego (15h AR)
-    - cron: "30 18 * * *"
+    # 15:10 Argentina (UTC-3) = 18:10 UTC — después de la actualización del juego (15h AR)
+    - cron: "10 18 * * *"
   workflow_dispatch:
     inputs:
       days:
