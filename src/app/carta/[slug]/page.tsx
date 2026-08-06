@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { FutCard } from "@/components/jugadores/FutCard";
 import { prisma } from "@/lib/db";
-import { getPlayerDetail, getCommunityChemStyles, type PlayerStatGroup } from "@/lib/futgg";
+import { getPlayerDetail, getCommunityChemStyles, getCardFromApi, type PlayerStatGroup, type ApiCard } from "@/lib/futgg";
 import { getCardComments } from "@/lib/actions/card-comments";
 import { CardComments } from "@/components/cartas/CardComments";
 import { createClient } from "@/lib/supabase/server";
@@ -21,17 +21,25 @@ function eaIdFromSlug(slug: string): number | null {
 async function getCard(slug: string) {
   const eaId = eaIdFromSlug(slug);
   if (eaId == null) return null;
-  return prisma.futCard.findFirst({ where: { eaId } });
+  const dbCard = await prisma.futCard.findFirst({ where: { eaId } });
+  if (dbCard) return dbCard;
+  return getCardFromApi(eaId);
 }
+
+type CardData = NonNullable<Awaited<ReturnType<typeof prisma.futCard.findFirst>>> | ApiCard;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const c = await getCard(params.slug);
   if (!c) return { title: "Carta no encontrada | Modo Fosa" };
-  const title = `${c.name} ${c.overall} ${c.position}${c.promo ? ` — ${c.promo}` : ""} | EA FC 26`;
+  const name = "commonName" in c && c.commonName ? c.commonName : c.name;
+  const pos = c.position;
+  const promo = c.promo;
+  const title = `${name} ${c.overall} ${pos}${promo ? ` — ${promo}` : ""} | EA FC 26`;
+  const img = c.cardFullUrl || c.imageUrl;
   return {
     title,
-    description: `${c.name} ${c.overall} (${c.position}) de EA FC 26: stats, precio, club, liga y nación. ${c.promo ?? ""}`.trim(),
-    openGraph: { title, images: c.cardFullUrl || c.imageUrl ? [c.cardFullUrl || c.imageUrl!] : [] },
+    description: `${name} ${c.overall} (${pos}) de EA FC 26: stats, precio, club, liga y nación. ${promo ?? ""}`.trim(),
+    openGraph: { title, images: img ? [img] : [] },
   };
 }
 

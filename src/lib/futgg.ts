@@ -359,16 +359,26 @@ interface RawPlayerItem {
   cardName: string | null;
   overall: number;
   position: string;
+  alternativePositions?: string[] | null;
   faceStatsV2: FutggFaceStats | null;
   club: { name: string } | null;
   league: { name: string } | null;
   nation: { name: string } | null;
   skillMoves: number | null;
   weakFoot: number | null;
+  foot?: string | null;
+  height?: number | null;
   cardImageUrl: string | null;
   imageUrl: string | null;
+  rarityImageUrl?: string | null;
+  rarityName?: string | null;
+  isIcon?: boolean;
+  isHero?: boolean;
+  isSpecial?: boolean;
+  isSbc?: boolean;
   price: number | null;
   hasPrice: boolean;
+  createdAt?: string;
 }
 interface FutggFaceStats {
   facePace: number; faceShooting: number; facePassing: number;
@@ -841,4 +851,97 @@ async function getSbcRewardCards(): Promise<LiveCard[]> {
     if (res.next === null || page >= res.totalPages) break;
   }
   return cards;
+}
+
+export interface ApiCard {
+  id: string;
+  eaId: number;
+  name: string;
+  commonName: string | null;
+  position: string;
+  altPositions: string[];
+  overall: number;
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
+  gkDiving: number | null;
+  gkHandling: number | null;
+  gkKicking: number | null;
+  gkReflexes: number | null;
+  gkSpeed: number | null;
+  gkPositioning: number | null;
+  club: string;
+  league: string;
+  nation: string;
+  cardType: string;
+  promo: string | null;
+  promoOrder: number;
+  height: number | null;
+  foot: string | null;
+  weakFoot: number | null;
+  skillMoves: number | null;
+  imageUrl: string | null;
+  cardImageId: string | null;
+  cardBgImageUrl: string | null;
+  cardFullUrl: string | null;
+  pricePs: number | null;
+  pricePc: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getCardFromApi(eaId: number): Promise<ApiCard | null> {
+  const bulk = await fetchJson<{ data: RawPlayerItem[] }>(
+    `https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`,
+  );
+  const p = bulk?.data?.[0];
+  if (!p?.faceStatsV2) return null;
+
+  const fs = p.faceStatsV2;
+  const isGK = p.position === "GK";
+  const name = p.commonName ?? ([p.firstName, p.lastName].filter(Boolean).join(" ").trim() || p.cardName || `Player ${eaId}`);
+  const created = p.createdAt ? new Date(p.createdAt) : new Date();
+
+  return {
+    id: `api-${eaId}`,
+    eaId,
+    name,
+    commonName: p.commonName,
+    position: p.position,
+    altPositions: p.alternativePositions ?? [],
+    overall: p.overall,
+    pace: fs.facePace,
+    shooting: fs.faceShooting,
+    passing: fs.facePassing,
+    dribbling: fs.faceDribbling,
+    defending: fs.faceDefending,
+    physical: fs.facePhysicality,
+    gkDiving: isGK ? (fs as unknown as Record<string, number>).gkFaceDiving ?? null : null,
+    gkHandling: isGK ? (fs as unknown as Record<string, number>).gkFaceHandling ?? null : null,
+    gkKicking: isGK ? (fs as unknown as Record<string, number>).gkFaceKicking ?? null : null,
+    gkReflexes: isGK ? (fs as unknown as Record<string, number>).gkFaceReflexes ?? null : null,
+    gkSpeed: isGK ? (fs as unknown as Record<string, number>).gkFaceSpeed ?? null : null,
+    gkPositioning: isGK ? (fs as unknown as Record<string, number>).gkFacePositioning ?? null : null,
+    club: p.club?.name ?? "",
+    league: p.league?.name ?? "",
+    nation: p.nation?.name ?? "",
+    cardType: p.isIcon ? "icon" : p.isHero ? "hero" : p.isSpecial ? "special" : "gold_rare",
+    promo: p.rarityName ?? null,
+    promoOrder: Math.floor(created.getTime() / 60_000),
+    height: p.height ?? null,
+    foot: p.foot ?? null,
+    weakFoot: p.weakFoot,
+    skillMoves: p.skillMoves,
+    imageUrl: p.imageUrl,
+    cardImageId: null,
+    cardBgImageUrl: p.rarityImageUrl ?? null,
+    cardFullUrl: p.cardImageUrl?.replace("width=300", "width=500") ?? null,
+    pricePs: p.hasPrice && p.price ? p.price : null,
+    pricePc: p.hasPrice && p.price ? p.price : null,
+    createdAt: created,
+    updatedAt: created,
+  };
 }
