@@ -89,13 +89,22 @@ function tLabel(label: unknown): string {
 
 // Traduce valores: "Max 95" → "Máx 95", "+30 (max 96)" → "+30 (máx 96)", "Any" → "Cualquier".
 // Coerce a string: algunos valores de la API vienen como número.
+const POS_ES: Record<string, string> = {
+  GK: "POR", CB: "DFC", LB: "LI", RB: "LD", LWB: "CAI", RWB: "CAD",
+  CDM: "MCD", CM: "MC", CAM: "MCO", LM: "MI", RM: "MD",
+  LW: "EI", RW: "ED", LF: "II", RF: "ID", CF: "MP",
+  ST: "DC", SW: "LIB",
+};
+
 function tValue(value: unknown): string {
   return String(value ?? "")
     .replace(/\bMax\b/g, "Máx")
     .replace(/\bmax\b/g, "máx")
     .replace(/\bMin\b/g, "Mín")
     .replace(/\bmin\b/g, "mín")
-    .replace(/\bAny\b/g, "Cualquier");
+    .replace(/\bAny\b/g, "Cualquier")
+    .replace(/\b(GK|CB|LB|RB|LWB|RWB|CDM|CM|CAM|LM|RM|LW|RW|LF|RF|CF|ST|SW)\b/g,
+      (m) => POS_ES[m] ?? m);
 }
 
 // ─── Tipos ───────────────────────────────────────────────────
@@ -105,6 +114,21 @@ export interface EvoRow {
   value: string;
 }
 
+export interface EvoPlayer {
+  name: string;
+  overall: number;
+  position: string;
+  imageUrl: string;
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
+  skillMoves: number;
+  weakFoot: number;
+}
+
 export interface Evolution {
   id: number;
   name: string;
@@ -112,14 +136,29 @@ export interface Evolution {
   state: string;
   isNew: boolean;
   endTime: number | null; // unix seconds
+  costCoins: number;
+  costXp: number;
   requirements: EvoRow[];
   upgrades: EvoRow[];
+  basePlayer: EvoPlayer | null;
+  evoPlayer: EvoPlayer | null;
 }
 
 interface RawRow {
   label: string;
   value: string;
   type?: string;
+}
+interface RawPlayer {
+  resourceId: number;
+  cardName: string;
+  name: string;
+  rating: number;
+  attributes: number[];
+  preferredPosition: string;
+  playerUrl: string;
+  skillMoves: number;
+  weakFoot: number;
 }
 interface RawEvo {
   id: number;
@@ -129,8 +168,10 @@ interface RawEvo {
   expired: boolean;
   newEvolution: boolean;
   endTime: number | null;
+  cost: { coins: number; points: number } | null;
   requirements: RawRow[] | null;
   upgrades: RawRow[] | null;
+  topPlayers: { basePlayer: RawPlayer; evolutionPlayer: RawPlayer }[] | null;
 }
 interface RawResponse {
   categories: { id: number; name: string }[];
@@ -156,10 +197,30 @@ export async function getEvolutions(): Promise<Evolution[]> {
 
   const catName = new Map(json.categories.map((c) => [c.id, c.name]));
 
+  function mapPlayer(p: RawPlayer | undefined): EvoPlayer | null {
+    if (!p) return null;
+    const attrs = p.attributes ?? [];
+    return {
+      name: p.cardName || p.name,
+      overall: p.rating,
+      position: p.preferredPosition,
+      imageUrl: p.playerUrl,
+      pace: attrs[0] ?? 0,
+      shooting: attrs[1] ?? 0,
+      passing: attrs[2] ?? 0,
+      dribbling: attrs[3] ?? 0,
+      defending: attrs[4] ?? 0,
+      physical: attrs[5] ?? 0,
+      skillMoves: p.skillMoves ?? 0,
+      weakFoot: p.weakFoot ?? 0,
+    };
+  }
+
   return json.evolutions
     .filter((e) => !e.expired)
     .map((e) => {
       const rawCat = catName.get(e.categoryId) ?? "Evoluciones";
+      const top = e.topPlayers?.[0];
       return {
         id: e.id,
         name: e.name,
@@ -167,6 +228,8 @@ export async function getEvolutions(): Promise<Evolution[]> {
         state: STATE_ES[e.state] ?? e.state,
         isNew: e.newEvolution,
         endTime: e.endTime,
+        costCoins: e.cost?.coins ?? 0,
+        costXp: e.cost?.points ?? 0,
         requirements: (e.requirements ?? []).map((r) => ({
           label: tLabel(r.label),
           value: tValue(r.value),
@@ -175,6 +238,8 @@ export async function getEvolutions(): Promise<Evolution[]> {
           label: tLabel(u.label),
           value: tValue(u.value),
         })),
+        basePlayer: mapPlayer(top?.basePlayer),
+        evoPlayer: mapPlayer(top?.evolutionPlayer),
       };
     })
     .sort((a, b) => Number(b.isNew) - Number(a.isNew));

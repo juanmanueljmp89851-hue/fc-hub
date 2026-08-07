@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
-import { getEvolutions, type Evolution } from "@/lib/easysbc";
+import { getEvolutions, type Evolution, type EvoPlayer } from "@/lib/easysbc";
 
-export const dynamic = "force-dynamic"; // API externa: render por request, sin prerender en build
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Evoluciones — EA FC 26 | Modo Fosa",
@@ -22,8 +22,62 @@ function timeLeft(endTime: number | null): string | null {
   return `${h}h ${m}m`;
 }
 
+function fmtCoins(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1_000) return Math.round(n / 1_000).toLocaleString("es-AR") + "K";
+  return n.toLocaleString("es-AR");
+}
+
+const STAT_LABELS = ["RIT", "TIR", "PAS", "REG", "DEF", "FÍS"];
+
+const POS_ES: Record<string, string> = {
+  GK: "POR", CB: "DFC", LB: "LI", RB: "LD", LWB: "CAI", RWB: "CAD",
+  CDM: "MCD", CM: "MC", CAM: "MCO", LM: "MI", RM: "MD",
+  LW: "EI", RW: "ED", LF: "II", RF: "ID", CF: "MP",
+  ST: "DC", SW: "LIB",
+};
+function tPos(pos: string): string {
+  return POS_ES[pos] ?? pos;
+}
+
+function MiniCard({ player, label }: { player: EvoPlayer; label: string }) {
+  const stats = [player.pace, player.shooting, player.passing, player.dribbling, player.defending, player.physical];
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-[9px] font-bold uppercase tracking-wider text-foreground/40">{label}</span>
+      <div className="relative flex w-[110px] flex-col items-center rounded-lg border border-surface-light bg-gradient-to-b from-surface-light/40 to-surface/20 p-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={player.imageUrl}
+          alt={player.name}
+          className="h-20 w-auto object-contain drop-shadow-md"
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+        />
+        <span className="mt-1 text-lg font-black leading-none text-accent">{player.overall}</span>
+        <span className="text-[10px] font-bold text-foreground/60">{tPos(player.position)}</span>
+        <div className="mt-1.5 grid w-full grid-cols-3 gap-x-2 gap-y-0.5">
+          {stats.map((s, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <span className="text-[8px] text-foreground/30">{STAT_LABELS[i]}</span>
+              <span className="text-[10px] font-bold text-foreground/80">{s}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-1 flex gap-2 text-[9px] text-foreground/40">
+          <span>R {player.skillMoves}</span>
+          <span>★ {player.weakFoot}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EvoCard({ evo }: { evo: Evolution }) {
   const vence = timeLeft(evo.endTime);
+  const hasPlayers = evo.basePlayer && evo.evoPlayer;
+
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40">
       {/* Header */}
@@ -37,13 +91,36 @@ function EvoCard({ evo }: { evo: Evolution }) {
           </span>
         </div>
         <h3 className="text-sm font-bold leading-tight">{evo.name}</h3>
-        {vence && (
-          <p className="mt-1 text-[11px] text-foreground/40">Vence en {vence}</p>
-        )}
+        <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[11px]">
+          {vence && (
+            <span className="text-foreground/40">⏱ {vence}</span>
+          )}
+          {(evo.costCoins > 0 || evo.costXp > 0) && (
+            <div className="flex items-center gap-2">
+              {evo.costCoins > 0 && (
+                <span className="font-bold text-gold">{fmtCoins(evo.costCoins)}</span>
+              )}
+              {evo.costXp > 0 && (
+                <span className="font-bold text-blue-400">{evo.costXp.toLocaleString("es-AR")} XP</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Player cards: before → after */}
+      {hasPlayers && (
+        <div className="flex items-center justify-center gap-3 border-b border-surface-light bg-gradient-to-b from-surface-light/10 to-transparent px-3 py-4">
+          <MiniCard player={evo.basePlayer!} label="ANTES" />
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-lg text-accent">→</span>
+          </div>
+          <MiniCard player={evo.evoPlayer!} label="DESPUÉS" />
+        </div>
+      )}
+
+      {/* Requirements + Upgrades */}
       <div className="grid flex-1 gap-3 p-4 sm:grid-cols-2">
-        {/* Requisitos */}
         <div>
           <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-foreground/40">Requisitos</h4>
           {evo.requirements.length === 0 ? (
@@ -60,7 +137,6 @@ function EvoCard({ evo }: { evo: Evolution }) {
           )}
         </div>
 
-        {/* Mejoras */}
         <div>
           <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-foreground/40">Mejoras</h4>
           {evo.upgrades.length === 0 ? (
@@ -113,7 +189,7 @@ export default async function EvolucionesPage() {
               )}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
               {evos.map((evo) => (
                 <EvoCard key={evo.id} evo={evo} />
               ))}
