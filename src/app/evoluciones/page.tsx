@@ -69,19 +69,19 @@ function EvoCardPlayer({ player, base }: { player: EvoPlayer; base: EvoPlayer })
   return (
     <div className="flex flex-col items-center gap-1.5">
       <span className="text-[10px] font-bold uppercase tracking-wider text-accent">DESPUÉS</span>
-      <div className="relative h-[180px] w-[130px] sm:h-[210px] sm:w-[152px]">
+      <div className="relative w-[140px] overflow-hidden rounded-xl sm:w-[155px]">
         {cardBg && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={cardBg}
             alt=""
-            className="absolute inset-0 h-full w-full object-contain opacity-30 blur-[1px]"
+            className="absolute inset-0 h-full w-full object-cover opacity-25 blur-[2px]"
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"
           />
         )}
-        <div className="relative flex h-full w-full flex-col items-center justify-center rounded-xl border-2 border-accent/40 bg-background/60 p-2 shadow-[0_0_24px_rgba(0,255,135,0.12)] backdrop-blur-sm">
+        <div className="relative flex w-full flex-col items-center border-2 border-accent/40 rounded-xl bg-background/70 px-2.5 py-3 shadow-[0_0_24px_rgba(0,255,135,0.12)] backdrop-blur-sm">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={player.imageUrl}
