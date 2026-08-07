@@ -14,6 +14,7 @@ const PROTECTED_ROUTES = [
   "/ranking",
   "/evoluciones",
   "/sbc",
+  "/admin",
 ];
 
 const PROTECTED_DYNAMIC = [

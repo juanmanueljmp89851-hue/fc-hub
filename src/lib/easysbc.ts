@@ -89,22 +89,17 @@ function tLabel(label: unknown): string {
 
 // Traduce valores: "Max 95" → "Máx 95", "+30 (max 96)" → "+30 (máx 96)", "Any" → "Cualquier".
 // Coerce a string: algunos valores de la API vienen como número.
-const POS_ES: Record<string, string> = {
-  GK: "POR", CB: "DFC", LB: "LI", RB: "LD", LWB: "CAI", RWB: "CAD",
-  CDM: "MCD", CM: "MC", CAM: "MCO", LM: "MI", RM: "MD",
-  LW: "EI", RW: "ED", LF: "II", RF: "ID", CF: "MP",
-  ST: "DC", SW: "LIB",
-};
+import { translatePositionsInText } from "@/lib/positions";
 
 function tValue(value: unknown): string {
-  return String(value ?? "")
-    .replace(/\bMax\b/g, "Máx")
-    .replace(/\bmax\b/g, "máx")
-    .replace(/\bMin\b/g, "Mín")
-    .replace(/\bmin\b/g, "mín")
-    .replace(/\bAny\b/g, "Cualquier")
-    .replace(/\b(GK|CB|LB|RB|LWB|RWB|CDM|CM|CAM|LM|RM|LW|RW|LF|RF|CF|ST|SW)\b/g,
-      (m) => POS_ES[m] ?? m);
+  return translatePositionsInText(
+    String(value ?? "")
+      .replace(/\bMax\b/g, "Máx")
+      .replace(/\bmax\b/g, "máx")
+      .replace(/\bMin\b/g, "Mín")
+      .replace(/\bmin\b/g, "mín")
+      .replace(/\bAny\b/g, "Cualquier"),
+  );
 }
 
 // ─── Tipos ───────────────────────────────────────────────────

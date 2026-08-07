@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { getEvolutions, type Evolution, type EvoPlayer } from "@/lib/easysbc";
+import { tPos } from "@/lib/positions";
 
 export const revalidate = 300; // ISR: regenera cada 5 min
 
@@ -26,16 +27,6 @@ function fmtCoins(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
   if (n >= 1_000) return Math.round(n / 1_000).toLocaleString("es-AR") + "K";
   return n.toLocaleString("es-AR");
-}
-
-const POS_ES: Record<string, string> = {
-  GK: "POR", CB: "DFC", LB: "LI", RB: "LD", LWB: "CAI", RWB: "CAD",
-  CDM: "MCD", CM: "MC", CAM: "MCO", LM: "MI", RM: "MD",
-  LW: "EI", RW: "ED", LF: "II", RF: "ID", CF: "MP",
-  ST: "DC", SW: "LIB",
-};
-function tPos(pos: string): string {
-  return POS_ES[pos] ?? pos;
 }
 
 const STAT_KEYS = ["pace", "shooting", "passing", "dribbling", "defending", "physical"] as const;

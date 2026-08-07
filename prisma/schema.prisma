@@ -314,6 +314,7 @@ model TournamentMatch {
   messages       MatchMessage[]      @relation("TournamentMatchMessages")
   rankingHistory RankingHistory[]
 
+  @@index([tournamentId])
   @@map("tournament_matches")
 }
 
@@ -433,6 +434,7 @@ model UserSanction {
   user          User @relation("SanctionedUser", fields: [userId], references: [id])
   sanctionedBy  User @relation("SanctionGiver", fields: [sanctionedById], references: [id])
 
+  @@index([userId])
   @@map("user_sanctions")
 }
 
@@ -486,6 +488,7 @@ model RankingHistory {
   casualMatch     CasualMatch?      @relation(fields: [casualMatchId], references: [id])
   tournamentMatch TournamentMatch?  @relation(fields: [tournamentMatchId], references: [id])
 
+  @@index([userId, createdAt])
   @@map("ranking_history")
 }
 
@@ -907,6 +910,7 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id])
 
+  @@index([userId, read, createdAt])
   @@map("notifications")
 }
 

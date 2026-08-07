@@ -8,6 +8,7 @@ import { getPlayerDetail, getCommunityChemStyles, getCardFromApi, type PlayerSta
 import { getCardComments } from "@/lib/actions/card-comments";
 import { CardComments } from "@/components/cartas/CardComments";
 import { createClient } from "@/lib/supabase/server";
+import { tPos } from "@/lib/positions";
 import type { FutPlayer } from "@/types/player";
 
 export const dynamic = "force-dynamic";
@@ -79,20 +80,9 @@ function fmtCoins(n: number): string {
   return n.toLocaleString("es-AR");
 }
 
-const POS_ES: Record<string, string> = {
-  GK: "POR", RB: "LD", RWB: "CDD", CB: "DFC", LB: "LI", LWB: "CDI",
-  CDM: "MCD", CM: "MC", CAM: "MCO", RM: "MD", LM: "MI",
-  RW: "ED", LW: "EI", RF: "DLD", LF: "DLI", CF: "MP",
-  ST: "DC",
-};
-
 const FOOT_ES: Record<string, string> = {
   Right: "Derecho", Left: "Izquierdo", R: "Derecho", L: "Izquierdo",
 };
-
-function tPos(pos: string): string {
-  return POS_ES[pos] ?? pos;
-}
 
 const NATION_ES: Record<string, string> = {
   Belgium: "Bélgica", Germany: "Alemania", France: "Francia", Spain: "España",
