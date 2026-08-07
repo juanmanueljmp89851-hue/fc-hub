@@ -65,53 +65,67 @@ function BaseCard({ player }: { player: EvoPlayer }) {
 function EvoCardPlayer({ player, base }: { player: EvoPlayer; base: EvoPlayer }) {
   const stats = STAT_KEYS.map((k) => ({ val: player[k], diff: player[k] - base[k] }));
   const ovrDiff = player.overall - base.overall;
+  const cardBg = player.cardImageUrl;
   return (
     <div className="flex flex-col items-center gap-1.5">
       <span className="text-[10px] font-bold uppercase tracking-wider text-accent">DESPUÉS</span>
-      <div className="relative flex w-[140px] flex-col items-center rounded-xl border-2 border-accent/30 bg-gradient-to-b from-accent/10 via-surface/40 to-surface/20 p-3 shadow-[0_0_20px_rgba(0,255,135,0.08)] sm:w-[155px]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={player.imageUrl}
-          alt={player.name}
-          className="h-[80px] w-auto object-contain drop-shadow-md sm:h-[90px]"
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-        />
-        <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-xl font-black leading-none text-accent">{player.overall}</span>
-          {ovrDiff > 0 && (
-            <span className="text-[10px] font-bold text-green-400">+{ovrDiff}</span>
-          )}
-        </div>
-        <span className="text-[10px] font-bold text-foreground/60">{tPos(player.position)}</span>
-        <span className="mt-0.5 max-w-full truncate text-[10px] font-bold text-foreground/80">{player.name}</span>
+      <div className="relative h-[180px] w-[130px] sm:h-[210px] sm:w-[152px]">
+        {cardBg && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cardBg}
+            alt=""
+            className="absolute inset-0 h-full w-full object-contain opacity-30 blur-[1px]"
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+          />
+        )}
+        <div className="relative flex h-full w-full flex-col items-center justify-center rounded-xl border-2 border-accent/40 bg-background/60 p-2 shadow-[0_0_24px_rgba(0,255,135,0.12)] backdrop-blur-sm">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={player.imageUrl}
+            alt={player.name}
+            className="h-[50px] w-auto object-contain drop-shadow-md sm:h-[60px]"
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+          />
+          <div className="mt-1 flex items-baseline gap-1">
+            <span className="text-lg font-black leading-none text-accent sm:text-xl">{player.overall}</span>
+            {ovrDiff > 0 && (
+              <span className="text-[9px] font-bold text-green-400">+{ovrDiff}</span>
+            )}
+          </div>
+          <span className="text-[9px] font-bold text-foreground/60">{tPos(player.position)}</span>
+          <span className="max-w-full truncate text-[9px] font-bold text-foreground/80">{player.name}</span>
 
-        <div className="mt-2 grid w-full grid-cols-3 gap-x-3 gap-y-1">
-          {stats.map((s, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <span className="text-[8px] text-foreground/30">{STAT_LABELS[i]}</span>
-              <div className="flex items-baseline gap-0.5">
-                <span className={`text-[11px] font-bold ${s.diff > 0 ? "text-accent" : "text-foreground/80"}`}>
-                  {s.val}
-                </span>
-                {s.diff > 0 && (
-                  <span className="text-[8px] font-bold text-green-400">+{s.diff}</span>
-                )}
+          <div className="mt-1.5 grid w-full grid-cols-3 gap-x-2 gap-y-0.5">
+            {stats.map((s, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <span className="text-[7px] text-foreground/30">{STAT_LABELS[i]}</span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className={`text-[10px] font-bold ${s.diff > 0 ? "text-accent" : "text-foreground/80"}`}>
+                    {s.val}
+                  </span>
+                  {s.diff > 0 && (
+                    <span className="text-[7px] font-bold text-green-400">+{s.diff}</span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="mt-1.5 flex gap-3 text-[9px]">
-          <span className={player.skillMoves > base.skillMoves ? "font-bold text-accent" : "text-foreground/40"}>
-            R {player.skillMoves}
-            {player.skillMoves > base.skillMoves && <span className="text-green-400"> +{player.skillMoves - base.skillMoves}</span>}
-          </span>
-          <span className={player.weakFoot > base.weakFoot ? "font-bold text-accent" : "text-foreground/40"}>
-            ★ {player.weakFoot}
-            {player.weakFoot > base.weakFoot && <span className="text-green-400"> +{player.weakFoot - base.weakFoot}</span>}
-          </span>
+          <div className="mt-1 flex gap-2 text-[8px]">
+            <span className={player.skillMoves > base.skillMoves ? "font-bold text-accent" : "text-foreground/40"}>
+              R {player.skillMoves}
+              {player.skillMoves > base.skillMoves && <span className="text-green-400"> +{player.skillMoves - base.skillMoves}</span>}
+            </span>
+            <span className={player.weakFoot > base.weakFoot ? "font-bold text-accent" : "text-foreground/40"}>
+              ★ {player.weakFoot}
+              {player.weakFoot > base.weakFoot && <span className="text-green-400"> +{player.weakFoot - base.weakFoot}</span>}
+            </span>
+          </div>
         </div>
       </div>
     </div>
