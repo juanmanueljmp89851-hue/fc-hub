@@ -28,32 +28,123 @@ function fmtCoins(n: number): string {
   return n.toLocaleString("es-AR");
 }
 
-function PlayerCard({ player, label }: { player: EvoPlayer; label: string }) {
+const POS_ES: Record<string, string> = {
+  GK: "POR", CB: "DFC", LB: "LI", RB: "LD", LWB: "CAI", RWB: "CAD",
+  CDM: "MCD", CM: "MC", CAM: "MCO", LM: "MI", RM: "MD",
+  LW: "EI", RW: "ED", LF: "II", RF: "ID", CF: "MP",
+  ST: "DC", SW: "LIB",
+};
+function tPos(pos: string): string {
+  return POS_ES[pos] ?? pos;
+}
+
+const STAT_KEYS = ["pace", "shooting", "passing", "dribbling", "defending", "physical"] as const;
+const STAT_LABELS = ["RIT", "TIR", "PAS", "REG", "DEF", "FÍS"];
+
+function BaseCard({ player }: { player: EvoPlayer }) {
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/40">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/40">ANTES</span>
       {player.cardImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={player.cardImageUrl}
           alt={player.name}
-          className="h-[180px] w-auto object-contain drop-shadow-lg sm:h-[200px]"
+          className="h-[180px] w-auto object-contain drop-shadow-lg sm:h-[210px]"
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
         />
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
+        <FallbackCard player={player} />
+      )}
+    </div>
+  );
+}
+
+function EvoCardPlayer({ player, base }: { player: EvoPlayer; base: EvoPlayer }) {
+  const stats = STAT_KEYS.map((k) => ({ val: player[k], diff: player[k] - base[k] }));
+  const ovrDiff = player.overall - base.overall;
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-accent">DESPUÉS</span>
+      <div className="relative flex w-[140px] flex-col items-center rounded-xl border-2 border-accent/30 bg-gradient-to-b from-accent/10 via-surface/40 to-surface/20 p-3 shadow-[0_0_20px_rgba(0,255,135,0.08)] sm:w-[155px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={player.imageUrl}
           alt={player.name}
-          className="h-[160px] w-auto object-contain drop-shadow-lg sm:h-[180px]"
+          className="h-[80px] w-auto object-contain drop-shadow-md sm:h-[90px]"
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
         />
-      )}
-      <span className="text-[11px] font-bold text-foreground/70">{player.name}</span>
+        <div className="mt-1 flex items-baseline gap-1">
+          <span className="text-xl font-black leading-none text-accent">{player.overall}</span>
+          {ovrDiff > 0 && (
+            <span className="text-[10px] font-bold text-green-400">+{ovrDiff}</span>
+          )}
+        </div>
+        <span className="text-[10px] font-bold text-foreground/60">{tPos(player.position)}</span>
+        <span className="mt-0.5 max-w-full truncate text-[10px] font-bold text-foreground/80">{player.name}</span>
+
+        <div className="mt-2 grid w-full grid-cols-3 gap-x-3 gap-y-1">
+          {stats.map((s, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <span className="text-[8px] text-foreground/30">{STAT_LABELS[i]}</span>
+              <div className="flex items-baseline gap-0.5">
+                <span className={`text-[11px] font-bold ${s.diff > 0 ? "text-accent" : "text-foreground/80"}`}>
+                  {s.val}
+                </span>
+                {s.diff > 0 && (
+                  <span className="text-[8px] font-bold text-green-400">+{s.diff}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-1.5 flex gap-3 text-[9px]">
+          <span className={player.skillMoves > base.skillMoves ? "font-bold text-accent" : "text-foreground/40"}>
+            R {player.skillMoves}
+            {player.skillMoves > base.skillMoves && <span className="text-green-400"> +{player.skillMoves - base.skillMoves}</span>}
+          </span>
+          <span className={player.weakFoot > base.weakFoot ? "font-bold text-accent" : "text-foreground/40"}>
+            ★ {player.weakFoot}
+            {player.weakFoot > base.weakFoot && <span className="text-green-400"> +{player.weakFoot - base.weakFoot}</span>}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FallbackCard({ player }: { player: EvoPlayer }) {
+  return (
+    <div className="flex w-[140px] flex-col items-center rounded-xl border border-surface-light bg-gradient-to-b from-surface-light/40 to-surface/20 p-3 sm:w-[155px]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={player.imageUrl}
+        alt={player.name}
+        className="h-[80px] w-auto object-contain drop-shadow-md sm:h-[90px]"
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+      />
+      <span className="mt-1 text-xl font-black leading-none text-foreground/80">{player.overall}</span>
+      <span className="text-[10px] font-bold text-foreground/60">{tPos(player.position)}</span>
+      <span className="mt-0.5 max-w-full truncate text-[10px] font-bold text-foreground/80">{player.name}</span>
+      <div className="mt-2 grid w-full grid-cols-3 gap-x-3 gap-y-1">
+        {STAT_KEYS.map((k, i) => (
+          <div key={i} className="flex flex-col items-center">
+            <span className="text-[8px] text-foreground/30">{STAT_LABELS[i]}</span>
+            <span className="text-[11px] font-bold text-foreground/80">{player[k]}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-1.5 flex gap-3 text-[9px] text-foreground/40">
+        <span>R {player.skillMoves}</span>
+        <span>★ {player.weakFoot}</span>
+      </div>
     </div>
   );
 }
@@ -95,11 +186,11 @@ function EvoCard({ evo }: { evo: Evolution }) {
       {/* Player cards: before → after */}
       {hasPlayers && (
         <div className="flex items-center justify-center gap-2 border-b border-surface-light bg-gradient-to-b from-surface-light/10 to-transparent px-2 py-5 sm:gap-4 sm:px-4">
-          <PlayerCard player={evo.basePlayer!} label="ANTES" />
+          <BaseCard player={evo.basePlayer!} />
           <div className="flex flex-col items-center">
             <span className="text-2xl font-black text-accent">→</span>
           </div>
-          <PlayerCard player={evo.evoPlayer!} label="DESPUÉS" />
+          <EvoCardPlayer player={evo.evoPlayer!} base={evo.basePlayer!} />
         </div>
       )}
 
