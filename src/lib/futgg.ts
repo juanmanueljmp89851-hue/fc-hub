@@ -569,14 +569,15 @@ export async function getCommunityChemStyles(eaId: number): Promise<ChemStyleVot
 }
 
 export async function getPlayerDetail(eaId: number): Promise<PlayerDetail | null> {
-  const raw = await fetchJson<RawPlayerDetail>(
-    `https://www.fut.gg/api/fut/player-items/26-${eaId}/`,
-  );
+  const [raw, bulk] = await Promise.all([
+    fetchJson<RawPlayerDetail>(
+      `https://www.fut.gg/api/fut/player-items/26-${eaId}/`,
+    ),
+    fetchJson<{ data: { accelerateType?: string; totalIgs?: number; playStyleEaIds?: number[]; playStylePlusEaIds?: number[]; rolesPlusPlus?: number[] }[] }>(
+      `https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`,
+    ),
+  ]);
   if (!raw?.data?.attributeGroups) return null;
-
-  const bulk = await fetchJson<{ data: { accelerateType?: string; totalIgs?: number; playStyleEaIds?: number[]; playStylePlusEaIds?: number[]; rolesPlusPlus?: number[] }[] }>(
-    `https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`,
-  );
   const bulkData = bulk?.data?.[0];
 
   const groupOrder = ["PACE", "SHOOTING", "PASSING", "DRIBBLING", "DEFENDING", "PHYSICALITY"];

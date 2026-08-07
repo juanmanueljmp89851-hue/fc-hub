@@ -127,10 +127,12 @@ const ACCELERATE_ES: Record<string, string> = {
 };
 
 export default async function CartaPage({ params }: { params: { slug: string } }) {
-  const c = await getCard(params.slug);
+  const [c, supabase] = await Promise.all([
+    getCard(params.slug),
+    createClient(),
+  ]);
   if (!c) notFound();
 
-  const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
   let currentUserId: string | null = null;
   if (authUser) {
@@ -226,6 +228,20 @@ export default async function CartaPage({ params }: { params: { slug: string } }
 
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "VideoGame",
+            name: `${c.name} ${c.overall} ${tPos(c.position)}${c.promo ? ` — ${c.promo}` : ""}`,
+            description: `Carta ${c.name} ${c.overall} (${tPos(c.position)}) de EA FC 26: stats, precio y más`,
+            image: c.cardFullUrl || c.imageUrl || undefined,
+            url: `https://www.modofosa.com.ar/carta/${params.slug}`,
+            gamePlatform: "EA FC 26",
+          }),
+        }}
+      />
       <Navbar />
       <main className="mx-auto max-w-5xl px-4 py-8">
         <Link href="/jugadores" className="mb-4 inline-flex items-center text-sm text-foreground/50 hover:text-accent">

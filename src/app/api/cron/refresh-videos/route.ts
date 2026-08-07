@@ -17,35 +17,36 @@ export async function GET(request: Request) {
       select: { id: true, youtubeChannelId: true, name: true },
     });
 
-    let totalVideos = 0;
-
-    for (const inf of influencers) {
-      if (!inf.youtubeChannelId) continue;
-
-      const videos = await getLatestVideos(inf.youtubeChannelId, 6);
-
-      for (const video of videos) {
-        await prisma.influencerVideo.upsert({
-          where: { externalId: video.id },
-          update: {
-            title: video.title,
-            thumbnailUrl: video.thumbnailUrl,
-            views: video.views,
-          },
-          create: {
-            influencerId: inf.id,
-            externalId: video.id,
-            title: video.title,
-            thumbnailUrl: video.thumbnailUrl,
-            videoUrl: video.videoUrl,
-            views: video.views,
-            publishedAt: video.publishedAt,
-          },
-        });
-      }
-
-      totalVideos += videos.length;
-    }
+    const results = await Promise.all(
+      influencers
+        .filter((inf) => inf.youtubeChannelId)
+        .map(async (inf) => {
+          const videos = await getLatestVideos(inf.youtubeChannelId!, 6);
+          await prisma.$transaction(
+            videos.map((video) =>
+              prisma.influencerVideo.upsert({
+                where: { externalId: video.id },
+                update: {
+                  title: video.title,
+                  thumbnailUrl: video.thumbnailUrl,
+                  views: video.views,
+                },
+                create: {
+                  influencerId: inf.id,
+                  externalId: video.id,
+                  title: video.title,
+                  thumbnailUrl: video.thumbnailUrl,
+                  videoUrl: video.videoUrl,
+                  views: video.views,
+                  publishedAt: video.publishedAt,
+                },
+              }),
+            ),
+          );
+          return videos.length;
+        }),
+    );
+    const totalVideos = results.reduce((a, b) => a + b, 0);
 
     return NextResponse.json({
       ok: true,
