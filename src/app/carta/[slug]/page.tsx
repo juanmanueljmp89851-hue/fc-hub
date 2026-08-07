@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { FutCard } from "@/components/jugadores/FutCard";
 import { prisma } from "@/lib/db";
-import { getPlayerDetail, getCommunityChemStyles, getCardFromApi, type PlayerStatGroup, type ApiCard } from "@/lib/futgg";
+import { getPlayerDetail, getCommunityChemStyles, getCardFromApi, type PlayerStatGroup } from "@/lib/futgg";
 import { getCardComments } from "@/lib/actions/card-comments";
 import { CardComments } from "@/components/cartas/CardComments";
 import { createClient } from "@/lib/supabase/server";
@@ -34,8 +34,6 @@ async function getCard(slug: string) {
   console.log(`[getCard] API result: ${apiCard ? apiCard.name : 'null'}`);
   return apiCard;
 }
-
-type CardData = NonNullable<Awaited<ReturnType<typeof prisma.futCard.findFirst>>> | ApiCard;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const c = await getCard(params.slug);
