@@ -894,10 +894,22 @@ export interface ApiCard {
 }
 
 export async function getCardFromApi(eaId: number): Promise<ApiCard | null> {
-  const bulk = await fetchJson<{ data: RawPlayerItem[] }>(
-    `https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`,
-  );
-  const p = bulk?.data?.[0];
+  let p: RawPlayerItem | undefined;
+  try {
+    const res = await fetch(`https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)", Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.error(`[getCardFromApi] fut.gg returned ${res.status} for eaId=${eaId}`);
+      return null;
+    }
+    const json = (await res.json()) as { data: RawPlayerItem[] };
+    p = json?.data?.[0];
+  } catch (err) {
+    console.error(`[getCardFromApi] fetch failed for eaId=${eaId}:`, err);
+    return null;
+  }
   if (!p?.faceStatsV2) return null;
 
   const fs = p.faceStatsV2;
