@@ -115,10 +115,12 @@ export interface EvoRow {
 }
 
 export interface EvoPlayer {
+  eaId: number;
   name: string;
   overall: number;
   position: string;
   imageUrl: string;
+  cardImageUrl: string | null;
   pace: number;
   shooting: number;
   passing: number;
@@ -197,14 +199,16 @@ export async function getEvolutions(): Promise<Evolution[]> {
 
   const catName = new Map(json.categories.map((c) => [c.id, c.name]));
 
-  function mapPlayer(p: RawPlayer | undefined): EvoPlayer | null {
+  function mapPlayer(p: RawPlayer | undefined, cardImages: Map<number, string>): EvoPlayer | null {
     if (!p) return null;
     const attrs = p.attributes ?? [];
     return {
+      eaId: p.resourceId,
       name: p.cardName || p.name,
       overall: p.rating,
       position: p.preferredPosition,
       imageUrl: p.playerUrl,
+      cardImageUrl: cardImages.get(p.resourceId) ?? null,
       pace: attrs[0] ?? 0,
       shooting: attrs[1] ?? 0,
       passing: attrs[2] ?? 0,
@@ -216,8 +220,44 @@ export async function getEvolutions(): Promise<Evolution[]> {
     };
   }
 
-  return json.evolutions
-    .filter((e) => !e.expired)
+  const active = json.evolutions.filter((e) => !e.expired);
+
+  // Collect unique resourceIds to batch-fetch card images from fut.gg
+  const eaIds = new Set<number>();
+  for (const e of active) {
+    const top = e.topPlayers?.[0];
+    if (top?.basePlayer?.resourceId) eaIds.add(top.basePlayer.resourceId);
+    if (top?.evolutionPlayer?.resourceId) eaIds.add(top.evolutionPlayer.resourceId);
+  }
+
+  const cardImages = new Map<number, string>();
+  if (eaIds.size > 0) {
+    try {
+      const idsParam = [...eaIds].join(",");
+      const imgRes = await fetch(
+        `https://www.fut.gg/api/fut/26/player-items/?ids=${idsParam}`,
+        {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)",
+            Accept: "application/json",
+          },
+          next: { revalidate: 1800 },
+        },
+      );
+      if (imgRes.ok) {
+        const imgJson = (await imgRes.json()) as {
+          data: { eaId: number; cardImageUrl?: string }[];
+        };
+        for (const p of imgJson.data ?? []) {
+          if (p.cardImageUrl) cardImages.set(p.eaId, p.cardImageUrl);
+        }
+      }
+    } catch {
+      // card images optional — continue without
+    }
+  }
+
+  return active
     .map((e) => {
       const rawCat = catName.get(e.categoryId) ?? "Evoluciones";
       const top = e.topPlayers?.[0];
@@ -238,8 +278,8 @@ export async function getEvolutions(): Promise<Evolution[]> {
           label: tLabel(u.label),
           value: tValue(u.value),
         })),
-        basePlayer: mapPlayer(top?.basePlayer),
-        evoPlayer: mapPlayer(top?.evolutionPlayer),
+        basePlayer: mapPlayer(top?.basePlayer, cardImages),
+        evoPlayer: mapPlayer(top?.evolutionPlayer, cardImages),
       };
     })
     .sort((a, b) => Number(b.isNew) - Number(a.isNew));

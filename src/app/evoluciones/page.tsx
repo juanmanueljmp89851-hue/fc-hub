@@ -28,48 +28,32 @@ function fmtCoins(n: number): string {
   return n.toLocaleString("es-AR");
 }
 
-const STAT_LABELS = ["RIT", "TIR", "PAS", "REG", "DEF", "FÍS"];
-
-const POS_ES: Record<string, string> = {
-  GK: "POR", CB: "DFC", LB: "LI", RB: "LD", LWB: "CAI", RWB: "CAD",
-  CDM: "MCD", CM: "MC", CAM: "MCO", LM: "MI", RM: "MD",
-  LW: "EI", RW: "ED", LF: "II", RF: "ID", CF: "MP",
-  ST: "DC", SW: "LIB",
-};
-function tPos(pos: string): string {
-  return POS_ES[pos] ?? pos;
-}
-
-function MiniCard({ player, label }: { player: EvoPlayer; label: string }) {
-  const stats = [player.pace, player.shooting, player.passing, player.dribbling, player.defending, player.physical];
+function PlayerCard({ player, label }: { player: EvoPlayer; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-[9px] font-bold uppercase tracking-wider text-foreground/40">{label}</span>
-      <div className="relative flex w-[110px] flex-col items-center rounded-lg border border-surface-light bg-gradient-to-b from-surface-light/40 to-surface/20 p-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+    <div className="flex flex-col items-center gap-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/40">{label}</span>
+      {player.cardImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={player.imageUrl}
+          src={player.cardImageUrl}
           alt={player.name}
-          className="h-20 w-auto object-contain drop-shadow-md"
+          className="h-[180px] w-auto object-contain drop-shadow-lg sm:h-[200px]"
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
         />
-        <span className="mt-1 text-lg font-black leading-none text-accent">{player.overall}</span>
-        <span className="text-[10px] font-bold text-foreground/60">{tPos(player.position)}</span>
-        <div className="mt-1.5 grid w-full grid-cols-3 gap-x-2 gap-y-0.5">
-          {stats.map((s, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <span className="text-[8px] text-foreground/30">{STAT_LABELS[i]}</span>
-              <span className="text-[10px] font-bold text-foreground/80">{s}</span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-1 flex gap-2 text-[9px] text-foreground/40">
-          <span>R {player.skillMoves}</span>
-          <span>★ {player.weakFoot}</span>
-        </div>
-      </div>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={player.imageUrl}
+          alt={player.name}
+          className="h-[160px] w-auto object-contain drop-shadow-lg sm:h-[180px]"
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+        />
+      )}
+      <span className="text-[11px] font-bold text-foreground/70">{player.name}</span>
     </div>
   );
 }
@@ -110,12 +94,12 @@ function EvoCard({ evo }: { evo: Evolution }) {
 
       {/* Player cards: before → after */}
       {hasPlayers && (
-        <div className="flex items-center justify-center gap-3 border-b border-surface-light bg-gradient-to-b from-surface-light/10 to-transparent px-3 py-4">
-          <MiniCard player={evo.basePlayer!} label="ANTES" />
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-lg text-accent">→</span>
+        <div className="flex items-center justify-center gap-2 border-b border-surface-light bg-gradient-to-b from-surface-light/10 to-transparent px-2 py-5 sm:gap-4 sm:px-4">
+          <PlayerCard player={evo.basePlayer!} label="ANTES" />
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-black text-accent">→</span>
           </div>
-          <MiniCard player={evo.evoPlayer!} label="DESPUÉS" />
+          <PlayerCard player={evo.evoPlayer!} label="DESPUÉS" />
         </div>
       )}
 
