@@ -20,19 +20,10 @@ function eaIdFromSlug(slug: string): number | null {
 
 async function getCard(slug: string) {
   const eaId = eaIdFromSlug(slug);
-  if (eaId == null) {
-    console.log(`[getCard] invalid slug: ${slug}`);
-    return null;
-  }
+  if (eaId == null) return null;
   const dbCard = await prisma.futCard.findFirst({ where: { eaId } });
-  if (dbCard) {
-    console.log(`[getCard] found in DB: ${dbCard.name} (eaId=${eaId})`);
-    return dbCard;
-  }
-  console.log(`[getCard] not in DB, trying API for eaId=${eaId}`);
-  const apiCard = await getCardFromApi(eaId);
-  console.log(`[getCard] API result: ${apiCard ? apiCard.name : 'null'}`);
-  return apiCard;
+  if (dbCard) return dbCard;
+  return getCardFromApi(eaId);
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {

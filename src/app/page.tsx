@@ -18,7 +18,8 @@ import { LatestCards } from "@/components/home/LatestCards";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Onboarding } from "@/components/home/Onboarding";
 import { prisma } from "@/lib/db";
-import { getLatestCardsLive } from "@/lib/futgg";
+import { getLatestCardsLive, getActiveSbcs } from "@/lib/futgg";
+import { HomeSbcs } from "@/components/home/HomeSbcs";
 import type { FutPlayer } from "@/types/player";
 
 const quickLinks = [
@@ -49,12 +50,13 @@ const quickLinks = [
 ];
 
 export default async function HomePage() {
-  const [latestRaw, liveCards] = await Promise.all([
+  const [latestRaw, liveCards, sbcs] = await Promise.all([
     prisma.futCard.findMany({
       orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
       take: 15,
     }),
     getLatestCardsLive(3).catch(() => []),
+    getActiveSbcs().catch(() => []),
   ]);
 
   const lastUpdated = latestRaw[0]?.updatedAt?.toISOString() ?? null;
@@ -171,6 +173,9 @@ export default async function HomePage() {
 
         {/* Latest Cards Strip */}
         <LatestCards cards={latestCards} lastUpdated={lastUpdated} />
+
+        {/* SBC del día */}
+        <HomeSbcs sbcs={sbcs} />
 
         {/* News Feed */}
         <section className="mb-8">
