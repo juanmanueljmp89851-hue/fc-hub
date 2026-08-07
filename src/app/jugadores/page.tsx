@@ -5,8 +5,7 @@ import { JugadoresClient } from "./JugadoresClient";
 import { AdSlot } from "@/components/ads/AdSlot";
 import type { FutPlayer } from "@/types/player";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 300; // 5 min cache
+export const revalidate = 300; // ISR: regenera cada 5 min
 
 export const metadata: Metadata = {
   title: "Cartas FC 26",

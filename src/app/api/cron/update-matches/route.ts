@@ -26,11 +26,14 @@ async function syncFixtures(fixtures: NormalizedFixture[]) {
   let updated = 0;
   let scored = 0;
 
-  for (const fixture of fixtures) {
-    const match = await prisma.prodeMatch.findUnique({
-      where: { externalId: fixture.externalId },
-    });
+  const externalIds = fixtures.map((f) => f.externalId);
+  const existingMatches = await prisma.prodeMatch.findMany({
+    where: { externalId: { in: externalIds } },
+  });
+  const matchByExtId = new Map(existingMatches.map((m) => [m.externalId, m]));
 
+  for (const fixture of fixtures) {
+    const match = matchByExtId.get(fixture.externalId);
     if (!match) continue;
 
     const statusChanged = match.status !== fixture.status;
@@ -49,7 +52,6 @@ async function syncFixtures(fixtures: NormalizedFixture[]) {
     });
     updated++;
 
-    // Auto-score predictions when match finishes
     if (fixture.status === "FINISHED" && match.status !== "FINISHED") {
       await scoreMatchPredictions(
         match.id,
@@ -60,7 +62,6 @@ async function syncFixtures(fixtures: NormalizedFixture[]) {
     }
   }
 
-  // Check if any week should be auto-closed or auto-scored
   await checkWeekStatus();
 
   return { updated, scored, total: fixtures.length };
@@ -75,27 +76,52 @@ async function scoreMatchPredictions(
     where: { matchId },
   });
 
-  for (const pred of predictions) {
-    let points: number = PRODE.INCORRECT;
+  if (predictions.length === 0) return;
 
+  const realOutcome = homeScore > awayScore ? "H" : homeScore < awayScore ? "A" : "D";
+
+  const exactIds: string[] = [];
+  const winnerIds: string[] = [];
+  const incorrectIds: string[] = [];
+
+  for (const pred of predictions) {
     if (pred.predHomeScore === homeScore && pred.predAwayScore === awayScore) {
-      points = PRODE.EXACT_RESULT;
+      exactIds.push(pred.id);
     } else {
-      const realOutcome = homeScore > awayScore ? "H" : homeScore < awayScore ? "A" : "D";
       const predOutcome =
         pred.predHomeScore > pred.predAwayScore
           ? "H"
           : pred.predHomeScore < pred.predAwayScore
             ? "A"
             : "D";
-      if (realOutcome === predOutcome) points = PRODE.CORRECT_WINNER;
+      if (realOutcome === predOutcome) {
+        winnerIds.push(pred.id);
+      } else {
+        incorrectIds.push(pred.id);
+      }
     }
-
-    await prisma.prodePrediction.update({
-      where: { id: pred.id },
-      data: { pointsEarned: points },
-    });
   }
+
+  await prisma.$transaction([
+    ...(exactIds.length > 0
+      ? [prisma.prodePrediction.updateMany({
+          where: { id: { in: exactIds } },
+          data: { pointsEarned: PRODE.EXACT_RESULT },
+        })]
+      : []),
+    ...(winnerIds.length > 0
+      ? [prisma.prodePrediction.updateMany({
+          where: { id: { in: winnerIds } },
+          data: { pointsEarned: PRODE.CORRECT_WINNER },
+        })]
+      : []),
+    ...(incorrectIds.length > 0
+      ? [prisma.prodePrediction.updateMany({
+          where: { id: { in: incorrectIds } },
+          data: { pointsEarned: PRODE.INCORRECT },
+        })]
+      : []),
+  ]);
 }
 
 async function checkWeekStatus() {

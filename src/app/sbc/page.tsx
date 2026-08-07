@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { getActiveSbcs, type SbcSet } from "@/lib/futgg";
 
-export const dynamic = "force-dynamic"; // API externa fut.gg
+export const revalidate = 300; // ISR: regenera cada 5 min
 
 export const metadata: Metadata = {
   title: "Resolver SBC — EA FC 26 | Modo Fosa",

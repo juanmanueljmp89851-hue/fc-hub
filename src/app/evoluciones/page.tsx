@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { getEvolutions, type Evolution, type EvoPlayer } from "@/lib/easysbc";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // ISR: regenera cada 5 min
 
 export const metadata: Metadata = {
   title: "Evoluciones — EA FC 26 | Modo Fosa",
