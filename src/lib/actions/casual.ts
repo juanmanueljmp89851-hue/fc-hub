@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { RANKING } from "@/lib/constants";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitAsync } from "@/lib/rate-limit";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ async function getAuthUserId(): Promise<string | null> {
 export async function challengeUser(challengedId: string) {
   const userId = await getAuthUserId();
   if (!userId) return { error: "No autenticado" };
-  if (!rateLimit(`challenge:${userId}`, 10, 60_000).ok) {
+  if (!(await rateLimitAsync(`challenge:${userId}`, 10, 60_000)).ok) {
     return { error: "Demasiados desafíos. Esperá un momento." };
   }
   if (userId === challengedId) return { error: "No podés desafiarte a vos mismo" };

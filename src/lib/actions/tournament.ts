@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import type { TournamentFormat, TournamentStatus, Platform, TeamType, TournamentVisibility, KnockoutSeeding, DrawUntilStage, PlayoffRule, KnockoutFormat } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { RANKING } from "@/lib/constants";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitAsync } from "@/lib/rate-limit";
 
 // ─── CREAR TORNEO ──────────────────────────────────────────
 
@@ -478,7 +478,7 @@ export async function joinTournament(tournamentId: string) {
     return { error: "Usuario no encontrado" };
   }
 
-  if (!rateLimit(`join:${dbUser.id}`, 10, 60_000).ok) {
+  if (!(await rateLimitAsync(`join:${dbUser.id}`, 10, 60_000)).ok) {
     return { error: "Demasiados intentos. Esperá un momento." };
   }
 
