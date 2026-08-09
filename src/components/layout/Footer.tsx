@@ -18,6 +18,8 @@ const communityLinks = [
 const legalLinks = [
   { href: "/legal/terminos", label: "Términos y condiciones" },
   { href: "/legal/privacidad", label: "Política de privacidad" },
+  { href: "/legal/embajadores", label: "Bases Embajadores" },
+  { href: "/legal/embajadores-agosto-2026", label: "Bases Agosto 2026" },
 ];
 
 const socialLinks = [

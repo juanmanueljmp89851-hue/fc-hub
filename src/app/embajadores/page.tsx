@@ -265,6 +265,15 @@ export default async function EmbajadoresPage() {
             🔥 Compartí tu link de referido
           </Link>
         </div>
+
+        {/* Legal */}
+        <div className="mt-8 flex flex-wrap justify-center gap-4 text-xs text-foreground/30">
+          <Link href="/legal/embajadores" className="hover:text-foreground/60">Bases del Programa</Link>
+          <span>·</span>
+          <Link href="/legal/embajadores-agosto-2026" className="hover:text-foreground/60">Bases Agosto 2026</Link>
+          <span>·</span>
+          <Link href="/legal/terminos" className="hover:text-foreground/60">Términos y condiciones</Link>
+        </div>
       </main>
     </div>
   );
