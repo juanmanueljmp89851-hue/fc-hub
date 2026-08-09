@@ -14,12 +14,6 @@ const DEFAULT_BENGALA_VALUES: Record<BengalaReason, number> = {
   REFERRAL_ORGANIZED: 15,
 };
 
-const DEFAULT_ACTIVE_CONDITIONS = {
-  minDuels: 5,
-  tournamentParticipation: true,
-  tournamentOrganized: true,
-};
-
 async function getBengalaValue(reason: BengalaReason): Promise<number> {
   const config = await prisma.systemConfig.findUnique({
     where: { key: `bengala_${reason.toLowerCase()}` },
@@ -30,15 +24,6 @@ async function getBengalaValue(reason: BengalaReason): Promise<number> {
   return DEFAULT_BENGALA_VALUES[reason];
 }
 
-async function getActiveConditions() {
-  const config = await prisma.systemConfig.findUnique({
-    where: { key: "active_conditions" },
-  });
-  if (config?.value && typeof config.value === "object") {
-    return { ...DEFAULT_ACTIVE_CONDITIONS, ...(config.value as Record<string, unknown>) };
-  }
-  return DEFAULT_ACTIVE_CONDITIONS;
-}
 
 // ─── CÓDIGO DE REFERIDO ─────────────────────────────────────
 
