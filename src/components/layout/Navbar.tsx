@@ -168,12 +168,12 @@ export function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-3 md:flex lg:gap-5">
+        <div className="hidden items-center gap-4 md:flex lg:gap-5 xl:gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="relative text-sm font-medium text-foreground/70 transition-colors hover:text-accent after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full"
+              className="relative whitespace-nowrap text-xs font-medium text-foreground/70 transition-colors hover:text-accent after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full lg:text-sm"
             >
               {link.label}
             </Link>
