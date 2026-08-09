@@ -230,6 +230,10 @@ function PeriodsTab() {
                     >
                       Activar
                     </button>
+                    <EditPeriodButton period={period} onSaved={async () => {
+                      const refreshed = await getAllPeriodsAdmin();
+                      setPeriods(refreshed);
+                    }} />
                     <AddPrizeButton periodId={period.id} onAdded={async () => {
                       const refreshed = await getAllPeriodsAdmin();
                       setPeriods(refreshed);
@@ -246,6 +250,10 @@ function PeriodsTab() {
                 {period.status === "ACTIVE" && (
                   <>
                     <PeriodRankingButton periodId={period.id} />
+                    <EditPeriodButton period={period} onSaved={async () => {
+                      const refreshed = await getAllPeriodsAdmin();
+                      setPeriods(refreshed);
+                    }} />
                     <AddPrizeButton periodId={period.id} onAdded={async () => {
                       const refreshed = await getAllPeriodsAdmin();
                       setPeriods(refreshed);
@@ -271,6 +279,65 @@ function PeriodsTab() {
           );
         })
       )}
+    </div>
+  );
+}
+
+function EditPeriodButton({ period, onSaved }: { period: { id: string; name: string; startDate: string; endDate: string }; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(period.name);
+  const [startDate, setStartDate] = useState(period.startDate.slice(0, 16));
+  const [endDate, setEndDate] = useState(period.endDate.slice(0, 16));
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-lg border border-foreground/20 px-4 py-2 text-xs font-bold text-foreground/60 hover:border-foreground/40 hover:text-foreground/80"
+      >
+        Editar
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-lg border border-accent/30 bg-surface-light/30 p-3 space-y-2">
+      <label className="block text-xs text-foreground/50">
+        Nombre
+        <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm text-foreground" />
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block text-xs text-foreground/50">
+          Inicio
+          <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm text-foreground" />
+        </label>
+        <label className="block text-xs text-foreground/50">
+          Fin
+          <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-1 w-full rounded-lg border border-surface-light bg-background px-3 py-2 text-sm text-foreground" />
+        </label>
+      </div>
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          disabled={isPending}
+          onClick={() => {
+            startTransition(async () => {
+              const res = await updatePeriod(period.id, { name, startDate, endDate });
+              if (typeof res.error === "string") { setError(res.error); return; }
+              setOpen(false);
+              onSaved();
+            });
+          }}
+          className="rounded-lg bg-accent px-4 py-1.5 text-xs font-bold text-background hover:opacity-90 disabled:opacity-50"
+        >
+          Guardar
+        </button>
+        <button onClick={() => setOpen(false)} className="rounded-lg border border-surface-light px-4 py-1.5 text-xs font-bold text-foreground/50 hover:text-foreground/80">
+          Cancelar
+        </button>
+      </div>
     </div>
   );
 }

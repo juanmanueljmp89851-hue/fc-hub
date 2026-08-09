@@ -948,7 +948,12 @@ export async function createPeriod(data: {
   const existing = await prisma.ambassadorPeriod.findUnique({
     where: { month_year: { month: data.month, year: data.year } },
   });
-  if (existing) return { error: `Ya existe un período para ${data.month}/${data.year}` };
+  if (existing && existing.status !== "CANCELLED") {
+    return { error: `Ya existe un período activo para ${data.month}/${data.year}` };
+  }
+  if (existing && existing.status === "CANCELLED") {
+    await prisma.ambassadorPeriod.delete({ where: { id: existing.id } });
+  }
 
   const period = await prisma.ambassadorPeriod.create({
     data: {
