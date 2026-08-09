@@ -33,16 +33,10 @@ export default function BasesAgosto2026Page() {
 
           <section>
             <h2 className="mb-2 text-lg font-bold text-foreground">2. Premios</h2>
-            <p className="mb-2">Se premiarán las primeras tres posiciones del ranking al cierre del período:</p>
+            <p className="mb-2">Se premiará al primer puesto del ranking al cierre del período:</p>
             <ul className="ml-4 list-disc space-y-1.5">
               <li>🥇 <strong>1er puesto:</strong> EA FC 27 Edición Estándar (código digital)</li>
-              <li>🥈 <strong>2do puesto:</strong> Remera Modo Fosa edición limitada</li>
-              <li>🥉 <strong>3er puesto:</strong> Mención de honor + rol destacado en la comunidad</li>
             </ul>
-            <p className="mt-2 text-xs text-foreground/50">
-              Los premios son orientativos y pueden ajustarse previo al cierre del período.
-              Modo Fosa confirmará los premios definitivos al momento de la entrega.
-            </p>
           </section>
 
           <section>
