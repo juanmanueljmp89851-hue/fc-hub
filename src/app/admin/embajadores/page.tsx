@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/actions/user";
 import { getAmbassadorDashboard } from "@/lib/actions/ambassador";
-import { Navbar } from "@/components/layout/Navbar";
 import { AdminAmbassadorPanel } from "@/components/ambassador/AdminAmbassadorPanel";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +20,6 @@ export default async function AdminEmbajadoresPage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
