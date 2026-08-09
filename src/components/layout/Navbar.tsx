@@ -167,7 +167,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-4 md:flex lg:gap-5 xl:gap-6">
+        <div className="hidden items-center gap-4 md:flex md:ml-6 lg:gap-5 xl:gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
