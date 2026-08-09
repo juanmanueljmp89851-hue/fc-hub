@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,19 +9,20 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { getTournament } from "@/lib/actions/tournament";
 import { getCurrentUser } from "@/lib/actions/user";
 import { TournamentActions } from "@/components/tournaments/TournamentActions";
-import { TournamentBracket } from "@/components/tournaments/TournamentBracket";
-import { LeagueTable } from "@/components/tournaments/LeagueTable";
-import { DeleteTournamentButton } from "@/components/tournaments/DeleteTournamentButton";
-import { DuplicateTournamentButton } from "@/components/tournaments/DuplicateTournamentButton";
-import { ResetTournamentButton } from "@/components/tournaments/ResetTournamentButton";
-import { PendingParticipants } from "@/components/tournaments/PendingParticipants";
-import { AdminMatchEdit } from "@/components/tournaments/AdminMatchEdit";
-import { AdminPlayerActions } from "@/components/tournaments/AdminPlayerActions";
 import { CollapsibleText } from "@/components/ui/CollapsibleText";
 import { ShareTournamentLink } from "@/components/tournaments/ShareTournamentLink";
-import { TournamentChat } from "@/components/tournaments/TournamentChat";
-import { RemindPendingButton } from "@/components/tournaments/RemindPendingButton";
 import { SendDmButton } from "@/components/dm/SendDmButton";
+
+const TournamentBracket = dynamic(() => import("@/components/tournaments/TournamentBracket").then((m) => m.TournamentBracket));
+const LeagueTable = dynamic(() => import("@/components/tournaments/LeagueTable").then((m) => m.LeagueTable));
+const TournamentChat = dynamic(() => import("@/components/tournaments/TournamentChat").then((m) => m.TournamentChat));
+const AdminMatchEdit = dynamic(() => import("@/components/tournaments/AdminMatchEdit").then((m) => m.AdminMatchEdit));
+const AdminPlayerActions = dynamic(() => import("@/components/tournaments/AdminPlayerActions").then((m) => m.AdminPlayerActions));
+const PendingParticipants = dynamic(() => import("@/components/tournaments/PendingParticipants").then((m) => m.PendingParticipants));
+const DeleteTournamentButton = dynamic(() => import("@/components/tournaments/DeleteTournamentButton").then((m) => m.DeleteTournamentButton));
+const DuplicateTournamentButton = dynamic(() => import("@/components/tournaments/DuplicateTournamentButton").then((m) => m.DuplicateTournamentButton));
+const ResetTournamentButton = dynamic(() => import("@/components/tournaments/ResetTournamentButton").then((m) => m.ResetTournamentButton));
+const RemindPendingButton = dynamic(() => import("@/components/tournaments/RemindPendingButton").then((m) => m.RemindPendingButton));
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);

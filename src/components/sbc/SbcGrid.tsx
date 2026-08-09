@@ -4,25 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import type { SbcSet } from "@/lib/futgg";
 import Link from "next/link";
+import { fmtCoins, timeLeft } from "@/lib/format";
 
 const PAGE_SIZE = 12;
-
-function fmtCoins(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (n >= 1_000) return Math.round(n / 1_000) + "K";
-  return String(n);
-}
-
-function timeLeft(endTime: string | null): string {
-  if (!endTime) return "Permanente";
-  const ms = new Date(endTime).getTime() - Date.now();
-  if (ms <= 0) return "Expira ya";
-  const d = Math.floor(ms / 86_400_000);
-  const h = Math.floor((ms % 86_400_000) / 3_600_000);
-  if (d >= 1) return `${d}d ${h}h`;
-  const m = Math.floor((ms % 3_600_000) / 60_000);
-  return `${h}h ${m}m`;
-}
 
 function SbcCard({ sbc }: { sbc: SbcSet }) {
   const reqs = [...new Set(sbc.challenges.flatMap((c) => c.requirements))];

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { SolutionPitch } from "@/components/sbc/SolutionPitch";
 import { getSbcSolution, type SbcSolution } from "@/lib/futgg";
+import { fmtCoins } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +13,6 @@ export const metadata: Metadata = {
   description: "Solución más barata para completar el SBC, con los jugadores y el costo total.",
   robots: { index: false },
 };
-
-function fmtCoins(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2).replace(/\.?0+$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
-  return String(n);
-}
 
 export default async function SolucionPage({ params }: { params: { uuid: string } }) {
   const uuids = decodeURIComponent(params.uuid).split(",").map((u) => u.trim()).filter(Boolean);

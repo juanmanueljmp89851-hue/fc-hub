@@ -1,6 +1,7 @@
 import { FutCard } from "@/components/jugadores/FutCard";
 import { POSITION_MAP, type FutPlayer, type PositionCategory } from "@/types/player";
 import type { SbcSolution } from "@/lib/futgg";
+import { fmtCoins } from "@/lib/format";
 
 type SolPlayer = SbcSolution["players"][number];
 
@@ -28,12 +29,6 @@ function toFutPlayer(p: SolPlayer): FutPlayer {
     skillMoves: p.skillMoves,
     weakFoot: p.weakFoot,
   };
-}
-
-function fmtCoins(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2).replace(/\.?0+$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
-  return String(n);
 }
 
 // Orden de líneas de arriba (ataque) a abajo (arco)

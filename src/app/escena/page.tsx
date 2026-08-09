@@ -6,7 +6,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { getExternalLeagues } from "@/lib/actions/external-leagues";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Competitivo",

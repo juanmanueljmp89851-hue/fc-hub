@@ -22,16 +22,18 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     },
   };
 }
+import dynamic from "next/dynamic";
 import { ShareCodeCopy } from "@/components/prode/ShareCodeCopy";
-import { DeleteProdeButton } from "@/components/prode/DeleteProdeButton";
-import { JoinRequestsPanel } from "@/components/prode/JoinRequestsPanel";
-import { ProdeChat } from "@/components/prode/ProdeChat";
-import { ProdeLeaderboard } from "@/components/prode/ProdeLeaderboard";
-import { ProdeParticipants } from "@/components/prode/ProdeParticipants";
 import { Suspense } from "react";
-import { GroupPredictionsSection } from "@/components/prode/GroupPredictionsSection";
-import { TopScorerPredictions } from "@/components/prode/TopScorerPredictions";
-import { ChampionPredictions } from "@/components/prode/ChampionPredictions";
+
+const DeleteProdeButton = dynamic(() => import("@/components/prode/DeleteProdeButton").then((m) => m.DeleteProdeButton));
+const JoinRequestsPanel = dynamic(() => import("@/components/prode/JoinRequestsPanel").then((m) => m.JoinRequestsPanel));
+const ProdeChat = dynamic(() => import("@/components/prode/ProdeChat").then((m) => m.ProdeChat));
+const ProdeLeaderboard = dynamic(() => import("@/components/prode/ProdeLeaderboard").then((m) => m.ProdeLeaderboard));
+const ProdeParticipants = dynamic(() => import("@/components/prode/ProdeParticipants").then((m) => m.ProdeParticipants));
+const GroupPredictionsSection = dynamic(() => import("@/components/prode/GroupPredictionsSection").then((m) => m.GroupPredictionsSection));
+const TopScorerPredictions = dynamic(() => import("@/components/prode/TopScorerPredictions").then((m) => m.TopScorerPredictions));
+const ChampionPredictions = dynamic(() => import("@/components/prode/ChampionPredictions").then((m) => m.ChampionPredictions));
 
 function getWeekStatusInfo(status: string) {
   const map: Record<string, { label: string; color: string }> = {

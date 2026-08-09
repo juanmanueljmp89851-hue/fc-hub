@@ -4,8 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { getSbcBySlug, type SbcSet, type SbcChallenge } from "@/lib/futgg";
+import { fmtCoins, timeLeft } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const sbc = await getSbcBySlug(params.slug);
@@ -15,23 +16,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     description: sbc.description || `Requisitos, premios y solución más barata del SBC ${sbc.name}.`,
     alternates: { canonical: `/sbc/${params.slug}` },
   };
-}
-
-function fmtCoins(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2).replace(/\.?0+$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
-  return String(n);
-}
-
-function timeLeft(endTime: string | null): string {
-  if (!endTime) return "Permanente";
-  const ms = new Date(endTime).getTime() - Date.now();
-  if (ms <= 0) return "Expira ya";
-  const d = Math.floor(ms / 86_400_000);
-  const h = Math.floor((ms % 86_400_000) / 3_600_000);
-  if (d >= 1) return `${d}d ${h}h`;
-  const m = Math.floor((ms % 3_600_000) / 60_000);
-  return `${h}h ${m}m`;
 }
 
 function InfoTile({ label, value }: { label: string; value: string }) {
