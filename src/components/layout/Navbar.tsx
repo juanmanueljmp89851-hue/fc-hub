@@ -11,7 +11,6 @@ import { DmInbox } from "@/components/dm/DmInbox";
 import type { User as DbUser } from "@/types";
 
 const navLinks = [
-  { href: "/", label: "Inicio" },
   { href: "/actualidad", label: "Actualidad" },
   { href: "/jugadores", label: "Cartas FC26" },
   { href: "/sbc", label: "SBC" },
