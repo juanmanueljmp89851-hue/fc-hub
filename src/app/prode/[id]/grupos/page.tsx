@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -180,7 +181,7 @@ export default function GruposPredictionPage() {
                         {i + 1}°
                       </span>
                       {TEAM_CODES[ordered[i]] && (
-                        <img
+                        <Image
                           src={`https://flagcdn.com/w20/${TEAM_CODES[ordered[i]]}.png`}
                           alt=""
                           width={20}

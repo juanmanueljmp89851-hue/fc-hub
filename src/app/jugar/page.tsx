@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { AdSlot } from "@/components/ads/AdSlot";
@@ -101,9 +102,11 @@ export default async function JugarPage() {
                       </span>
                       <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-surface-light">
                         {user.avatarUrl ? (
-                          <img
+                          <Image
                             src={user.avatarUrl}
                             alt=""
+                            width={24}
+                            height={24}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -147,7 +150,7 @@ export default async function JugarPage() {
                       </span>
                       <div className="h-6 w-6 shrink-0 overflow-hidden rounded-lg bg-surface-light">
                         {team.logoUrl ? (
-                          <img src={team.logoUrl} alt="" className="h-full w-full object-contain p-0.5" />
+                          <Image src={team.logoUrl} alt="" width={24} height={24} className="h-full w-full object-contain p-0.5" />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-[10px]">🛡️</div>
                         )}

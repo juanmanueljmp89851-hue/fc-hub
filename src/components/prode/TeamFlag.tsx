@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { TEAM_CODES } from "@/lib/teamFlags";
 
-// flagcdn.com only supports specific widths
 const VALID_WIDTHS = [16, 20, 24, 32, 40, 48, 60, 80];
 
 function closestWidth(w: number): number {
@@ -11,19 +11,19 @@ function closestWidth(w: number): number {
   );
 }
 
-/** Small inline flag image next to team name */
 export function TeamFlag({ team, size = 20 }: { team: string; size?: number }) {
   const code = TEAM_CODES[team];
   if (!code) return null;
   const w = closestWidth(size);
   return (
-    <img
+    <Image
       src={`https://flagcdn.com/w${w}/${code}.png`}
       alt=""
       width={size}
       height={Math.round(size * 0.75)}
       className="inline-block shrink-0"
       style={{ verticalAlign: "middle" }}
+      unoptimized
     />
   );
 }

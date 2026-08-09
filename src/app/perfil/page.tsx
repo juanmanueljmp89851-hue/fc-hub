@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
@@ -87,9 +88,11 @@ export default function ProfilePage() {
             {/* Avatar */}
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-surface-light">
               {user.avatarUrl ? (
-                <img
+                <Image
                   src={user.avatarUrl}
                   alt={user.username}
+                  width={80}
+                  height={80}
                   className="h-full w-full object-cover"
                 />
               ) : (

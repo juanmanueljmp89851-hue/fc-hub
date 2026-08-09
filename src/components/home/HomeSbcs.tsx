@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { SbcSet } from "@/lib/futgg";
 
 function fmtCoins(n: number): string {
@@ -53,14 +54,13 @@ export function HomeSbcs({ sbcs }: { sbcs: SbcSet[] }) {
                   </span>
                 )}
                 {sbc.imageUrl ?? sbc.iconUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={(sbc.imageUrl ?? sbc.iconUrl)!}
                     alt={sbc.rewardPlayer?.commonName ?? sbc.name}
+                    width={112}
+                    height={112}
                     className="h-28 w-auto object-contain drop-shadow-lg"
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-28 w-20 items-center justify-center rounded-lg bg-surface-light text-2xl">

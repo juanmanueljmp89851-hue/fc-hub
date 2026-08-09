@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -233,7 +234,7 @@ export default function AvancePredictionPage() {
                         }`}
                       >
                         {TEAM_CODES[team] && (
-                          <img src={`https://flagcdn.com/w20/${TEAM_CODES[team]}.png`} alt="" width={16} height={12} />
+                          <Image src={`https://flagcdn.com/w20/${TEAM_CODES[team]}.png`} alt="" width={16} height={12} />
                         )}
                         {team}
                       </button>
@@ -276,7 +277,7 @@ export default function AvancePredictionPage() {
                             className="inline-flex items-center gap-1 rounded-full border border-surface-light/50 px-2.5 py-1 text-xs text-foreground/40"
                           >
                             {TEAM_CODES[team] && (
-                              <img src={`https://flagcdn.com/w20/${TEAM_CODES[team]}.png`} alt="" width={14} height={10} />
+                              <Image src={`https://flagcdn.com/w20/${TEAM_CODES[team]}.png`} alt="" width={14} height={10} />
                             )}
                             {team}
                           </span>

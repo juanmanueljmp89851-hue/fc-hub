@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { AdSlot } from "@/components/ads/AdSlot";
 import Link from "next/link";
@@ -217,11 +218,12 @@ function StandingsTable({
                 <td className="px-3 py-2.5">
                   <div className="flex items-center gap-2">
                     {row.team.logoUrl ? (
-                      <img
+                      <Image
                         src={row.team.logoUrl}
                         alt=""
+                        width={24}
+                        height={24}
                         className="h-6 w-6 rounded object-contain"
-                        loading="lazy"
                       />
                     ) : (
                       <div className="h-6 w-6 rounded bg-surface-light" />
@@ -308,11 +310,13 @@ function TopScorersCard({ scorers }: { scorers: VpnTopScorer[] }) {
               {s.position}
             </span>
             {s.countryFlag && (
-              <img
+              <Image
                 src={s.countryFlag}
                 alt=""
+                width={20}
+                height={16}
                 className="h-4 w-5 object-contain"
-                loading="lazy"
+                unoptimized
               />
             )}
             <div className="min-w-0 flex-1">

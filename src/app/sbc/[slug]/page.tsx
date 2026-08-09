@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -118,13 +119,13 @@ export default async function SbcDetailPage({ params }: { params: { slug: string
 
           <div className="flex flex-col gap-4 p-5 sm:flex-row">
             {(sbc.imageUrl ?? sbc.iconUrl) && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={(sbc.imageUrl ?? sbc.iconUrl)!}
                 alt={sbc.name}
+                width={176}
+                height={176}
                 className="mx-auto h-44 w-auto object-contain drop-shadow-lg sm:mx-0"
-                loading="lazy"
-                referrerPolicy="no-referrer"
+                unoptimized
               />
             )}
             <div className="flex-1">

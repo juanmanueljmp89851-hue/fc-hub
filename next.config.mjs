@@ -30,6 +30,10 @@ const nextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       // FUTBIN player images
       { protocol: "https", hostname: "cdn.futbin.com" },
+      // FUT.GG player cards & SBC images
+      { protocol: "https", hostname: "**.fut.gg" },
+      // Country flags
+      { protocol: "https", hostname: "flagcdn.com" },
     ],
   },
 };

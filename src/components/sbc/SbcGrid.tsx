@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { SbcSet } from "@/lib/futgg";
 import Link from "next/link";
 
@@ -45,14 +46,13 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
 
       <div className="flex items-center justify-center bg-gradient-to-b from-surface-light/30 to-transparent px-4 pt-6 pb-2">
         {sbc.imageUrl ?? sbc.iconUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={(sbc.imageUrl ?? sbc.iconUrl)!}
             alt={sbc.rewardPlayer?.commonName ?? sbc.name}
+            width={160}
+            height={160}
             className="h-40 w-auto object-contain drop-shadow-lg"
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
+            unoptimized
           />
         ) : (
           <div className="flex h-40 w-28 items-center justify-center rounded-lg bg-surface-light text-3xl">🎁</div>

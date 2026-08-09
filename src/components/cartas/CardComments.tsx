@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { addCardComment, deleteCardComment } from "@/lib/actions/card-comments";
 
 interface CommentUser {
@@ -31,8 +32,7 @@ function timeAgo(date: Date | string): string {
 function Avatar({ user }: { user: CommentUser }) {
   if (user.avatarUrl) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={user.avatarUrl} alt={user.username} className="h-8 w-8 rounded-full object-cover" />
+      <Image src={user.avatarUrl} alt={user.username} width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
     );
   }
   return (
