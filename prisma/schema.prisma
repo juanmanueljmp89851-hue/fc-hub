@@ -80,6 +80,16 @@ model User {
   teamJoinRequests      TeamJoinRequest[]    @relation("JoinRequester")
   cardComments          CardComment[]
 
+  // ─── EMBAJADORES ───
+  referralCode          String?  @unique @map("referral_code")
+  referralsMade         Referral[]           @relation("AmbassadorReferrals")
+  referredBy            Referral?            @relation("ReferredBy")
+  referralsReviewed     Referral[]           @relation("ReferralReviewer")
+  bengalas              Bengala[]            @relation("UserBengalas")
+  bengalasInvalidated   Bengala[]            @relation("BengalaInvalidator")
+  periodsCreated        AmbassadorPeriod[]   @relation("PeriodCreator")
+  periodWins            PeriodWinner[]       @relation("PeriodWinners")
+
   @@map("users")
 }
 
@@ -956,6 +966,12 @@ enum NotificationType {
   TEAM_JOIN_REJECTED
   TEAM_PLAYER_LEFT
   TOURNAMENT_CANCELLED
+  BENGALA_EARNED
+  REFERRAL_ACTIVATED
+  REFERRAL_VALIDATED
+  CONVERSION_REVIEW
+  AMBASSADOR_WON
+  PERIOD_STARTED
 }
 
 // ─── MENSAJES DIRECTOS ─────────────────────────────────────
@@ -1238,4 +1254,191 @@ enum InviteStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+// ─── EMBAJADORES ───────────────────────────────────────────
+
+model Referral {
+  id               String            @id @default(uuid())
+  ambassadorId     String            @map("ambassador_id")
+  referredId       String            @unique @map("referred_id")
+  referralCode     String            @map("referral_code")
+  isActive         Boolean           @default(false) @map("is_active")
+  activatedAt      DateTime?         @map("activated_at")
+  conversionStatus ConversionStatus  @default(PENDING) @map("conversion_status")
+  conversionRule   ConversionRule?   @map("conversion_rule")
+  convertedAt      DateTime?         @map("converted_at")
+  riskScore        Int               @default(0) @map("risk_score")
+  riskFlags        Json?             @map("risk_flags")
+  reviewedBy       String?           @map("reviewed_by")
+  reviewedAt       DateTime?         @map("reviewed_at")
+  reviewNote       String?           @map("review_note")
+  invalidated      Boolean           @default(false)
+  invalidatedBy    String?           @map("invalidated_by")
+  invalidatedAt    DateTime?         @map("invalidated_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  ambassador      User              @relation("AmbassadorReferrals", fields: [ambassadorId], references: [id])
+  referred        User              @relation("ReferredBy", fields: [referredId], references: [id])
+  reviewer        User?             @relation("ReferralReviewer", fields: [reviewedBy], references: [id])
+  bengalas        Bengala[]
+  conversionLogs  ConversionLog[]
+
+  @@index([ambassadorId])
+  @@index([conversionStatus])
+  @@map("referrals")
+}
+
+enum ConversionStatus {
+  PENDING
+  VALIDATED
+  UNDER_REVIEW
+  INVALIDATED
+}
+
+enum ConversionRule {
+  DUELS_5_USERS_3
+  TOURNAMENT_PARTICIPATION
+  TOURNAMENT_CREATOR_5P_2M
+  PRODE_CREATOR_5P
+  LEGACY
+}
+
+model Bengala {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  amount        Int
+  reason        BengalaReason
+  referralId    String?       @map("referral_id")
+  metadata      Json?
+  invalidated   Boolean       @default(false)
+  invalidatedBy String?       @map("invalidated_by")
+  invalidatedAt DateTime?     @map("invalidated_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  user          User      @relation("UserBengalas", fields: [userId], references: [id])
+  invalidator   User?     @relation("BengalaInvalidator", fields: [invalidatedBy], references: [id])
+  referral      Referral? @relation(fields: [referralId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([referralId, reason])
+  @@map("bengalas")
+}
+
+enum BengalaReason {
+  REFERRAL_ACTIVE
+  REFERRAL_TOURNAMENT
+  REFERRAL_PRODE
+  REFERRAL_ORGANIZED
+}
+
+model ConversionConfig {
+  id                      String   @id @default(uuid())
+  periodId                String?  @unique @map("period_id")
+  minDuels                Int      @default(5) @map("min_duels")
+  minUniqueOpponents      Int      @default(3) @map("min_unique_opponents")
+  minTournamentParticipants Int    @default(5) @map("min_tournament_participants")
+  minTournamentMatches    Int      @default(2) @map("min_tournament_matches")
+  minProdeParticipants    Int      @default(5) @map("min_prode_participants")
+  riskThreshold           Int      @default(40) @map("risk_threshold")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  period AmbassadorPeriod? @relation(fields: [periodId], references: [id])
+
+  @@map("conversion_configs")
+}
+
+model ConversionLog {
+  id             String   @id @default(uuid())
+  referralId     String   @map("referral_id")
+  previousStatus String   @map("previous_status")
+  newStatus      String   @map("new_status")
+  rule           String?
+  changedBy      String   @map("changed_by")
+  reason         String?
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  referral Referral @relation(fields: [referralId], references: [id])
+
+  @@index([referralId])
+  @@map("conversion_logs")
+}
+
+// ─── SORTEOS ───────────────────────────────────────────────
+
+// ─── EMBAJADOR DEL MES ────────────────────────────────────
+
+model AmbassadorPeriod {
+  id          String       @id @default(uuid())
+  name        String
+  month       Int
+  year        Int
+  startDate   DateTime     @map("start_date")
+  endDate     DateTime     @map("end_date")
+  status      PeriodStatus @default(SCHEDULED)
+  createdById String       @map("created_by")
+  finalizedAt DateTime?    @map("finalized_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  createdBy        User              @relation("PeriodCreator", fields: [createdById], references: [id])
+  prizes           PeriodPrize[]
+  winners          PeriodWinner[]
+  conversionConfig ConversionConfig?
+
+  @@unique([month, year])
+  @@map("ambassador_periods")
+}
+
+enum PeriodStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model PeriodPrize {
+  id          String   @id @default(uuid())
+  periodId    String   @map("period_id")
+  position    Int      @default(1)
+  name        String
+  description String?
+  imageUrl    String?  @map("image_url")
+  value       String?
+  conditions  String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  period AmbassadorPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@unique([periodId, position])
+  @@map("period_prizes")
+}
+
+model PeriodWinner {
+  id              String    @id @default(uuid())
+  periodId        String    @map("period_id")
+  userId          String    @map("user_id")
+  position        Int
+  activeReferrals Int       @map("active_referrals")
+  bengalasEarned  Int       @map("bengalas_earned")
+  confirmedAt     DateTime? @map("confirmed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  period AmbassadorPeriod @relation(fields: [periodId], references: [id])
+  user   User             @relation("PeriodWinners", fields: [userId], references: [id])
+
+  @@unique([periodId, position])
+  @@map("period_winners")
+}
+
+// ─── CONFIGURACIÓN SISTEMA ─────────────────────────────────
+
+model SystemConfig {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
+
+  @@map("system_config")
 }

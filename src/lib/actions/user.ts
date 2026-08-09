@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
  * Obtiene o crea el usuario en nuestra DB a partir de la sesión de Supabase.
  * Se llama después del login/register para sincronizar.
  */
-export async function syncUserWithDB() {
+export async function syncUserWithDB(referralCode?: string) {
   const supabase = createClient();
   const {
     data: { user: authUser },
@@ -47,6 +47,12 @@ export async function syncUserWithDB() {
       bio: null,
     },
   });
+
+  // Registrar referido si hay código
+  if (referralCode) {
+    const { registerReferral } = await import("@/lib/actions/ambassador");
+    await registerReferral(newUser.id, referralCode);
+  }
 
   return newUser;
 }

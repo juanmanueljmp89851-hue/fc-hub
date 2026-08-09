@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/lib/actions/user";
+import { getMyAmbassadorProfile } from "@/lib/actions/ambassador";
+import { AmbassadorProfile } from "@/components/ambassador/AmbassadorProfile";
 import type { User } from "@/types";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -40,6 +42,7 @@ function InfoRow({
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [ambassadorData, setAmbassadorData] = useState<Awaited<ReturnType<typeof getMyAmbassadorProfile>>>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,6 +54,7 @@ export default function ProfilePage() {
       }
       setUser(dbUser);
       setLoading(false);
+      getMyAmbassadorProfile().then(setAmbassadorData);
     }
     load();
   }, [router]);
@@ -181,13 +185,26 @@ export default function ProfilePage() {
 
         {/* Contacto */}
         {user.phone && (
-          <Card>
+          <Card className="mb-6">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground/50">
               Contacto
             </h3>
             <InfoRow icon="📱" label="Teléfono" value={user.phone} />
           </Card>
         )}
+
+        {/* Embajador */}
+        <div id="embajador">
+          {ambassadorData ? (
+            <AmbassadorProfile data={ambassadorData} />
+          ) : (
+            !loading && (
+              <div className="animate-pulse rounded-xl border border-surface-light bg-surface/30 p-6">
+                <div className="h-6 w-32 rounded bg-surface" />
+              </div>
+            )
+          )}
+        </div>
       </main>
     </div>
   );

@@ -83,6 +83,11 @@ export async function createProde(input: CreateProdeInput) {
     data: { prodeId: prode.id, userId },
   });
 
+  // Bengala: referido creó prode
+  import("@/lib/actions/ambassador").then(({ checkAndAwardBengala }) =>
+    checkAndAwardBengala(userId, "REFERRAL_PRODE", { prodeId: prode.id }).catch(() => {}),
+  );
+
   revalidatePath("/prode");
   return { success: true, prode };
 }
@@ -151,6 +156,11 @@ export async function joinProdeByCode(shareCode: string) {
   await prisma.prodeParticipant.create({
     data: { prodeId: prode.id, userId },
   });
+
+  // Evaluate ambassador conversion for prode creator (PRODE_CREATOR_5P rule)
+  import("@/lib/actions/ambassador").then(({ evaluateConversion }) =>
+    evaluateConversion(prode.createdById).catch(() => {}),
+  );
 
   revalidatePath(`/prode/${prode.id}`);
   return { success: true, prodeId: prode.id };
@@ -1418,6 +1428,11 @@ export async function resolveJoinRequest(
       update: {},
       create: { prodeId: request.prodeId, userId: request.userId },
     });
+
+    // Evaluate ambassador conversion for prode creator (PRODE_CREATOR_5P rule)
+    import("@/lib/actions/ambassador").then(({ evaluateConversion }) =>
+      evaluateConversion(request.prode.createdById).catch(() => {}),
+    );
   }
 
   // Notify the requester about the decision

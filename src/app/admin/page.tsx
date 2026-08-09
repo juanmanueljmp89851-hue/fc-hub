@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getAdminStats } from "@/lib/actions/admin";
 
 export default async function AdminDashboard() {
@@ -26,6 +27,21 @@ export default async function AdminDashboard() {
             <p className={`mt-1 text-3xl font-bold ${card.color}`}>{card.value}</p>
           </div>
         ))}
+      </div>
+
+      <div className="mt-8">
+        <h2 className="mb-4 text-lg font-bold text-foreground/70">Herramientas</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href="/admin/embajadores"
+            className="rounded-xl border border-accent/30 bg-accent/5 p-6 transition-colors hover:border-accent/60"
+          >
+            <p className="text-lg font-bold text-accent">🔥 Embajadores</p>
+            <p className="mt-1 text-sm text-foreground/50">
+              Referidos, bengalas, sorteos y fraude
+            </p>
+          </Link>
+        </div>
       </div>
     </div>
   );

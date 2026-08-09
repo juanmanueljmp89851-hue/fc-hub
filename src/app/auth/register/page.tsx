@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 function RegisterForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
+  const ref = searchParams.get("ref") || "";
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -51,6 +52,7 @@ function RegisterForm() {
       options: {
         data: {
           username,
+          ...(ref ? { referral_code: ref } : {}),
         },
       },
     });
@@ -78,6 +80,9 @@ function RegisterForm() {
     const callbackUrl = new URL("/auth/callback", window.location.origin);
     if (redirectTo && redirectTo !== "/") {
       callbackUrl.searchParams.set("redirect", redirectTo);
+    }
+    if (ref) {
+      callbackUrl.searchParams.set("ref", ref);
     }
 
     await supabase.auth.signInWithOAuth({
@@ -120,6 +125,15 @@ function RegisterForm() {
           <CardHeader>
             <CardTitle>Crear cuenta</CardTitle>
           </CardHeader>
+
+          {ref && (
+            <div className="rounded-lg border border-accent/30 bg-accent/5 px-4 py-3 text-sm">
+              <span className="font-bold text-accent">🔥 Invitado por un embajador</span>
+              <p className="mt-1 text-foreground/60">
+                Código: <span className="font-mono font-bold text-foreground/80">{ref}</span>
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleRegister} className="space-y-4">
             {error && (

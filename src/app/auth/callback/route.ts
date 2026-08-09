@@ -6,13 +6,17 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? searchParams.get("redirect") ?? "/";
+  const ref = searchParams.get("ref") ?? undefined;
 
   if (code) {
     const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Leer referral_code de metadata (email signup) o query param (OAuth)
+      const referralCode = ref ?? data.user?.user_metadata?.referral_code ?? undefined;
+
       // Sincronizar usuario con nuestra DB
-      const user = await syncUserWithDB();
+      const user = await syncUserWithDB(referralCode);
 
       // Si es usuario nuevo (perfil no completado), redirigir a editar perfil
       if (user && !user.profileCompleted) {

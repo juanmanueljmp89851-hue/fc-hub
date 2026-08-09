@@ -166,6 +166,11 @@ export async function createTournament(input: CreateTournamentInput) {
       },
     });
 
+    // Bengala: referido organizó torneo
+    import("@/lib/actions/ambassador").then(({ checkAndAwardBengala }) =>
+      checkAndAwardBengala(dbUser.id, "REFERRAL_ORGANIZED", { tournamentId: tournament.id }).catch(() => {}),
+    );
+
     revalidatePath("/torneos");
     return { success: true, tournamentId: tournament.id };
   } catch (err) {
@@ -542,6 +547,24 @@ export async function joinTournament(tournamentId: string) {
         linkUrl: `/torneos/${tournamentId}`,
       },
     });
+  }
+
+  // Bengala: referido participó en torneo
+  if (status === "CONFIRMED") {
+    import("@/lib/actions/ambassador").then(({ checkAndAwardBengala }) =>
+      checkAndAwardBengala(dbUser.id, "REFERRAL_TOURNAMENT", { tournamentId }).catch(() => {}),
+    );
+
+    // Evaluate conversion for tournament creator (TOURNAMENT_CREATOR_5P_2M rule)
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      select: { createdById: true },
+    });
+    if (tournament) {
+      import("@/lib/actions/ambassador").then(({ evaluateConversion }) =>
+        evaluateConversion(tournament.createdById).catch(() => {}),
+      );
+    }
   }
 
   revalidatePath(`/torneos/${tournamentId}`);
@@ -3175,6 +3198,18 @@ export async function confirmTournamentResult(matchId: string) {
 
   // Check if tournament complete
   await checkTournamentComplete(match.tournament.id);
+
+  // Evaluate ambassador conversions for both players
+  if (match.player1Id) {
+    import("@/lib/actions/ambassador").then(({ evaluateConversion }) =>
+      evaluateConversion(match.player1Id!).catch(() => {}),
+    );
+  }
+  if (match.player2Id) {
+    import("@/lib/actions/ambassador").then(({ evaluateConversion }) =>
+      evaluateConversion(match.player2Id!).catch(() => {}),
+    );
+  }
 
   revalidatePath(`/arena/${matchId}`);
   revalidatePath(`/torneos/${match.tournament.id}`);

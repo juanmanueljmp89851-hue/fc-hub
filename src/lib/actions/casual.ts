@@ -308,6 +308,12 @@ export async function confirmCasualResult(matchId: string) {
     });
   });
 
+  // Bengala: verificar activación por duelos completados
+  import("@/lib/actions/ambassador").then(({ checkAndActivateReferral }) => {
+    checkAndActivateReferral(match.challengerId).catch(() => {});
+    checkAndActivateReferral(match.challengedId).catch(() => {});
+  });
+
   revalidatePath(`/casual/${matchId}`);
   revalidatePath("/casual");
   revalidatePath("/ranking");
