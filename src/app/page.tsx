@@ -26,18 +26,18 @@ const quickLinks = [
   {
     href: "/actualidad",
     title: "Actualidad",
-    description: "Noticias y novedades de FC 26",
+    description: "Noticias y novedades de EA FC 26",
     icon: "📰",
   },
   {
     href: "/sbc",
     title: "Resolver SBC",
-    description: "SBC activos de FC 26: costo y premio",
+    description: "SBC activos: costo, premio y solución",
     icon: "🧩",
   },
   {
     href: "/jugadores",
-    title: "Cartas FC26",
+    title: "Cartas FC 26",
     description: "Base de datos de jugadores y cartas",
     icon: "🃏",
   },
@@ -46,6 +46,36 @@ const quickLinks = [
     title: "Arena",
     description: "Torneos y copas de la comunidad",
     icon: "🏆",
+  },
+  {
+    href: "/evoluciones",
+    title: "Evoluciones",
+    description: "Mejorá tus jugadores con evoluciones activas",
+    icon: "⬆️",
+  },
+  {
+    href: "/ranking",
+    title: "Clasificación",
+    description: "Ranking general de la comunidad",
+    icon: "📊",
+  },
+  {
+    href: "/escena",
+    title: "Competitivo",
+    description: "Ligas y escena competitiva FC 26",
+    icon: "⚡",
+  },
+  {
+    href: "/influencers",
+    title: "Streamers",
+    description: "Creadores de contenido de FC",
+    icon: "🎥",
+  },
+  {
+    href: "/casual",
+    title: "Casual",
+    description: "Desafiá a otros jugadores 1v1",
+    icon: "🎯",
   },
 ];
 

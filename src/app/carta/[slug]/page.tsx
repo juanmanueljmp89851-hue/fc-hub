@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     title,
     description: `${name} ${c.overall} (${pos}) de EA FC 26: stats, precio, club, liga y nación. ${promo ?? ""}`.trim(),
     openGraph: { title, images: img ? [img] : [] },
+    alternates: { canonical: `/carta/${params.slug}` },
   };
 }
 

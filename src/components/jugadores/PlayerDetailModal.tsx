@@ -2,16 +2,11 @@
 
 import Link from "next/link";
 import type { FutPlayer } from "@/types/player";
+import { tPos } from "@/lib/positions";
 
 function toSlug(name: string, eaId: number): string {
   return `${name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}-${eaId}`;
 }
-
-const POS_ES: Record<string, string> = {
-  GK: "POR", RB: "LD", RWB: "CDD", CB: "DFC", LB: "LI", LWB: "CDI",
-  CDM: "MCD", CM: "MC", CAM: "MCO", RM: "MD", LM: "MI",
-  RW: "ED", LW: "EI", RF: "DLD", LF: "DLI", CF: "MP", ST: "DC",
-};
 
 function formatPrice(price?: number): string {
   if (!price) return "—";
@@ -77,14 +72,14 @@ export function PlayerDetailModal({ player, onClose }: Props) {
               {player.overall} OVR
             </span>
             <span className="rounded bg-surface-light px-2 py-0.5 text-xs font-medium text-foreground/60">
-              {POS_ES[player.position] ?? player.position}
+              {tPos(player.position)}
             </span>
             {player.alternatePositions?.map((pos) => (
               <span
                 key={pos}
                 className="rounded bg-surface-light px-1.5 py-0.5 text-[10px] font-medium text-foreground/40"
               >
-                {POS_ES[pos] ?? pos}
+                {tPos(pos)}
               </span>
             ))}
             {player.promo && (

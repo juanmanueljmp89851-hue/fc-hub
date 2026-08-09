@@ -12,7 +12,10 @@ import { LeaveTeamButton } from "@/components/teams/LeaveTeamButton";
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const team = await getTeam(params.id);
   if (!team) return { title: "Equipo no encontrado" };
-  return { title: `${team.name} — ${team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}` };
+  return {
+    title: `${team.name} — ${team.mode === "CLUBS_PRO" ? "Clubes Pro" : "Rush"}`,
+    alternates: { canonical: `/equipos/${params.id}` },
+  };
 }
 
 export default async function TeamDetailPage({ params }: { params: { id: string } }) {

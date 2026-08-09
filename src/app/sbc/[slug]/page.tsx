@@ -12,6 +12,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${sbc.name} — SBC EA FC 26 | Modo Fosa`,
     description: sbc.description || `Requisitos, premios y solución más barata del SBC ${sbc.name}.`,
+    alternates: { canonical: `/sbc/${params.slug}` },
   };
 }
 

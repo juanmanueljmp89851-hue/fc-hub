@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     type: "article",
     images: [{ url: "/images/liga-oficial-1.png" }],
   },
+  alternates: { canonical: "/actualidad/ligas-oficiales-modo-fosa" },
 };
 
 export default function LigasOficialesPage() {
