@@ -32,6 +32,8 @@ function getNotifIcon(type: string) {
       return "🏆";
     case "ADMIN_MESSAGE":
       return "📢";
+    case "DISPUTE_OPENED":
+      return "⚖️";
     case "SANCTION":
       return "🚫";
     case "TOURNAMENT_CHAT":
@@ -62,6 +64,12 @@ function getNotifIcon(type: string) {
       return "📩";
     case "TEAM_PLAYER_LEFT":
       return "🚪";
+    case "WO_REQUESTED":
+      return "🏳️";
+    case "WO_APPROVED":
+      return "🏳️";
+    case "WO_REJECTED":
+      return "🚫";
     default:
       return "🔔";
   }
@@ -96,6 +104,8 @@ function getNotifLink(notif: Notification & { linkUrl?: string | null }): string
     case "ELIMINATED":
     case "TOURNAMENT_FINISHED":
       return `/torneos/${notif.relatedId}`;
+    case "DISPUTE_OPENED":
+      return `/arena/${notif.relatedId}`;
     case "TEAM_INVITE":
       return "/equipos/invitaciones";
     case "TEAM_INVITE_ACCEPTED":
@@ -268,6 +278,17 @@ export function NotificationBell() {
               ))
             )}
           </div>
+          {notifications.length > 0 && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                router.push("/notificaciones");
+              }}
+              className="block w-full border-t border-surface-light py-3 text-center text-xs font-medium text-accent hover:bg-surface-light"
+            >
+              Ver todas las notificaciones
+            </button>
+          )}
         </div>
       )}
     </div>

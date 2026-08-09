@@ -40,6 +40,7 @@ model User {
   matchesAsPlayer1      TournamentMatch[]       @relation("MatchPlayer1")
   matchesAsPlayer2      TournamentMatch[]       @relation("MatchPlayer2")
   wonMatches            TournamentMatch[]       @relation("MatchWinner")
+  woRequests            TournamentMatch[]       @relation("MatchWoRequester")
   leagueStandings       LeagueStanding[]
   openedDisputes        TournamentDispute[]     @relation("DisputeOpener")
   resolvedDisputes      TournamentDispute[]     @relation("DisputeResolver")
@@ -299,9 +300,11 @@ model TournamentMatch {
   proofImageUrls String[]     @map("proof_image_urls")
   disputeCountP1 Int         @default(0) @map("dispute_count_p1")
   disputeCountP2 Int         @default(0) @map("dispute_count_p2")
-  version        Int         @default(0)
-  scheduledTime  DateTime?   @map("scheduled_time")
-  createdAt     DateTime     @default(now()) @map("created_at")
+  version          Int         @default(0)
+  scheduledTime    DateTime?   @map("scheduled_time")
+  woRequestedById  String?     @map("wo_requested_by_id")
+  woRequestedAt    DateTime?   @map("wo_requested_at")
+  createdAt        DateTime    @default(now()) @map("created_at")
 
   tournament Tournament          @relation(fields: [tournamentId], references: [id])
   player1    User?               @relation("MatchPlayer1", fields: [player1Id], references: [id])
@@ -309,7 +312,8 @@ model TournamentMatch {
   winner     User?               @relation("MatchWinner", fields: [winnerId], references: [id])
   team1      Team?               @relation("MatchTeam1", fields: [team1Id], references: [id])
   team2      Team?               @relation("MatchTeam2", fields: [team2Id], references: [id])
-  winnerTeam Team?               @relation("MatchWinnerTeam", fields: [winnerTeamId], references: [id])
+  winnerTeam     Team?               @relation("MatchWinnerTeam", fields: [winnerTeamId], references: [id])
+  woRequestedBy  User?               @relation("MatchWoRequester", fields: [woRequestedById], references: [id])
   disputes       TournamentDispute[]
   messages       MatchMessage[]      @relation("TournamentMatchMessages")
   rankingHistory RankingHistory[]
@@ -944,6 +948,9 @@ enum NotificationType {
   TEAM_INVITE
   TEAM_INVITE_ACCEPTED
   TEAM_INVITE_REJECTED
+  WO_REQUESTED
+  WO_APPROVED
+  WO_REJECTED
   TEAM_JOIN_REQUEST
   TEAM_JOIN_ACCEPTED
   TEAM_JOIN_REJECTED

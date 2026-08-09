@@ -166,24 +166,6 @@ export async function createTournament(input: CreateTournamentInput) {
       },
     });
 
-    // Notify all users about new tournament
-    const allUsers = await prisma.user.findMany({
-      where: { id: { not: dbUser.id } },
-      select: { id: true },
-    });
-    if (allUsers.length > 0) {
-      await prisma.notification.createMany({
-        data: allUsers.map((u) => ({
-          userId: u.id,
-          type: "NEW_TOURNAMENT",
-          title: `Nuevo torneo: ${tournament.name}`,
-          message: `${dbUser.username} creó un nuevo torneo. ¡Inscribite!`,
-          relatedId: tournament.id,
-          linkUrl: `/torneos/${tournament.id}`,
-        })),
-      });
-    }
-
     revalidatePath("/torneos");
     return { success: true, tournamentId: tournament.id };
   } catch (err) {
@@ -1618,175 +1600,6 @@ function getRoundNames(totalRounds: number): string[] {
   return names.reverse();
 }
 
-// ─── CARGAR RESULTADO (JUGADOR) ────────────────────────────
-
-export async function submitMatchResult(
-  matchId: string,
-  resultP1: number,
-  resultP2: number
-) {
-  const supabase = createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) return { error: "No autenticado" };
-
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseId: authUser.id },
-  });
-
-  if (!dbUser) return { error: "Usuario no encontrado" };
-
-  const match = await prisma.tournamentMatch.findUnique({
-    where: { id: matchId },
-    include: { tournament: true },
-  });
-
-  if (!match) return { error: "Partido no encontrado" };
-
-  // Solo jugadores del partido pueden cargar resultado
-  if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
-    return { error: "No sos parte de este partido" };
-  }
-
-  if (match.status === "FINISHED") {
-    return { error: "Este partido ya tiene resultado" };
-  }
-
-  // Determinar ganador
-  let winnerId: string | null = null;
-  if (resultP1 > resultP2) winnerId = match.player1Id;
-  else if (resultP2 > resultP1) winnerId = match.player2Id;
-  // Empate: winnerId null (para liga)
-
-  await prisma.tournamentMatch.update({
-    where: { id: matchId },
-    data: {
-      resultP1,
-      resultP2,
-      winnerId,
-      status: "PENDING_CONFIRMATION",
-    },
-  });
-
-  revalidatePath(`/torneos/${match.tournamentId}`);
-  return { success: true };
-}
-
-// ─── CONFIRMAR RESULTADO ───────────────────────────────────
-
-export async function confirmMatchResult(matchId: string) {
-  const supabase = createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) return { error: "No autenticado" };
-
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseId: authUser.id },
-  });
-
-  if (!dbUser) return { error: "Usuario no encontrado" };
-
-  const match = await prisma.tournamentMatch.findUnique({
-    where: { id: matchId },
-    include: { tournament: true },
-  });
-
-  if (!match) return { error: "Partido no encontrado" };
-  if (match.status !== "PENDING_CONFIRMATION") return { error: "Partido no está pendiente de confirmación" };
-
-  // Solo el otro jugador puede confirmar
-  if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
-    return { error: "No sos parte de este partido" };
-  }
-
-  await prisma.tournamentMatch.update({
-    where: { id: matchId },
-    data: {
-      status: "FINISHED",
-      confirmedAt: new Date(),
-    },
-  });
-
-  // Update ranking points
-  if (match.player1Id && match.player2Id && match.resultP1 !== null && match.resultP2 !== null) {
-    const winnerId = match.resultP1 > match.resultP2 ? match.player1Id : match.resultP2 > match.resultP1 ? match.player2Id : null;
-    const p1Pts = winnerId === match.player1Id ? RANKING.WIN : winnerId === match.player2Id ? RANKING.LOSS : RANKING.DRAW;
-    const p2Pts = winnerId === match.player2Id ? RANKING.WIN : winnerId === match.player1Id ? RANKING.LOSS : RANKING.DRAW;
-
-    await prisma.user.update({ where: { id: match.player1Id }, data: { rankingPoints: { increment: p1Pts } } });
-    await prisma.rankingHistory.create({ data: { userId: match.player1Id, tournamentMatchId: matchId, pointsChange: p1Pts, reason: p1Pts === RANKING.WIN ? "Victoria en torneo" : p1Pts === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo" } });
-    await prisma.user.update({ where: { id: match.player2Id }, data: { rankingPoints: { increment: p2Pts } } });
-    await prisma.rankingHistory.create({ data: { userId: match.player2Id, tournamentMatchId: matchId, pointsChange: p2Pts, reason: p2Pts === RANKING.WIN ? "Victoria en torneo" : p2Pts === RANKING.DRAW ? "Empate en torneo" : "Derrota en torneo" } });
-
-    // Update team stats if team tournament
-    if (match.team1Id && match.team2Id) {
-      await updateTeamStats(match.team1Id, match.team2Id, match.resultP1, match.resultP2);
-    }
-  }
-
-  // Si es liga o grupo, actualizar standings
-  if (
-    (match.tournament.format === "LEAGUE" || match.tournament.format === "GROUP_KNOCKOUT") &&
-    match.resultP1 !== null &&
-    match.resultP2 !== null
-  ) {
-    await updateLeagueStandings(match.tournamentId, match.player1Id!, match.player2Id!, match.resultP1, match.resultP2);
-
-    // If group knockout, check if all group matches done → advance to knockout
-    if (match.tournament.format === "GROUP_KNOCKOUT" && match.groupName) {
-      await checkGroupComplete(match.tournamentId, match.tournament.groupCount ?? 4, match.tournament.qualifyPerGroup ?? 2);
-    }
-  }
-
-  // Si es eliminación, avanzar ganador
-  if (
-    (match.tournament.format === "SINGLE_ELIMINATION" || match.tournament.format === "DOUBLE_ELIMINATION") &&
-    match.winnerId &&
-    match.round
-  ) {
-    const winTeamId = match.winnerId === match.player1Id ? match.team1Id : match.team2Id;
-    await advanceWinner(match.tournamentId, match.round, match.winnerId, match.tournament.format, winTeamId);
-    if (match.tournament.format === "DOUBLE_ELIMINATION" && match.player1Id && match.player2Id) {
-      const loserId = match.winnerId === match.player1Id ? match.player2Id : match.player1Id;
-      const loserTeamId = match.winnerId === match.player1Id ? match.team2Id : match.team1Id;
-      await sendToLosers(match.tournamentId, match.round, loserId, loserTeamId);
-    }
-  }
-
-  // Notify both players result confirmed
-  if (match.player1Id && match.player2Id && match.resultP1 !== null && match.resultP2 !== null) {
-    const p1 = await prisma.user.findUnique({ where: { id: match.player1Id }, select: { username: true } });
-    const p2 = await prisma.user.findUnique({ where: { id: match.player2Id }, select: { username: true } });
-    const scoreText = `${match.resultP1}-${match.resultP2}`;
-    const winnerId = match.resultP1 > match.resultP2 ? match.player1Id : match.resultP2 > match.resultP1 ? match.player2Id : null;
-
-    for (const playerId of [match.player1Id, match.player2Id]) {
-      const isWinner = winnerId === playerId;
-      const isDraw = !winnerId;
-      const rivalName = playerId === match.player1Id ? p2?.username : p1?.username;
-      await prisma.notification.create({
-        data: {
-          userId: playerId,
-          type: "RESULT_CONFIRMED",
-          title: isDraw ? `Empate ${scoreText}` : isWinner ? `¡Ganaste ${scoreText}!` : `Perdiste ${scoreText}`,
-          message: `Resultado confirmado vs ${rivalName ?? "rival"} en ${match.tournament.name}.`,
-          relatedId: match.tournamentId,
-          linkUrl: `/torneos/${match.tournamentId}`,
-        },
-      });
-    }
-  }
-
-  // Check if tournament finished
-  await checkTournamentComplete(match.tournamentId);
-
-  revalidatePath(`/torneos/${match.tournamentId}`);
-  return { success: true };
-}
 
 async function updateLeagueStandings(
   tournamentId: string,
@@ -3432,7 +3245,7 @@ export async function disputeTournamentResult(matchId: string) {
     await prisma.notification.createMany({
       data: Array.from(recipientIds).map((userId) => ({
         userId,
-        type: "ADMIN_MESSAGE" as const,
+        type: "DISPUTE_OPENED" as const,
         title: "🚨 Conflicto sin resolver",
         message: `${match.player1?.username ?? "?"} y ${match.player2?.username ?? "?"} no se ponen de acuerdo en ${match.tournament.name}. Se requiere intervención.`,
         relatedId: matchId,
@@ -3533,7 +3346,7 @@ export async function invokeArenaAdmin(matchId: string) {
   await prisma.notification.createMany({
     data: Array.from(recipientIds).map((userId) => ({
       userId,
-      type: "ADMIN_MESSAGE" as const,
+      type: "DISPUTE_OPENED" as const,
       title: "⚠️ Intervención solicitada",
       message: `${dbUser.username} pide ayuda en ${match.tournament.name}: ${match.player1?.username ?? "?"} vs ${match.player2?.username ?? "?"}`,
       relatedId: matchId,
@@ -4128,4 +3941,204 @@ export async function duplicateTournament(tournamentId: string) {
 
   revalidatePath("/torneos");
   return { success: true, tournamentId: newTournament.id };
+}
+
+// ─── SOLICITAR WALKOVER ─────────────────────────────────────
+
+export async function requestWalkover(matchId: string, reason: string) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, username: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const match = await prisma.tournamentMatch.findUnique({
+    where: { id: matchId },
+    include: {
+      tournament: { select: { id: true, name: true, createdById: true } },
+      player1: { select: { id: true, username: true } },
+      player2: { select: { id: true, username: true } },
+    },
+  });
+  if (!match) return { error: "Partido no encontrado" };
+
+  if (match.player1Id !== dbUser.id && match.player2Id !== dbUser.id) {
+    return { error: "No sos parte de este partido" };
+  }
+
+  if (match.status === "FINISHED" || match.status === "WALKOVER" || match.status === "CANCELLED") {
+    return { error: "Este partido ya terminó" };
+  }
+
+  if (match.woRequestedById) {
+    return { error: "Ya hay una solicitud de WO pendiente" };
+  }
+
+  await prisma.tournamentMatch.update({
+    where: { id: matchId },
+    data: {
+      woRequestedById: dbUser.id,
+      woRequestedAt: new Date(),
+    },
+  });
+
+  const admins = await prisma.user.findMany({
+    where: { role: "ADMIN" },
+    select: { id: true },
+  });
+  const recipientIds = new Set(admins.map((a) => a.id));
+  if (match.tournament.createdById) recipientIds.add(match.tournament.createdById);
+
+  const trimmedReason = reason.trim().slice(0, 200);
+
+  await prisma.notification.createMany({
+    data: Array.from(recipientIds).map((userId) => ({
+      userId,
+      type: "WO_REQUESTED" as const,
+      title: "Solicitud de Walkover",
+      message: `${dbUser.username} solicita WO en ${match.tournament.name}: ${match.player1?.username ?? "?"} vs ${match.player2?.username ?? "?"}. Motivo: ${trimmedReason}`,
+      relatedId: matchId,
+      linkUrl: `/arena/${matchId}`,
+    })),
+  });
+
+  revalidatePath(`/arena/${matchId}`);
+  return { success: true, message: "Solicitud de WO enviada al organizador." };
+}
+
+// ─── RESOLVER WALKOVER (ADMIN/CREATOR) ──────────────────────
+
+export async function resolveWalkover(
+  matchId: string,
+  approved: boolean,
+) {
+  const supabase = createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { error: "No autenticado" };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: authUser.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) return { error: "No autenticado" };
+
+  const match = await prisma.tournamentMatch.findUnique({
+    where: { id: matchId },
+    include: {
+      tournament: {
+        select: { id: true, name: true, format: true, createdById: true },
+      },
+      player1: { select: { id: true, username: true } },
+      player2: { select: { id: true, username: true } },
+    },
+  });
+  if (!match) return { error: "Partido no encontrado" };
+
+  const isCreator = match.tournament.createdById === dbUser.id;
+  const isAdmin = dbUser.role === "ADMIN";
+  if (!isCreator && !isAdmin) {
+    return { error: "Solo el organizador o admin puede resolver WO" };
+  }
+
+  if (!match.woRequestedById) {
+    return { error: "No hay solicitud de WO pendiente" };
+  }
+
+  if (!approved) {
+    await prisma.tournamentMatch.update({
+      where: { id: matchId },
+      data: { woRequestedById: null, woRequestedAt: null },
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId: match.woRequestedById,
+        type: "WO_REJECTED" as const,
+        title: "Solicitud de WO rechazada",
+        message: `Tu solicitud de walkover en ${match.tournament.name} fue rechazada.`,
+        relatedId: matchId,
+        linkUrl: `/arena/${matchId}`,
+      },
+    });
+
+    revalidatePath(`/arena/${matchId}`);
+    return { success: true, message: "Solicitud de WO rechazada." };
+  }
+
+  const requesterId = match.woRequestedById;
+  const winnerId = requesterId;
+  const loserId = match.player1Id === requesterId ? match.player2Id : match.player1Id;
+  const winTeamId = match.player1Id === requesterId ? match.team1Id : match.team2Id;
+  const loseTeamId = match.player1Id === requesterId ? match.team2Id : match.team1Id;
+
+  await prisma.tournamentMatch.update({
+    where: { id: matchId },
+    data: {
+      status: "WALKOVER",
+      winnerId,
+      resultP1: match.player1Id === requesterId ? 3 : 0,
+      resultP2: match.player2Id === requesterId ? 3 : 0,
+      confirmedAt: new Date(),
+    },
+  });
+
+  const notifs = [];
+  if (winnerId) {
+    notifs.push({
+      userId: winnerId,
+      type: "WO_APPROVED" as const,
+      title: "Walkover otorgado",
+      message: `Ganaste por WO en ${match.tournament.name}.`,
+      relatedId: match.tournamentId,
+      linkUrl: `/torneos/${match.tournamentId}`,
+    });
+  }
+  if (loserId) {
+    notifs.push({
+      userId: loserId,
+      type: "WO_APPROVED" as const,
+      title: "Walkover en tu contra",
+      message: `Perdiste por WO en ${match.tournament.name}.`,
+      relatedId: match.tournamentId,
+      linkUrl: `/torneos/${match.tournamentId}`,
+    });
+  }
+  if (notifs.length > 0) {
+    await prisma.notification.createMany({ data: notifs });
+  }
+
+  if (
+    winnerId &&
+    match.round &&
+    (match.tournament.format === "SINGLE_ELIMINATION" || match.tournament.format === "DOUBLE_ELIMINATION")
+  ) {
+    await advanceWinner(match.tournamentId, match.round, winnerId, match.tournament.format, winTeamId);
+    if (match.tournament.format === "DOUBLE_ELIMINATION" && loserId) {
+      await sendToLosers(match.tournamentId, match.round, loserId, loseTeamId);
+    }
+  }
+
+  if (
+    (match.tournament.format === "LEAGUE" || match.tournament.format === "GROUP_KNOCKOUT") &&
+    match.player1Id &&
+    match.player2Id
+  ) {
+    const rP1 = match.player1Id === requesterId ? 3 : 0;
+    const rP2 = match.player2Id === requesterId ? 3 : 0;
+    await updateLeagueStandings(match.tournamentId, match.player1Id, match.player2Id, rP1, rP2);
+  }
+
+  await checkTournamentComplete(match.tournamentId);
+
+  revalidatePath(`/arena/${matchId}`);
+  revalidatePath(`/torneos/${match.tournamentId}`);
+  return { success: true, message: "Walkover otorgado." };
 }

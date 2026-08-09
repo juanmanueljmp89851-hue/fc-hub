@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 import type { NotificationType } from "@prisma/client";
 
-export async function getMyNotifications(limit = 20) {
+export async function getMyNotifications(limit = 20, offset = 0) {
   const supabase = await createClient();
   const {
     data: { user: authUser },
@@ -21,6 +21,7 @@ export async function getMyNotifications(limit = 20) {
     where: { userId: dbUser.id, type: { not: "DIRECT_MESSAGE" } },
     orderBy: { createdAt: "desc" },
     take: limit,
+    skip: offset,
   });
 }
 
