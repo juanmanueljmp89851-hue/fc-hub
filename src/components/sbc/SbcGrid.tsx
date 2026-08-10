@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import type { SbcSet } from "@/lib/futgg";
 import Link from "next/link";
 import { fmtCoins, timeLeft } from "@/lib/format";
