@@ -43,8 +43,14 @@ export function HomeSbcs({ sbcs }: { sbcs: SbcSet[] }) {
                     src={(sbc.imageUrl ?? sbc.iconUrl)!}
                     alt={sbc.rewardPlayer?.commonName ?? sbc.name}
                     className="h-28 w-auto object-contain drop-shadow-lg"
+                    loading="lazy"
                     onError={(e) => {
                       const el = e.currentTarget;
+                      const fallbackUrl = sbc.iconUrl && el.src !== sbc.iconUrl ? sbc.iconUrl : null;
+                      if (fallbackUrl) {
+                        el.src = fallbackUrl;
+                        return;
+                      }
                       el.style.display = "none";
                       const fb = document.createElement("div");
                       fb.className = "flex h-28 w-20 items-center justify-center rounded-lg bg-surface-light text-2xl";

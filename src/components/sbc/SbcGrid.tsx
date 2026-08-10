@@ -35,6 +35,11 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
             className="h-40 w-auto object-contain drop-shadow-lg"
             onError={(e) => {
               const el = e.currentTarget;
+              const fallbackUrl = sbc.iconUrl && el.src !== sbc.iconUrl ? sbc.iconUrl : null;
+              if (fallbackUrl) {
+                el.src = fallbackUrl;
+                return;
+              }
               el.style.display = "none";
               const fb = document.createElement("div");
               fb.className = "flex h-40 w-28 items-center justify-center rounded-lg bg-surface-light text-3xl";
