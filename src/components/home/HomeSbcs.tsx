@@ -1,5 +1,6 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
 import type { SbcSet } from "@/lib/futgg";
 import { fmtCoins, timeLeft } from "@/lib/format";
 
@@ -38,13 +39,18 @@ export function HomeSbcs({ sbcs }: { sbcs: SbcSet[] }) {
                   </span>
                 )}
                 {sbc.imageUrl ?? sbc.iconUrl ? (
-                  <Image
+                  <img
                     src={(sbc.imageUrl ?? sbc.iconUrl)!}
                     alt={sbc.rewardPlayer?.commonName ?? sbc.name}
-                    width={112}
-                    height={112}
                     className="h-28 w-auto object-contain drop-shadow-lg"
-                    unoptimized
+                    onError={(e) => {
+                      const el = e.currentTarget;
+                      el.style.display = "none";
+                      const fb = document.createElement("div");
+                      fb.className = "flex h-28 w-20 items-center justify-center rounded-lg bg-surface-light text-2xl";
+                      fb.textContent = "🎁";
+                      el.parentElement?.appendChild(fb);
+                    }}
                   />
                 ) : (
                   <div className="flex h-28 w-20 items-center justify-center rounded-lg bg-surface-light text-2xl">

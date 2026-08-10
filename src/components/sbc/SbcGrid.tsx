@@ -30,13 +30,18 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
 
       <div className="flex items-center justify-center bg-gradient-to-b from-surface-light/30 to-transparent px-4 pt-6 pb-2">
         {sbc.imageUrl ?? sbc.iconUrl ? (
-          <Image
+          <img
             src={(sbc.imageUrl ?? sbc.iconUrl)!}
             alt={sbc.rewardPlayer?.commonName ?? sbc.name}
-            width={160}
-            height={160}
             className="h-40 w-auto object-contain drop-shadow-lg"
-            unoptimized
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.style.display = "none";
+              const fb = document.createElement("div");
+              fb.className = "flex h-40 w-28 items-center justify-center rounded-lg bg-surface-light text-3xl";
+              fb.textContent = "🎁";
+              el.parentElement?.appendChild(fb);
+            }}
           />
         ) : (
           <div className="flex h-40 w-28 items-center justify-center rounded-lg bg-surface-light text-3xl">🎁</div>
