@@ -1,8 +1,36 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const action = searchParams.get("action");
+
+  if (action === "bundle") {
+    const pos = parseInt(searchParams.get("pos") || "32814");
+    const range = parseInt(searchParams.get("range") || "200");
+    try {
+      const bundlePath = join(process.cwd(), ".next/server/app/torneos/[id]/page.js");
+      const content = readFileSync(bundlePath, "utf-8");
+      const start = Math.max(0, pos - range);
+      const end = Math.min(content.length, pos + range);
+      const snippet = content.substring(start, end);
+      const markerPos = pos - start;
+      return NextResponse.json({
+        totalLength: content.length,
+        position: pos,
+        snippetStart: start,
+        snippetEnd: end,
+        snippet,
+        markerPos,
+        around: snippet.substring(markerPos - 50, markerPos + 50),
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+  }
+
   const id = searchParams.get("id") || "5e9ef013-b3c4-4cd9-bf43-e5bc67784c53";
 
   const tournament = await prisma.tournament.findUnique({
