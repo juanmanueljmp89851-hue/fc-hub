@@ -68,7 +68,7 @@ export function LeagueTable({
   cup2Spots = 0,
   isFinished = false,
 }: LeagueTableProps) {
-  if (standings.length === 0) {
+  if (!standings || !Array.isArray(standings) || standings.length === 0) {
     return <p className="text-sm text-foreground/50">No hay tabla de posiciones todavía</p>;
   }
 

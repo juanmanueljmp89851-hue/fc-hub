@@ -122,6 +122,8 @@ function getSeriesAggregate(matches: MatchData[]) {
 }
 
 export function TournamentBracket({ matches, isTeamTournament }: TournamentBracketProps) {
+  if (!matches || !Array.isArray(matches)) return null;
+
   const winnersRounds = new Set(
     matches.filter((m) => m.round?.startsWith("W-")).map((m) => m.round),
   ).size;

@@ -31,10 +31,12 @@ export function TournamentChat({ tournamentId, messages, currentUserId, creatorI
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  const safeMessages = messages ?? [];
+
   useEffect(() => {
     const el = chatContainerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length]);
+  }, [safeMessages.length]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -63,13 +65,13 @@ export function TournamentChat({ tournamentId, messages, currentUserId, creatorI
       <h3 className="mb-3 text-sm font-bold text-foreground/70">💬 Chat del torneo</h3>
 
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto rounded-lg border border-surface-light bg-background p-3" style={{ maxHeight: "360px", minHeight: "200px" }}>
-        {messages.length === 0 ? (
+        {safeMessages.length === 0 ? (
           <p className="py-6 text-center text-xs text-foreground/30">
             Sin mensajes. Coordiná horarios y partidos acá.
           </p>
         ) : (
           <div className="space-y-2">
-            {messages.map((msg) => {
+            {safeMessages.map((msg) => {
               const isMe = msg.user.id === currentUserId;
               const isCreatorMsg = msg.user.id === creatorId;
               const isAdmin = msg.user.role === "ADMIN" && !isCreatorMsg;

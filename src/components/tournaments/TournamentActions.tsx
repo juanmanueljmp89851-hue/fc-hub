@@ -50,11 +50,12 @@ export function TournamentActions({
     load();
   }, [isTeamTournament, teamType]);
 
+  const safeParticipants = participants ?? [];
   const isOrganizer = userId === createdById;
   const isRegistered = isTeamTournament
-    ? myTeams.some((t) => participants.some((p) => p.teamId === t.id))
-    : participants.some((p) => p.userId === userId);
-  const confirmedCount = participants.filter((p) => p.status === "CONFIRMED").length;
+    ? myTeams.some((t) => safeParticipants.some((p) => p.teamId === t.id))
+    : safeParticipants.some((p) => p.userId === userId);
+  const confirmedCount = safeParticipants.filter((p) => p.status === "CONFIRMED").length;
   const isFull = confirmedCount >= maxPlayers;
 
   async function handleJoin() {
