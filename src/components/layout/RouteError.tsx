@@ -5,9 +5,11 @@ import { Navbar } from "./Navbar";
 export function RouteError({
   sectionName,
   reset,
+  errorDetail,
 }: {
   sectionName: string;
   reset: () => void;
+  errorDetail?: string;
 }) {
   return (
     <div className="min-h-screen">
@@ -20,6 +22,11 @@ export function RouteError({
         <p className="mt-2 text-sm text-foreground/50">
           Hubo un problema. Intentá de nuevo en unos segundos.
         </p>
+        {errorDetail && (
+          <p className="mt-2 max-w-md rounded bg-surface-light px-3 py-2 text-xs font-mono text-red-400 break-all">
+            {errorDetail}
+          </p>
+        )}
         <div className="mt-6 flex items-center gap-3">
           <button
             onClick={reset}

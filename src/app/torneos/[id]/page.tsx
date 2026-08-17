@@ -120,6 +120,8 @@ export default async function TorneoDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  console.log(`[TorneoDetail] id=${params.id} status=${tournament.status} participants=${tournament.participants?.length ?? "null"} matches=${tournament.matches?.length ?? "null"} standings=${tournament.standings?.length ?? "null"} chat=${tournament.chatMessages?.length ?? "null"} scheduleDays=${JSON.stringify(tournament.scheduleDays)} platforms=${JSON.stringify(tournament.platforms)}`);
+
   const currentUser = await getCurrentUser();
 
   // If soft-deleted and not admin, show not found
