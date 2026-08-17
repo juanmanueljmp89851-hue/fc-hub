@@ -129,10 +129,14 @@ export default async function TorneoDetailPage({ params }: PageProps) {
 
   const canEdit = currentUser && (currentUser.id === tournament.createdById || currentUser.role === "ADMIN") && !tournament.deletedAt;
 
-  const confirmedCount = tournament.participants.filter((p) => p.status === "CONFIRMED").length;
+  const participants = tournament.participants ?? [];
+  const confirmedCount = participants.filter((p) => p.status === "CONFIRMED").length;
   const isLeague = tournament.format === "LEAGUE";
   const isTeamTournament = tournament.teamType === "CLUBS_PRO" || tournament.teamType === "RUSH";
-  const hasMatches = tournament.matches.length > 0;
+  const matches = tournament.matches ?? [];
+  const hasMatches = matches.length > 0;
+  const standings = tournament.standings ?? [];
+  const chatMessages = tournament.chatMessages ?? [];
 
   return (
     <div className="min-h-screen">
@@ -270,7 +274,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               tournamentId={tournament.id}
               status={tournament.status}
               createdById={tournament.createdById}
-              participants={tournament.participants.map((p) => ({
+              participants={participants.map((p) => ({
                 userId: p.userId,
                 teamId: p.teamId,
                 status: p.status,
@@ -282,7 +286,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
 
           {/* Solicitudes pendientes (creador/admin) */}
           {canEdit && (() => {
-            const pending = tournament.participants.filter((p) => p.status === "PENDING");
+            const pending = participants.filter((p) => p.status === "PENDING");
             return pending.length > 0 ? (
               <div className="mt-6">
                 <PendingParticipants
@@ -311,7 +315,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </CardHeader>
               {isLeague ? (
                 <LeagueTable
-                  standings={tournament.standings}
+                  standings={standings}
                   relegationCount={tournament.relegationCount ?? 0}
                   cup1Name={tournament.cup1Name ?? undefined}
                   cup1Spots={tournament.cup1Spots ?? 0}
@@ -320,14 +324,14 @@ export default async function TorneoDetailPage({ params }: PageProps) {
                   isFinished={tournament.status === "FINISHED"}
                 />
               ) : (
-                <TournamentBracket matches={tournament.matches} isTeamTournament={isTeamTournament} />
+                <TournamentBracket matches={matches} isTeamTournament={isTeamTournament} />
               )}
             </Card>
 
             <Card>
               <TournamentChat
                 tournamentId={tournament.id}
-                messages={tournament.chatMessages}
+                messages={chatMessages}
                 currentUserId={currentUser?.id ?? ""}
                 creatorId={tournament.createdById}
               />
@@ -340,7 +344,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
           <Card className="mb-8">
             <TournamentChat
               tournamentId={tournament.id}
-              messages={tournament.chatMessages}
+              messages={chatMessages}
               currentUserId={currentUser?.id ?? ""}
               creatorId={tournament.createdById}
             />
@@ -349,7 +353,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
 
         {/* Fixture */}
         {hasMatches && (() => {
-          const rounds = Array.from(new Set(tournament.matches.map((m) => m.round))).sort();
+          const rounds = Array.from(new Set(matches.map((m) => m.round))).sort();
           const hasDays = tournament.scheduleDays && tournament.scheduleDays.length > 0;
           return (
             <Card className="mb-8">
@@ -358,7 +362,7 @@ export default async function TorneoDetailPage({ params }: PageProps) {
               </CardHeader>
               <div className="space-y-4">
                 {rounds.map((round, roundIdx) => {
-                  const roundMatches = tournament.matches.filter((m) => m.round === round);
+                  const roundMatches = matches.filter((m) => m.round === round);
                   const dateLabel = hasDays ? getScheduleDateForRound(tournament.scheduleDays, roundIdx, tournament.startDate) : "";
                   return (
                     <div key={round}>
@@ -456,11 +460,11 @@ export default async function TorneoDetailPage({ params }: PageProps) {
             <CardHeader>
               <CardTitle>{isTeamTournament ? "Equipos" : "Participantes"} ({confirmedCount})</CardTitle>
             </CardHeader>
-            {tournament.participants.length === 0 ? (
+            {participants.length === 0 ? (
               <p className="text-sm text-foreground/50">No hay inscriptos todavía</p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
-                {tournament.participants.map((p) => (
+                {participants.map((p) => (
                   <div
                     key={p.id}
                     className="flex items-center gap-2 rounded-lg bg-background/50 px-3 py-2"

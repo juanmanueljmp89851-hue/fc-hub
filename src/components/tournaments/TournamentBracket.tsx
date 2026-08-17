@@ -93,6 +93,7 @@ function groupMatchesBySeries(matches: MatchData[]): (MatchData | SeriesGroup)[]
 }
 
 function getSeriesAggregate(matches: MatchData[]) {
+  if (!matches?.length) return null;
   const leg1 = matches.find((m) => m.leg === 1);
   if (!leg1) return null;
   const playerA = leg1.player1?.id;
@@ -222,7 +223,7 @@ function SeriesCard({ series, isTeamTournament }: { series: SeriesGroup; isTeamT
   const agg = getSeriesAggregate(series.matches);
   const finishedCount = series.matches.filter((m) => m.status === "FINISHED").length;
   const totalCount = series.matches.length;
-  const nextMatch = series.matches.find(
+  const nextMatch = series.matches?.find(
     (m) => m.status !== "FINISHED" && m.status !== "WALKOVER" && m.status !== "CANCELLED",
   );
   const m0 = series.matches[0];
