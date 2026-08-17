@@ -13,16 +13,16 @@ import { CollapsibleText } from "@/components/ui/CollapsibleText";
 import { ShareTournamentLink } from "@/components/tournaments/ShareTournamentLink";
 import { SendDmButton } from "@/components/dm/SendDmButton";
 
-const TournamentBracket = dynamic(() => import("@/components/tournaments/TournamentBracket").then((m) => m.TournamentBracket));
-const LeagueTable = dynamic(() => import("@/components/tournaments/LeagueTable").then((m) => m.LeagueTable));
-const TournamentChat = dynamic(() => import("@/components/tournaments/TournamentChat").then((m) => m.TournamentChat));
-const AdminMatchEdit = dynamic(() => import("@/components/tournaments/AdminMatchEdit").then((m) => m.AdminMatchEdit));
-const AdminPlayerActions = dynamic(() => import("@/components/tournaments/AdminPlayerActions").then((m) => m.AdminPlayerActions));
-const PendingParticipants = dynamic(() => import("@/components/tournaments/PendingParticipants").then((m) => m.PendingParticipants));
-const DeleteTournamentButton = dynamic(() => import("@/components/tournaments/DeleteTournamentButton").then((m) => m.DeleteTournamentButton));
-const DuplicateTournamentButton = dynamic(() => import("@/components/tournaments/DuplicateTournamentButton").then((m) => m.DuplicateTournamentButton));
-const ResetTournamentButton = dynamic(() => import("@/components/tournaments/ResetTournamentButton").then((m) => m.ResetTournamentButton));
-const RemindPendingButton = dynamic(() => import("@/components/tournaments/RemindPendingButton").then((m) => m.RemindPendingButton));
+const TournamentBracket = dynamic(() => import("@/components/tournaments/TournamentBracket").then((m) => m.TournamentBracket), { ssr: false });
+const LeagueTable = dynamic(() => import("@/components/tournaments/LeagueTable").then((m) => m.LeagueTable), { ssr: false });
+const TournamentChat = dynamic(() => import("@/components/tournaments/TournamentChat").then((m) => m.TournamentChat), { ssr: false });
+const AdminMatchEdit = dynamic(() => import("@/components/tournaments/AdminMatchEdit").then((m) => m.AdminMatchEdit), { ssr: false });
+const AdminPlayerActions = dynamic(() => import("@/components/tournaments/AdminPlayerActions").then((m) => m.AdminPlayerActions), { ssr: false });
+const PendingParticipants = dynamic(() => import("@/components/tournaments/PendingParticipants").then((m) => m.PendingParticipants), { ssr: false });
+const DeleteTournamentButton = dynamic(() => import("@/components/tournaments/DeleteTournamentButton").then((m) => m.DeleteTournamentButton), { ssr: false });
+const DuplicateTournamentButton = dynamic(() => import("@/components/tournaments/DuplicateTournamentButton").then((m) => m.DuplicateTournamentButton), { ssr: false });
+const ResetTournamentButton = dynamic(() => import("@/components/tournaments/ResetTournamentButton").then((m) => m.ResetTournamentButton), { ssr: false });
+const RemindPendingButton = dynamic(() => import("@/components/tournaments/RemindPendingButton").then((m) => m.RemindPendingButton), { ssr: false });
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const tournament = await getTournament(params.id);
@@ -120,7 +120,11 @@ export default async function TorneoDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  console.log(`[TorneoDetail] id=${params.id} status=${tournament.status} participants=${tournament.participants?.length ?? "null"} matches=${tournament.matches?.length ?? "null"} standings=${tournament.standings?.length ?? "null"} chat=${tournament.chatMessages?.length ?? "null"} scheduleDays=${JSON.stringify(tournament.scheduleDays)} platforms=${JSON.stringify(tournament.platforms)}`);
+  console.log(`[TorneoDetail] id=${params.id} status=${tournament.status} format=${tournament.format} participants=${tournament.participants?.length ?? "null"} matches=${tournament.matches?.length ?? "null"} standings=${tournament.standings?.length ?? "null"} chat=${tournament.chatMessages?.length ?? "null"} scheduleDays=${JSON.stringify(tournament.scheduleDays)} platforms=${JSON.stringify(tournament.platforms)}`);
+  if (tournament.matches?.length) {
+    const m = tournament.matches[0];
+    console.log(`[TorneoDetail:match0] id=${m.id} round=${m.round} status=${m.status} seriesId=${m.seriesId} leg=${m.leg} p1=${m.player1Id ?? m.player1?.id ?? "null"} p2=${m.player2Id ?? m.player2?.id ?? "null"} winner=${m.winnerId ?? m.winner?.id ?? "null"}`);
+  }
 
   const currentUser = await getCurrentUser();
 
