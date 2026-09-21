@@ -12,7 +12,7 @@ interface TickerMatch {
   awayScore: number | null;
   status: "live" | "finished" | "upcoming";
   minute: string | null;
-  type: "real" | "fc26";
+  type: "real" | "fc27";
 }
 
 const NO_REAL_MATCHES_PLACEHOLDER: TickerMatch = {
@@ -45,7 +45,7 @@ function StatusBadge({ match }: { match: TickerMatch }) {
 
 function getMatchUrl(match: TickerMatch): string | null {
   if (match.id === "no-real") return null;
-  if (match.type === "fc26") return null;
+  if (match.type === "fc27") return null;
   const q = encodeURIComponent(`${match.homeTeam} vs ${match.awayTeam} resultado`);
   return `https://www.google.com/search?q=${q}`;
 }
@@ -60,12 +60,12 @@ export function LiveTicker() {
       if (!res.ok) return;
       const data: TickerMatch[] = await res.json();
       const realMatches = data.filter((m) => m.type === "real");
-      const fc26Matches = data.filter((m) => m.type === "fc26");
+      const fc27Matches = data.filter((m) => m.type === "fc27");
 
       const finalMatches =
         realMatches.length > 0
-          ? [...realMatches, ...fc26Matches]
-          : [NO_REAL_MATCHES_PLACEHOLDER, ...fc26Matches];
+          ? [...realMatches, ...fc27Matches]
+          : [NO_REAL_MATCHES_PLACEHOLDER, ...fc27Matches];
 
       setMatches(finalMatches);
     } catch {
@@ -152,7 +152,7 @@ export function LiveTicker() {
           const itemClass = `mx-1.5 inline-flex shrink-0 items-center rounded-md px-2 py-1 ${
             isPlaceholder
               ? "border border-surface-light/50 bg-surface/50"
-              : match.type === "fc26"
+              : match.type === "fc27"
                 ? "border border-accent/20 bg-accent/5"
                 : "border border-surface-light bg-surface"
           }`;

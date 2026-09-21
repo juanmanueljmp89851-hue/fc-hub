@@ -230,7 +230,7 @@ export async function getEvolutions(): Promise<Evolution[]> {
     try {
       const idsParam = [...eaIds].join(",");
       const imgRes = await fetch(
-        `https://www.fut.gg/api/fut/26/player-items/?ids=${idsParam}`,
+        `https://www.fut.gg/api/fut/27/player-items/?ids=${idsParam}`,
         {
           headers: {
             "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)",

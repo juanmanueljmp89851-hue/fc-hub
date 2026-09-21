@@ -6,7 +6,7 @@ const STEPS = [
   {
     icon: "🏆",
     title: "Torneos",
-    desc: "Creá o unite a torneos de FC 26 con amigos o la comunidad.",
+    desc: "Creá o unite a torneos de FC 27 con amigos o la comunidad.",
     link: "/torneos",
   },
   {

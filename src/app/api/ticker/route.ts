@@ -14,16 +14,16 @@ export interface TickerMatch {
   awayScore: number | null;
   status: "live" | "finished" | "upcoming";
   minute: string | null;
-  type: "real" | "fc26";
+  type: "real" | "fc27";
 }
 
 export async function GET() {
-  const [realMatches, fc26Matches] = await Promise.all([
+  const [realMatches, fc27Matches] = await Promise.all([
     fetchRealFootball(),
-    fetchFC26Matches(),
+    fetchFC27Matches(),
   ]);
 
-  const allMatches = [...realMatches, ...fc26Matches];
+  const allMatches = [...realMatches, ...fc27Matches];
 
   // Sort: live first, then finished, then upcoming
   const statusOrder = { live: 0, finished: 1, upcoming: 2 };
@@ -58,7 +58,7 @@ async function fetchRealFootball(): Promise<TickerMatch[]> {
   }
 }
 
-async function fetchFC26Matches(): Promise<TickerMatch[]> {
+async function fetchFC27Matches(): Promise<TickerMatch[]> {
   try {
     // Recent casual matches (last 24h, finished or in progress)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -106,7 +106,7 @@ async function fetchFC26Matches(): Promise<TickerMatch[]> {
             ? ("live" as const)
             : ("live" as const), // PENDING_CONFIRMATION = still "live"
       minute: null,
-      type: "fc26" as const,
+      type: "fc27" as const,
     }));
 
     const tournament: TickerMatch[] = tournamentMatches
@@ -124,12 +124,12 @@ async function fetchFC26Matches(): Promise<TickerMatch[]> {
             ? ("finished" as const)
             : ("live" as const),
         minute: null,
-        type: "fc26" as const,
+        type: "fc27" as const,
       }));
 
     return [...casual, ...tournament];
   } catch (err) {
-    console.error("[ticker] FC26 matches error:", err);
+    console.error("[ticker] FC27 matches error:", err);
     return [];
   }
 }

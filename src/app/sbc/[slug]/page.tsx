@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const sbc = await getSbcBySlug(params.slug);
   if (!sbc) return { title: "SBC no encontrado | Modo Fosa" };
   return {
-    title: `${sbc.name} — SBC EA FC 26 | Modo Fosa`,
+    title: `${sbc.name} — SBC EA FC 27 | Modo Fosa`,
     description: sbc.description || `Requisitos, premios y solución más barata del SBC ${sbc.name}.`,
     alternates: { canonical: `/sbc/${params.slug}` },
   };

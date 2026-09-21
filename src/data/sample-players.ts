@@ -1,6 +1,6 @@
 import type { FutPlayer } from "@/types/player";
 
-// FUTBIN CDN for player face images (EA IDs — FC 26)
+// FUTBIN CDN for player face images (EA IDs — FC 27)
 const img = (eaId: number) =>
   `https://cdn.futbin.com/content/fifa26/img/players/${eaId}.png`;
 

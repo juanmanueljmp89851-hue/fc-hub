@@ -8,13 +8,13 @@ import type { FutPlayer } from "@/types/player";
 export const revalidate = 300; // ISR: regenera cada 5 min
 
 export const metadata: Metadata = {
-  title: "Cartas FC 26",
+  title: "Cartas FC 27",
   description:
-    "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
+    "Base de datos de cartas de EA FC 27. Filtrá por promo, posición, overall y más.",
   alternates: { canonical: "/jugadores" },
   openGraph: {
-    title: "Cartas FC 26 | Modo Fosa",
-    description: "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
+    title: "Cartas FC 27 | Modo Fosa",
+    description: "Base de datos de cartas de EA FC 27. Filtrá por promo, posición, overall y más.",
   },
 };
 
@@ -118,8 +118,8 @@ export default async function JugadoresPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Cartas FC 26",
-    description: "Base de datos de cartas de EA FC 26. Filtrá por promo, posición, overall y más.",
+    name: "Cartas FC 27",
+    description: "Base de datos de cartas de EA FC 27. Filtrá por promo, posición, overall y más.",
     url: "https://www.modofosa.com.ar/jugadores",
     isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
     numberOfItems: players.length,

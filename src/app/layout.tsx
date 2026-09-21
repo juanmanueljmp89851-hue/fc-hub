@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   description:
     "Torneos, ranking, prode del Mundial 2026 y más para la comunidad EA FC hispanohablante.",
-  keywords: ["EA FC", "FC 26", "FUT", "fútbol", "Argentina", "torneos", "ranking", "prode", "Mundial 2026"],
+  keywords: ["EA FC", "FC 27", "FUT", "fútbol", "Argentina", "torneos", "ranking", "prode", "Mundial 2026"],
   authors: [{ name: "Modo Fosa" }],
   openGraph: {
     type: "website",

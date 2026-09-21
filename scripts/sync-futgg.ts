@@ -1,7 +1,7 @@
 /**
  * fut.gg card sync — reemplaza scraping de FUTBIN por API pública fut.gg.
  *
- * Endpoint: https://www.fut.gg/api/fut/players/v2/26/  (JSON, sin API key)
+ * Endpoint: https://www.fut.gg/api/fut/players/v2/27/  (JSON, sin API key)
  * Newest-first. Recorre páginas hasta cutoff por fecha de release.
  *
  * Uso:
@@ -16,7 +16,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const GAME = "26";
+const GAME = "27";
 const API = `https://www.fut.gg/api/fut/players/v2/${GAME}/`;
 
 function arg(name: string, def: number): number {

@@ -58,7 +58,7 @@ export default function LigasOficialesPage() {
           <p>Para Modo Fosa, ese momento llegó.</p>
 
           <p>
-            Después de meses construyendo herramientas para la comunidad de FC 26
+            Después de meses construyendo herramientas para la comunidad de FC 27
             (prodes, duelos, clasificación de jugadores, seguimiento competitivo y
             estadísticas) llega el momento de dar el siguiente paso: encontrar a
             los primeros campeones oficiales de la plataforma.
@@ -90,7 +90,7 @@ export default function LigasOficialesPage() {
           </h3>
 
           <p>
-            La primera competición estará reservada para quienes viven FC 26 a
+            La primera competición estará reservada para quienes viven FC 27 a
             través de Ultimate Team.
           </p>
 

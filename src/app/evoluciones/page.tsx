@@ -6,9 +6,9 @@ import { tPos } from "@/lib/positions";
 export const revalidate = 300; // ISR: regenera cada 5 min
 
 export const metadata: Metadata = {
-  title: "Evoluciones — EA FC 26 | Modo Fosa",
+  title: "Evoluciones — EA FC 27 | Modo Fosa",
   description:
-    "Todas las Evoluciones activas de EA FC 26 en español: requisitos y mejoras de cada una. Se actualiza solo.",
+    "Todas las Evoluciones activas de EA FC 27 en español: requisitos y mejoras de cada una. Se actualiza solo.",
   alternates: { canonical: "/evoluciones" },
 };
 
@@ -248,7 +248,7 @@ export default async function EvolucionesPage() {
         <header className="mb-6">
           <h1 className="text-2xl font-black">🧬 Evoluciones</h1>
           <p className="mt-1 text-sm text-foreground/50">
-            Todas las Evoluciones activas de EA FC 26 — requisitos y mejoras, en español. Se actualiza solo.
+            Todas las Evoluciones activas de EA FC 27 — requisitos y mejoras, en español. Se actualiza solo.
           </p>
         </header>
 

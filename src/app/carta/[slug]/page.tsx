@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const name = "commonName" in c && c.commonName ? c.commonName : c.name;
   const pos = c.position;
   const promo = c.promo;
-  const title = `${name} ${c.overall} ${pos}${promo ? ` — ${promo}` : ""} | EA FC 26`;
+  const title = `${name} ${c.overall} ${pos}${promo ? ` — ${promo}` : ""} | EA FC 27`;
   const img = c.cardFullUrl || c.imageUrl;
   return {
     title,
-    description: `${name} ${c.overall} (${pos}) de EA FC 26: stats, precio, club, liga y nación. ${promo ?? ""}`.trim(),
+    description: `${name} ${c.overall} (${pos}) de EA FC 27: stats, precio, club, liga y nación. ${promo ?? ""}`.trim(),
     openGraph: { title, images: img ? [img] : [] },
     alternates: { canonical: `/carta/${params.slug}` },
   };
@@ -236,10 +236,10 @@ export default async function CartaPage({ params }: { params: { slug: string } }
             "@context": "https://schema.org",
             "@type": "VideoGame",
             name: `${c.name} ${c.overall} ${tPos(c.position)}${c.promo ? ` — ${c.promo}` : ""}`,
-            description: `Carta ${c.name} ${c.overall} (${tPos(c.position)}) de EA FC 26: stats, precio y más`,
+            description: `Carta ${c.name} ${c.overall} (${tPos(c.position)}) de EA FC 27: stats, precio y más`,
             image: c.cardFullUrl || c.imageUrl || undefined,
             url: `https://www.modofosa.com.ar/carta/${params.slug}`,
-            gamePlatform: "EA FC 26",
+            gamePlatform: "EA FC 27",
           }),
         }}
       />

@@ -79,7 +79,7 @@ export const POSITION_MAP: Record<string, PositionCategory> = {
 
 // ─── CDN HELPERS ─────────────────────────────────────────
 
-/** Player face image (FC26 uses "p" prefix on EA IDs) */
+/** Player face image (FC27 uses "p" prefix on EA IDs) */
 export function playerFaceUrl(eaId: number): string {
   return `https://cdn.futbin.com/content/fifa26/img/players/p${eaId}.png`;
 }

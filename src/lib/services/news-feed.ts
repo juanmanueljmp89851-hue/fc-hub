@@ -89,7 +89,7 @@ const RELEVANCE_KEYWORDS = [
   "messi", "mbappé", "mbappe", "haaland", "neymar", "premier", "laliga",
   "serie a", "bundesliga", "transfer", "fichaje", "traspaso",
   // EA FC / Gaming
-  "ea fc", "ea sports", "fc 25", "fc 26", "fc25", "fc26", "fc 27", "fut ", "ultimate team",
+  "ea fc", "ea sports", "fc 25", "fc 26", "fc25", "fc26", "fc 27", "fc27", "fut ", "ultimate team",
   "fifa", "pro clubs", "esports", "esport", "e-sport", "gaming", "videojuego",
   "playstation", "xbox", "pc gaming", "torneo", "tournament", "rush mode",
   "evolutions", "icon", "hero", "tots", "toty", "potm", "sbc",
@@ -353,8 +353,8 @@ const PINNED_ARTICLES: Array<{
   {
     position: 2,
     item: {
-      title: "EA FC 26: así es el modo Mundial 2026 del juego",
-      description: "Todo lo que sabemos sobre el modo Copa del Mundo FIFA 2026 en EA Sports FC 26.",
+      title: "EA FC 27: así es el nuevo juego de EA Sports",
+      description: "Todo lo que sabemos sobre EA Sports FC 27: novedades, modos de juego y más.",
       link: "https://culturageek.com.ar/ea-fc-26-modo-mundial-2026/",
       imageUrl: "https://culturageek.com.ar/wp-content/uploads/2026/05/Screenshot-2026-05-27-at-11-57-21-EA-Sports-FC-26-The-Worlds-Game-Update-details-1.webp",
       source: "CulturaGeek",

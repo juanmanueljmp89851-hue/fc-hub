@@ -6,11 +6,11 @@ import { AdSlot } from "@/components/ads/AdSlot";
 export const metadata: Metadata = {
   title: "Actualidad",
   description:
-    "Noticias, novedades y actualizaciones de FC 26, Ultimate Team, eventos, esports y mercado.",
+    "Noticias, novedades y actualizaciones de FC 27, Ultimate Team, eventos, esports y mercado.",
   alternates: { canonical: "/actualidad" },
   openGraph: {
     title: "Actualidad | Modo Fosa",
-    description: "Últimas noticias de EA FC 26, eventos y mercado.",
+    description: "Últimas noticias de EA FC 27, eventos y mercado.",
   },
 };
 
@@ -18,8 +18,8 @@ export default function ActualidadPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Actualidad EA FC 26",
-    description: "Noticias, novedades y actualizaciones de FC 26, Ultimate Team, eventos y mercado.",
+    name: "Actualidad EA FC 27",
+    description: "Noticias, novedades y actualizaciones de FC 27, Ultimate Team, eventos y mercado.",
     url: "https://www.modofosa.com.ar/actualidad",
     isPartOf: { "@id": "https://www.modofosa.com.ar/#website" },
   };
@@ -35,7 +35,7 @@ export default function ActualidadPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Actualidad</h1>
           <p className="mt-1 text-foreground/60">
-            Noticias, novedades y todo lo que pasa en el mundo del fútbol y FC 26
+            Noticias, novedades y todo lo que pasa en el mundo del fútbol y FC 27
           </p>
         </div>
 

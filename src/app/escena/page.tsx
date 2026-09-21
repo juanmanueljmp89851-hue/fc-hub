@@ -10,7 +10,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Competitivo",
-  description: "Escena competitiva de FC 26: IESA, EFA, eLiga Profesional, VPG y más.",
+  description: "Escena competitiva de FC 27: IESA, EFA, eLiga Profesional, VPG y más.",
   alternates: { canonical: "/escena" },
   openGraph: {
     title: "Escena Competitiva | Modo Fosa",
@@ -52,7 +52,7 @@ export default async function EscenaPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Competitivo</h1>
           <p className="mt-1 text-foreground/60">
-            Seguimiento de ligas y torneos oficiales de FC 26
+            Seguimiento de ligas y torneos oficiales de FC 27
           </p>
         </div>
 

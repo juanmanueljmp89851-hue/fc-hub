@@ -64,9 +64,9 @@ export default function SobreNosotrosPage() {
                 </p>
               </div>
               <div className="rounded-xl border border-surface-light bg-surface/30 p-4">
-                <p className="mb-1 text-lg font-bold">🃏 Cartas FC 26</p>
+                <p className="mb-1 text-lg font-bold">🃏 Cartas FC 27</p>
                 <p className="text-sm text-foreground/60">
-                  Base de datos completa de cartas de EA FC 26 con stats, promos y precios actualizados.
+                  Base de datos completa de cartas de EA FC 27 con stats, promos y precios actualizados.
                 </p>
               </div>
               <div className="rounded-xl border border-surface-light bg-surface/30 p-4">

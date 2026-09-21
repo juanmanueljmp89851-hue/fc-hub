@@ -296,7 +296,7 @@ export function HeroParallax() {
               Entrar a la Fosa →
             </Link>
             <Link href="/jugadores" className="btn-ghost-hero">
-              Ver Cartas FC26
+              Ver Cartas FC27
             </Link>
           </div>
         </div>

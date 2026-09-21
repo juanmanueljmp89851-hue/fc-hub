@@ -36,7 +36,7 @@ export function LatestCards({ cards, lastUpdated }: LatestCardsProps) {
               Cartas Nuevas
             </h2>
             <p className="text-xs text-foreground/40">
-              Últimas incorporaciones en FC 26
+              Últimas incorporaciones en FC 27
             </p>
           </div>
           {lastUpdated && (

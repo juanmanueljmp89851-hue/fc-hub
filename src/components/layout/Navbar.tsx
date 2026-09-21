@@ -12,7 +12,7 @@ import type { User as DbUser } from "@/types";
 
 const navLinks = [
   { href: "/actualidad", label: "Actualidad" },
-  { href: "/jugadores", label: "Cartas FC26" },
+  { href: "/jugadores", label: "Cartas FC27" },
   { href: "/sbc", label: "SBC" },
   { href: "/evoluciones", label: "Evoluciones" },
   { href: "/torneos", label: "Arena" },

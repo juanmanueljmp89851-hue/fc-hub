@@ -6,9 +6,9 @@ import { SbcGrid } from "@/components/sbc/SbcGrid";
 export const revalidate = 300; // ISR: regenera cada 5 min
 
 export const metadata: Metadata = {
-  title: "Resolver SBC — EA FC 26 | Modo Fosa",
+  title: "Resolver SBC — EA FC 27 | Modo Fosa",
   description:
-    "Todos los SBC (Squad Building Challenges) activos de EA FC 26: costo, premio y vencimiento. Actualizado automáticamente.",
+    "Todos los SBC (Squad Building Challenges) activos de EA FC 27: costo, premio y vencimiento. Actualizado automáticamente.",
   alternates: { canonical: "/sbc" },
 };
 
@@ -23,7 +23,7 @@ export default async function SbcPage() {
         <header className="mb-6">
           <h1 className="text-2xl font-black">🧩 Resolver SBC</h1>
           <p className="mt-1 text-sm text-foreground/50">
-            Todos los SBC activos de EA FC 26 — costo, premio y vencimiento. Se actualiza solo.
+            Todos los SBC activos de EA FC 27 — costo, premio y vencimiento. Se actualiza solo.
           </p>
         </header>
 

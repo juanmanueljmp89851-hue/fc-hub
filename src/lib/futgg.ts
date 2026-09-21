@@ -1,7 +1,7 @@
 // Cliente de solo-lectura para la API pública de fut.gg (sin key).
 // Usado para listar SBCs activos. Newest-first, paginado.
 
-const GAME = "26";
+const GAME = "27";
 const SBC_API = `https://www.fut.gg/api/fut/sbc/${GAME}/`;
 
 export interface SbcAwardPlayer {
@@ -407,7 +407,7 @@ export async function getSbcSolution(uuid: string): Promise<SbcSolution | null> 
 
   const ids = positions.map((p) => p.playerEaId);
   const items = await fetchJson<{ data: RawPlayerItem[] }>(
-    `https://www.fut.gg/api/fut/26/player-items/?ids=${ids.join(",")}`,
+    `https://www.fut.gg/api/fut/${GAME}/player-items/?ids=${ids.join(",")}`,
   );
   const byId = new Map((items?.data ?? []).map((p) => [p.eaId, p]));
 
@@ -558,7 +558,7 @@ export interface ChemStyleVote {
 
 export async function getCommunityChemStyles(eaId: number): Promise<ChemStyleVote[]> {
   const raw = await fetchJson<{ data: { top3ChemistryStyles: [number, number][] } }>(
-    `https://www.fut.gg/api/fut/players/26/${eaId}/chemistry-style/`,
+    `https://www.fut.gg/api/fut/players/${GAME}/${eaId}/chemistry-style/`,
   );
   if (!raw?.data?.top3ChemistryStyles) return [];
   return raw.data.top3ChemistryStyles.map(([id, pct]) => ({
@@ -571,10 +571,10 @@ export async function getCommunityChemStyles(eaId: number): Promise<ChemStyleVot
 export async function getPlayerDetail(eaId: number): Promise<PlayerDetail | null> {
   const [raw, bulk] = await Promise.all([
     fetchJson<RawPlayerDetail>(
-      `https://www.fut.gg/api/fut/player-items/26-${eaId}/`,
+      `https://www.fut.gg/api/fut/player-items/${GAME}-${eaId}/`,
     ),
     fetchJson<{ data: { accelerateType?: string; totalIgs?: number; playStyleEaIds?: number[]; playStylePlusEaIds?: number[]; rolesPlusPlus?: number[] }[] }>(
-      `https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`,
+      `https://www.fut.gg/api/fut/${GAME}/player-items/?ids=${eaId}`,
     ),
   ]);
   if (!raw?.data?.attributeGroups) return null;
@@ -897,7 +897,7 @@ export interface ApiCard {
 export async function getCardFromApi(eaId: number): Promise<ApiCard | null> {
   let p: RawPlayerItem | undefined;
   try {
-    const res = await fetch(`https://www.fut.gg/api/fut/26/player-items/?ids=${eaId}`, {
+    const res = await fetch(`https://www.fut.gg/api/fut/${GAME}/player-items/?ids=${eaId}`, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)", Accept: "application/json" },
       cache: "no-store",
     });
