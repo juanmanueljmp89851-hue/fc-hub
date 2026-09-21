@@ -26,8 +26,8 @@ export async function GET(request: Request) {
         markerPos,
         around: snippet.substring(markerPos - 50, markerPos + 50),
       });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err: unknown) {
+      return NextResponse.json({ error: err instanceof Error ? err.message : "unknown error" }, { status: 500 });
     }
   }
 
