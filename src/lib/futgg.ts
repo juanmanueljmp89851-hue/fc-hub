@@ -292,10 +292,14 @@ export async function getActiveSbcs(): Promise<SbcSet[]> {
         // Revalida cada 15 min (ISR)
         next: { revalidate: 900 },
       });
-    } catch {
+    } catch (err) {
+      console.error(`[SBC] fetch page ${page} failed:`, err instanceof Error ? err.message : err);
       break;
     }
-    if (!res.ok) break;
+    if (!res.ok) {
+      console.error(`[SBC] page ${page} returned ${res.status}`);
+      break;
+    }
     const json = (await res.json()) as SbcResponse;
     for (const raw of json.data) {
       if (!raw.isExpired) all.push(mapSbc(raw));
