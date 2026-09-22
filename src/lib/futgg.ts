@@ -894,6 +894,7 @@ export interface ApiCard {
   cardFullUrl: string | null;
   pricePs: number | null;
   pricePc: number | null;
+  game: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -958,6 +959,7 @@ export async function getCardFromApi(eaId: number): Promise<ApiCard | null> {
     cardFullUrl: p.cardImageUrl?.replace("width=300", "width=500") ?? null,
     pricePs: p.hasPrice && p.price ? p.price : null,
     pricePc: p.hasPrice && p.price ? p.price : null,
+    game: GAME,
     createdAt: created,
     updatedAt: created,
   };
