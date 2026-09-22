@@ -10,7 +10,11 @@ import { NotificationBell } from "@/components/layout/NotificationBell";
 import { DmInbox } from "@/components/dm/DmInbox";
 import type { User as DbUser } from "@/types";
 
-const navLinks = [
+type NavLink =
+  | { href: string; label: string; dropdown?: never }
+  | { label: string; dropdown: { href: string; label: string }[]; href?: never };
+
+const navLinks: NavLink[] = [
   { href: "/actualidad", label: "Actualidad" },
   {
     label: "Cartas",
@@ -222,12 +226,12 @@ export function Navbar() {
         {/* Desktop nav */}
         <div className="hidden items-center gap-4 md:flex md:ml-6 lg:gap-5 xl:gap-6">
           {navLinks.map((link) =>
-            "dropdown" in link ? (
+            link.dropdown ? (
               <NavDropdown key={link.label} label={link.label} items={link.dropdown} />
             ) : (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href!}
                 className="relative whitespace-nowrap text-xs font-medium text-foreground/70 transition-colors hover:text-accent after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full lg:text-sm"
               >
                 {link.label}
@@ -290,7 +294,7 @@ export function Navbar() {
       {mobileOpen && (
         <div className="animate-[slideDown_200ms_ease-out] border-t border-surface-light bg-background px-4 pb-4 md:hidden">
           {navLinks.map((link) =>
-            "dropdown" in link ? (
+            link.dropdown ? (
               <div key={link.label}>
                 <span className="block py-3 text-sm font-medium text-foreground/40">
                   {link.label}
@@ -309,7 +313,7 @@ export function Navbar() {
             ) : (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href!}
                 onClick={() => setMobileOpen(false)}
                 className="block py-3 text-sm font-medium text-foreground/70 transition-colors hover:text-accent"
               >

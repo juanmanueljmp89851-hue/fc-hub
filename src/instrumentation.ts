@@ -9,7 +9,7 @@ export async function register() {
 
     // Upsert Carvajal End of Era card with correct eaId
     await prisma.futCard.upsert({
-      where: { eaId_cardType: { eaId: 67313827, cardType: 'end_of_era' } },
+      where: { eaId_cardType_game: { eaId: 67313827, cardType: 'end_of_era', game: '26' } },
       update: {
         name: 'Dani Carvajal',
         commonName: 'Carvajal',
@@ -55,6 +55,7 @@ export async function register() {
         league: 'LaLiga EA Sports',
         nation: 'España',
         cardType: 'end_of_era',
+        game: '26',
         promo: 'End of Era',
         promoOrder: 999999,
         cardImageId: '25_end_of_era',
@@ -155,7 +156,7 @@ export async function register() {
       const c = newCards[i];
       const order = baseOrder + (newCards.length - 1 - i);
       await prisma.futCard.upsert({
-        where: { eaId_cardType: { eaId: c.eaId, cardType: c.cardType } },
+        where: { eaId_cardType_game: { eaId: c.eaId, cardType: c.cardType, game: '26' } },
         update: {
           name: c.name, commonName: c.commonName, overall: c.overall,
           position: c.position, altPositions: c.altPositions,
@@ -169,7 +170,7 @@ export async function register() {
           releaseDate: c.releaseDate,
         },
         create: {
-          ...c, promoOrder: order, imageUrl: null, source: 'manual',
+          ...c, game: '26', promoOrder: order, imageUrl: null, source: 'manual',
         },
       });
     }
