@@ -1,11 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getActiveSbcs } from "@/lib/futgg";
 import { readFileSync } from "fs";
 import { join } from "path";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get("action");
+
+  if (action === "diag") {
+    const [fc26, fc27, sbcs] = await Promise.all([
+      prisma.futCard.count({ where: { game: "26" } }),
+      prisma.futCard.count({ where: { game: "27" } }),
+      getActiveSbcs().catch((e: unknown) => ({ error: e instanceof Error ? e.message : String(e) })),
+    ]);
+    return NextResponse.json({
+      cards: { fc26, fc27 },
+      sbcs: Array.isArray(sbcs) ? { count: sbcs.length, names: sbcs.slice(0, 5).map(s => s.name) } : sbcs,
+    });
+  }
 
   if (action === "bundle") {
     const pos = parseInt(searchParams.get("pos") || "32814");
