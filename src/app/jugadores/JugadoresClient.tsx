@@ -40,12 +40,13 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [promoFilter, setPromoFilter] = useState("");
-  const [sortBy, setSortBy] = useState<SortKey>("recent");
+  const [sortBy, setSortBy] = useState<SortKey>("overall");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [selectedPlayer, setSelectedPlayer] = useState<FutPlayer | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [expandedPromos, setExpandedPromos] = useState(() => new Set<string>());
   const [visibleSections, setVisibleSections] = useState(3);
+  const [gridVisible, setGridVisible] = useState(60);
   const CARDS_PER_PROMO = 6;
 
   const filtered = useMemo(() => {
@@ -327,13 +328,13 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
             )}
           </div>
         ) : (
-          /* GRID VIEW — flat sorted */
+          /* GRID VIEW — flat sorted, paginated */
           <>
             <div
               className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
               style={{ justifyItems: "center" }}
             >
-              {filtered.slice(0, 60).map((player) => (
+              {filtered.slice(0, gridVisible).map((player) => (
                 <div key={player.id} className="w-full flex justify-center">
                   <FutCard
                     player={player}
@@ -343,10 +344,13 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
                 </div>
               ))}
             </div>
-            {filtered.length > 60 && (
-              <p className="mt-4 text-center text-xs text-foreground/40">
-                Mostrando 60 de {filtered.length} — usá filtros para refinar
-              </p>
+            {filtered.length > gridVisible && (
+              <button
+                onClick={() => setGridVisible((v) => v + 60)}
+                className="mt-6 w-full rounded-xl border border-accent/20 bg-accent/5 py-4 text-sm font-bold text-accent transition-colors hover:bg-accent/10"
+              >
+                Ver más cartas ({filtered.length - gridVisible} restantes)
+              </button>
             )}
           </>
         )}

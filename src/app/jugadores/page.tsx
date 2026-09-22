@@ -27,8 +27,7 @@ export default async function JugadoresPage({
   const [cards, liveCards] = await Promise.all([
     prisma.futCard.findMany({
       where: { game },
-      orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
-      take: 1000,
+      orderBy: [{ overall: "desc" }, { promoOrder: "desc" }],
     }),
     game === "27" ? getLatestCardsLive(3).catch(() => []) : Promise.resolve([]),
   ]);
