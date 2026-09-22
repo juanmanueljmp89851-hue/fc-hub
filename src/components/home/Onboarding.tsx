@@ -23,8 +23,8 @@ const STEPS = [
   },
   {
     icon: "⚽",
-    title: "Prode Mundial",
-    desc: "Predecí resultados del Mundial 2026 y competí con amigos.",
+    title: "Prode",
+    desc: "Predecí resultados de fútbol y competí con amigos.",
     link: "/prode",
   },
   {

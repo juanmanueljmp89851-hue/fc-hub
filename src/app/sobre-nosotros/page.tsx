@@ -59,7 +59,7 @@ export default function SobreNosotrosPage() {
               <div className="rounded-xl border border-surface-light bg-surface/30 p-4">
                 <p className="mb-1 text-lg font-bold">⚽ Prode</p>
                 <p className="text-sm text-foreground/60">
-                  Predecí resultados del Mundial 2026 y otras competencias. Competí con amigos
+                  Predecí resultados de fútbol y otras competencias. Competí con amigos
                   por premios y prestigio.
                 </p>
               </div>

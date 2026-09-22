@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: { id: string; weekI
   if (!prode || !week) return { title: "Fecha no encontrada" };
   return {
     title: `${week.title} — ${prode.name}`,
-    description: `Predicciones para ${week.title} en ${prode.name}. Prode del Mundial 2026 en Modo Fosa.`,
+    description: `Predicciones para ${week.title} en ${prode.name}. Prode en Modo Fosa.`,
   };
 }
 

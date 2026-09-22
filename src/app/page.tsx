@@ -6,7 +6,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: { absolute: "Modo Fosa — Comunidad EA FC Argentina | Stats, Torneos, Prode" },
   description:
-    "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode del Mundial, ranking, cartas FC 27, noticias y más.",
+    "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode, ranking, cartas FC 27, noticias y más.",
   alternates: { canonical: "/" },
 };
 import { Navbar } from "@/components/layout/Navbar";

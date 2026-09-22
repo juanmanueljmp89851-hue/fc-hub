@@ -90,7 +90,7 @@ export function TopScorerPredictions({ prodeId }: { prodeId: string }) {
         ) : (
           <div>
             <p className="mb-3 text-xs text-foreground/50">
-              Elegí quién creés que será el goleador del Mundial 2026.
+              Elegí quién creés que será el goleador.
               <span className="font-bold text-gold"> Una vez guardado no se puede cambiar.</span>
             </p>
             <div className="flex flex-wrap gap-2">

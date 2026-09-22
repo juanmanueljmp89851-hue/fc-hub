@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | Modo Fosa",
   },
   description:
-    "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode del Mundial, ranking, cartas FC 27, noticias y más.",
+    "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode, ranking, cartas FC 27, noticias y más.",
   keywords: ["EA FC", "FC 27", "FUT", "fútbol", "Argentina", "torneos", "ranking", "prode", "cartas"],
   authors: [{ name: "Modo Fosa" }],
   openGraph: {

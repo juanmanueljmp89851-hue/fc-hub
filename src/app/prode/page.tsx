@@ -9,12 +9,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Prode Mundial 2026",
-  description: "Predecí los resultados del Mundial 2026. Competí con amigos y ganá premios.",
+  title: "Prode",
+  description: "Predecí resultados de fútbol. Competí con amigos y ganá premios.",
   alternates: { canonical: "/prode" },
   openGraph: {
-    title: "Prode Mundial 2026 | Modo Fosa",
-    description: "Predecí resultados del Mundial y competí con amigos.",
+    title: "Prode | Modo Fosa",
+    description: "Predecí resultados de fútbol y competí con amigos.",
   },
 };
 
@@ -43,8 +43,8 @@ export default async function ProdePage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Prode Mundial 2026",
-    description: "Predecí los resultados del Mundial 2026. Competí con amigos y ganá premios.",
+    name: "Prode Modo Fosa",
+    description: "Predecí resultados de fútbol. Competí con amigos y ganá premios.",
     url: "https://www.modofosa.com.ar/prode",
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
@@ -62,12 +62,12 @@ export default async function ProdePage() {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">
-              Prode <span className="text-gold">Mundial 2026</span>
+              Prode <span className="text-gold">Modo Fosa</span>
             </h1>
             <p className="mt-1 text-foreground/60">
               {isLoggedIn
                 ? "Creá tu prode, invitá amigos y competí por premios"
-                : "Predecí los resultados del Mundial 2026 y competí con amigos"}
+                : "Predecí resultados de fútbol y competí con amigos"}
             </p>
           </div>
           {isLoggedIn && (
