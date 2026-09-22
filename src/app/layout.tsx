@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     template: "%s | Modo Fosa",
   },
   description:
-    "Torneos, ranking, prode del Mundial 2026 y más para la comunidad EA FC hispanohablante.",
-  keywords: ["EA FC", "FC 27", "FUT", "fútbol", "Argentina", "torneos", "ranking", "prode", "Mundial 2026"],
+    "Modo Fosa: la comunidad de EA FC Argentina. Torneos, prode del Mundial, ranking, cartas FC 27, noticias y más.",
+  keywords: ["EA FC", "FC 27", "FUT", "fútbol", "Argentina", "torneos", "ranking", "prode", "cartas"],
   authors: [{ name: "Modo Fosa" }],
   openGraph: {
     type: "website",

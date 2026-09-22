@@ -147,7 +147,7 @@ export default async function CartaPage({ params }: { params: { slug: string } }
   const [detail, otherVersions, chemStyles, comments] = await Promise.all([
     getPlayerDetail(c.eaId),
     prisma.futCard.findMany({
-      where: { name: c.name, NOT: { id: c.id } },
+      where: { name: c.name, game: c.game, NOT: { id: c.id } },
       orderBy: { overall: "desc" },
       take: 6,
       select: {
