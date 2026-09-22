@@ -1144,6 +1144,9 @@ model FutCard {
   // FUTBIN rating
   futbinRating   Float?   @map("futbin_rating")
 
+  // Game version
+  game           String   @default("26")        // "26" or "27"
+
   // Source tracking
   source         String   @default("futbin")    // "futbin", "futgg", "futwiz"
   sourceUrl      String?  @map("source_url")
@@ -1151,7 +1154,8 @@ model FutCard {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  @@unique([eaId, cardType])
+  @@unique([eaId, cardType, game])
+  @@index([game])
   @@index([promo, promoOrder])
   @@index([overall])
   @@index([cardType])

@@ -146,7 +146,7 @@ async function upsertPlayer(p: FutggPlayer): Promise<"created" | "updated" | "sk
   const promoOrder = Math.floor(releaseDate.getTime() / 60_000);
 
   const existing = await prisma.futCard.findUnique({
-    where: { eaId_cardType: { eaId: p.eaId, cardType } },
+    where: { eaId_cardType_game: { eaId: p.eaId, cardType, game: GAME } },
     select: { id: true },
   });
 
@@ -187,12 +187,13 @@ async function upsertPlayer(p: FutggPlayer): Promise<"created" | "updated" | "sk
     workRateDef: p.defensiveWorkrate ?? undefined,
     pricePs: p.hasPrice && p.price ? p.price : undefined,
     pricePc: p.hasPrice && p.price ? p.price : undefined,
+    game: GAME,
     source: "futgg",
     sourceUrl: p.url ? `https://www.fut.gg${p.url}` : undefined,
   };
 
   await prisma.futCard.upsert({
-    where: { eaId_cardType: { eaId: p.eaId, cardType } },
+    where: { eaId_cardType_game: { eaId: p.eaId, cardType, game: GAME } },
     update: data,
     create: { eaId: p.eaId, ...data },
   });

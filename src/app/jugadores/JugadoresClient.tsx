@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { FutCard } from "@/components/jugadores/FutCard";
 import { PlayerDetailModal } from "@/components/jugadores/PlayerDetailModal";
@@ -32,9 +33,10 @@ const POSITIONS = [
 interface Props {
   players: FutPlayer[];
   promos: string[];
+  game?: string;
 }
 
-export function JugadoresClient({ players, promos }: Props) {
+export function JugadoresClient({ players, promos, game = "27" }: Props) {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [promoFilter, setPromoFilter] = useState("");
@@ -107,10 +109,34 @@ export function JugadoresClient({ players, promos }: Props) {
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8">
+        {/* Game version tabs */}
+        <div className="mb-6 flex items-center gap-2">
+          <Link
+            href="/jugadores"
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+              game === "27"
+                ? "bg-accent text-background"
+                : "border border-surface-light bg-surface text-foreground/50 hover:text-foreground"
+            }`}
+          >
+            FC 27
+          </Link>
+          <Link
+            href="/jugadores?game=26"
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+              game === "26"
+                ? "bg-accent text-background"
+                : "border border-surface-light bg-surface text-foreground/50 hover:text-foreground"
+            }`}
+          >
+            FC 26
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-black text-foreground">
-            <span className="text-accent">Base de Jugadores</span> FC 27
+            <span className="text-accent">Base de Jugadores</span> FC {game}
           </h1>
           <p className="mt-2 text-sm text-foreground/50">
             Cartas especiales, promos y más.

@@ -18,13 +18,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function JugadoresPage() {
+export default async function JugadoresPage({
+  searchParams,
+}: {
+  searchParams: { game?: string };
+}) {
+  const game = searchParams.game === "26" ? "26" : "27";
   const [cards, liveCards] = await Promise.all([
     prisma.futCard.findMany({
+      where: { game },
       orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
       take: 1000,
     }),
-    getLatestCardsLive(3).catch(() => []),
+    game === "27" ? getLatestCardsLive(3).catch(() => []) : Promise.resolve([]),
   ]);
 
   const dbPlayers: FutPlayer[] = cards.map((c) => ({
@@ -131,7 +137,7 @@ export default async function JugadoresPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <JugadoresClient players={players} promos={promos} />
+      <JugadoresClient players={players} promos={promos} game={game} />
       <div className="mx-auto max-w-7xl px-4 pb-8">
         <AdSlot format="auto" />
       </div>
