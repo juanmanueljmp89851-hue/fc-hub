@@ -69,7 +69,7 @@ export function PlayerDetailModal({ player, onClose }: Props) {
           )}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="rounded bg-accent/10 px-2 py-0.5 text-xs font-bold text-accent">
-              {player.overall} OVR
+              {player.overall} MED
             </span>
             <span className="rounded bg-surface-light px-2 py-0.5 text-xs font-medium text-foreground/60">
               {tPos(player.position)}
@@ -93,9 +93,9 @@ export function PlayerDetailModal({ player, onClose }: Props) {
         {/* Meta */}
         <div className="mb-4 flex flex-wrap gap-3 text-xs text-foreground/50">
           {player.height && <span>📏 {player.height}cm</span>}
-          {player.foot && <span>🦶 {player.foot}</span>}
-          {player.skillMoves != null && <span>⭐ {player.skillMoves} Skill</span>}
-          {player.weakFoot != null && <span>🦶 {player.weakFoot}★ WF</span>}
+          {player.foot && <span>🦶 {player.foot === "Right" ? "Derecho" : player.foot === "Left" ? "Izquierdo" : player.foot}</span>}
+          {player.skillMoves != null && <span>⭐ {player.skillMoves} Filigranas</span>}
+          {player.weakFoot != null && <span>🦶 {player.weakFoot}★ Pierna mala</span>}
         </div>
 
         {/* Prices */}

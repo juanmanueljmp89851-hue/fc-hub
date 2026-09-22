@@ -8,6 +8,7 @@ import {
   getCardStyle,
   CARD_COLORS,
 } from "@/types/player";
+import { tPos } from "@/lib/positions";
 
 interface FutCardProps {
   player: FutPlayer;
@@ -255,7 +256,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
               textShadow: "0 1px 3px rgba(0,0,0,0.7)",
             }}
           >
-            {player.position}
+            {tPos(player.position)}
           </span>
         </div>
 
@@ -365,7 +366,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
                   textShadow: "0 1px 2px rgba(0,0,0,0.5)",
                 }}
               >
-                {pos}
+                {tPos(pos)}
               </span>
             ))}
           </div>
@@ -380,7 +381,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
             }}
           >
             {player.skillMoves != null && <span>★{player.skillMoves}</span>}
-            {player.weakFoot != null && <span>WF{player.weakFoot}</span>}
+            {player.weakFoot != null && <span>PM{player.weakFoot}</span>}
           </div>
         </div>
       </div>

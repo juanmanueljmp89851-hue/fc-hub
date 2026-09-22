@@ -14,9 +14,34 @@ export async function GET(request: Request) {
       prisma.futCard.count({ where: { game: "27" } }),
       getActiveSbcs().catch((e: unknown) => ({ error: e instanceof Error ? e.message : String(e) })),
     ]);
+
+    // Direct fetch test to see what fut.gg returns from Vercel
+    let directTest: Record<string, unknown> = {};
+    try {
+      const res = await fetch("https://www.fut.gg/api/fut/sbc/27/?page=1", {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          Accept: "application/json",
+        },
+        cache: "no-store",
+      });
+      const text = await res.text();
+      directTest = {
+        status: res.status,
+        statusText: res.statusText,
+        contentType: res.headers.get("content-type"),
+        bodyLength: text.length,
+        bodyPreview: text.substring(0, 500),
+        isJson: text.startsWith("{") || text.startsWith("["),
+      };
+    } catch (e: unknown) {
+      directTest = { fetchError: e instanceof Error ? e.message : String(e) };
+    }
+
     return NextResponse.json({
       cards: { fc26, fc27 },
       sbcs: Array.isArray(sbcs) ? { count: sbcs.length, names: sbcs.slice(0, 5).map(s => s.name) } : sbcs,
+      directFutggTest: directTest,
     });
   }
 

@@ -5,7 +5,12 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { FutCard } from "@/components/jugadores/FutCard";
 import { PlayerDetailModal } from "@/components/jugadores/PlayerDetailModal";
+import { tPos } from "@/lib/positions";
 import type { FutPlayer } from "@/types/player";
+
+function normalize(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
 
 const SORT_OPTIONS = [
   { value: "recent", label: "Reciente" },
@@ -53,12 +58,12 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
     let result = [...players];
 
     if (search.trim()) {
-      const q = search.toLowerCase();
+      const q = normalize(search);
       result = result.filter(
         (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.commonName?.toLowerCase().includes(q) ?? false) ||
-          p.club.toLowerCase().includes(q)
+          normalize(p.name).includes(q) ||
+          (p.commonName ? normalize(p.commonName).includes(q) : false) ||
+          normalize(p.club).includes(q)
       );
     }
 
@@ -186,7 +191,7 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
             >
               <option value="">Posición</option>
               {POSITIONS.map((pos) => (
-                <option key={pos} value={pos}>{pos}</option>
+                <option key={pos} value={pos}>{tPos(pos)}</option>
               ))}
             </select>
 
