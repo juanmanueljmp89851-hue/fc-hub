@@ -3,10 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { SolutionPitch } from "@/components/sbc/SolutionPitch";
-import { getSbcSolution, type SbcSolution } from "@/lib/futgg";
+import { getSbcSolutionFromDb } from "@/lib/sbc-db";
+import type { SbcSolution } from "@/lib/futgg";
 import { fmtCoins } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Solución de SBC | Modo Fosa",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function SolucionPage({ params }: { params: { uuid: string } }) {
   const uuids = decodeURIComponent(params.uuid).split(",").map((u) => u.trim()).filter(Boolean);
-  const sols = (await Promise.all(uuids.map((u) => getSbcSolution(u)))).filter(
+  const sols = (await Promise.all(uuids.map((u) => getSbcSolutionFromDb(u)))).filter(
     (s): s is SbcSolution => !!s && s.players.length > 0,
   );
   if (sols.length === 0) notFound();

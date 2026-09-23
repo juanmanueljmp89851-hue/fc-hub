@@ -252,6 +252,164 @@ function mapSbc(r: RawSbc): SbcSet {
   };
 }
 
+// --- Solution types & fetching ---
+
+const SOLUTIONS_KEY = "sbc_solutions";
+
+interface RawSquadResponse {
+  data?: {
+    data?: {
+      activeFormationId?: string | null;
+      activeGroupPositions?: { playerEaId: number; positionIdx: number }[];
+    };
+  };
+}
+
+interface RawPlayerItem {
+  eaId: number;
+  commonName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  cardName: string | null;
+  overall: number;
+  position: string;
+  price: number | null;
+  hasPrice: boolean;
+  imageUrl: string | null;
+  cardImageUrl: string | null;
+  skillMoves: number | null;
+  weakFoot: number | null;
+  club?: { name: string } | null;
+  league?: { name: string } | null;
+  nation?: { name: string } | null;
+  faceStatsV2?: Record<string, number> | null;
+}
+
+interface SolutionPlayer {
+  eaId: number;
+  name: string;
+  commonName?: string;
+  position: string;
+  overall: number;
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
+  club: string;
+  league: string;
+  nation: string;
+  skillMoves?: number;
+  weakFoot?: number;
+  cardFullUrl?: string;
+  imageUrl?: string;
+  price: number | null;
+}
+
+interface SbcSolution {
+  uuid: string;
+  formation: string | null;
+  players: SolutionPlayer[];
+  total: number | null;
+}
+
+async function fetchJson<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)",
+        Accept: "application/json",
+      },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchSolution(uuid: string): Promise<SbcSolution | null> {
+  const squad = await fetchJson<RawSquadResponse>(`https://www.fut.gg/api/squads/${uuid}/`);
+  const inner = squad?.data?.data;
+  const positions = inner?.activeGroupPositions ?? [];
+  if (positions.length === 0) return null;
+
+  const ids = positions.map((p) => p.playerEaId);
+  const items = await fetchJson<{ data: RawPlayerItem[] }>(
+    `https://www.fut.gg/api/fut/${GAME}/player-items/?ids=${ids.join(",")}`,
+  );
+  const byId = new Map((items?.data ?? []).map((p) => [p.eaId, p]));
+
+  const players: SolutionPlayer[] = [];
+  let total = 0;
+  let hasAnyPrice = false;
+  for (const id of ids) {
+    const p = byId.get(id);
+    if (!p) continue;
+    const fs = p.faceStatsV2;
+    const price = p.hasPrice ? p.price : null;
+    if (price != null) { total += price; hasAnyPrice = true; }
+    players.push({
+      eaId: p.eaId,
+      name: p.commonName ?? [p.firstName, p.lastName].filter(Boolean).join(" ").trim() ?? p.cardName ?? `#${p.eaId}`,
+      commonName: p.commonName ?? undefined,
+      position: p.position,
+      overall: p.overall,
+      pace: fs?.facePace ?? 0,
+      shooting: fs?.faceShooting ?? 0,
+      passing: fs?.facePassing ?? 0,
+      dribbling: fs?.faceDribbling ?? 0,
+      defending: fs?.faceDefending ?? 0,
+      physical: fs?.facePhysicality ?? 0,
+      club: p.club?.name ?? "",
+      league: p.league?.name ?? "",
+      nation: p.nation?.name ?? "",
+      skillMoves: p.skillMoves ?? undefined,
+      weakFoot: p.weakFoot ?? undefined,
+      cardFullUrl: (p.cardImageUrl ?? undefined)?.replace("width=300", "width=500"),
+      imageUrl: p.imageUrl ?? undefined,
+      price,
+    });
+  }
+
+  return {
+    uuid,
+    formation: inner?.activeFormationId ?? null,
+    players,
+    total: hasAnyPrice ? total : null,
+  };
+}
+
+async function syncSolutions(sbcs: SbcSet[]): Promise<void> {
+  const uuids: string[] = [];
+  for (const sbc of sbcs) {
+    for (const ch of sbc.challenges) {
+      if (ch.solutionUuid) uuids.push(ch.solutionUuid);
+    }
+  }
+
+  console.log(`[sync-sbcs] Fetching ${uuids.length} solutions...`);
+  const solutions: Record<string, SbcSolution> = {};
+  let ok = 0;
+  for (const uuid of uuids) {
+    const sol = await fetchSolution(uuid);
+    if (sol && sol.players.length > 0) {
+      solutions[uuid] = sol;
+      ok++;
+    }
+    // Small delay to avoid rate limiting
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  console.log(`[sync-sbcs] Got ${ok}/${uuids.length} solutions.`);
+
+  await prisma.systemConfig.upsert({
+    where: { key: SOLUTIONS_KEY },
+    update: { value: solutions as unknown as Record<string, unknown> },
+    create: { id: crypto.randomUUID(), key: SOLUTIONS_KEY, value: solutions as unknown as Record<string, unknown> },
+  });
+}
+
 async function main() {
   console.log("[sync-sbcs] Fetching SBCs from fut.gg...");
   const all: SbcSet[] = [];
@@ -282,7 +440,10 @@ async function main() {
     create: { id: crypto.randomUUID(), key: SBC_KEY, value: all as unknown as Record<string, unknown>[] },
   });
 
-  console.log(`[sync-sbcs] Done! ${all.length} SBCs stored.`);
+  // Sync solutions
+  await syncSolutions(all);
+
+  console.log(`[sync-sbcs] Done! ${all.length} SBCs + solutions stored.`);
   await prisma.$disconnect();
 }
 

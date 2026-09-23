@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
-import type { SbcSet } from "@/lib/futgg";
+import type { SbcSet, SbcSolution } from "@/lib/futgg";
 
 const SBC_KEY = "active_sbcs";
+const SOLUTIONS_KEY = "sbc_solutions";
 
 export async function getActiveSbcsFromDb(): Promise<SbcSet[]> {
   const row = await prisma.systemConfig.findUnique({ where: { key: SBC_KEY } });
@@ -22,4 +23,11 @@ export async function saveSbcsToDb(sbcs: SbcSet[]): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     create: { key: SBC_KEY, value: sbcs as any },
   });
+}
+
+export async function getSbcSolutionFromDb(uuid: string): Promise<SbcSolution | null> {
+  const row = await prisma.systemConfig.findUnique({ where: { key: SOLUTIONS_KEY } });
+  if (!row?.value) return null;
+  const solutions = row.value as unknown as Record<string, SbcSolution>;
+  return solutions[uuid] ?? null;
 }
