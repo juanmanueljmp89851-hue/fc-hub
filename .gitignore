@@ -38,6 +38,7 @@ yarn-error.log*
 !/scripts/sync-futgg.ts
 !/scripts/sync-sbcs.ts
 !/scripts/seed-tournaments.ts
+!/scripts/import-sbcs.ts
 build-log.txt
 prisma/dev.db
 
