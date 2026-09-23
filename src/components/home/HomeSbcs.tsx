@@ -85,7 +85,9 @@ export function HomeSbcs({ sbcs }: { sbcs: SbcSet[] }) {
                     <span className="font-bold text-gold">
                       {sbc.cheapestTotal != null
                         ? fmtCoins(sbc.cheapestTotal)
-                        : fmtCoins(sbc.cost)}
+                        : sbc.cost
+                          ? fmtCoins(sbc.cost)
+                          : "—"}
                     </span>
                   </div>
                   <div className="rounded-md bg-background/50 px-2 py-1">
