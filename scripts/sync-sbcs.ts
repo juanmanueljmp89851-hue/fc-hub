@@ -433,6 +433,12 @@ async function main() {
     if (json.next === null || page >= json.totalPages) break;
   }
 
+  if (all.length === 0) {
+    console.warn("[sync-sbcs] ⚠️ Got 0 SBCs — skipping DB write to preserve existing data.");
+    await prisma.$disconnect();
+    return;
+  }
+
   console.log(`[sync-sbcs] Saving ${all.length} SBCs to DB...`);
   await prisma.systemConfig.upsert({
     where: { key: SBC_KEY },
