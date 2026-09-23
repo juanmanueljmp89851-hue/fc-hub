@@ -19,7 +19,6 @@ const PROTECTED_ROUTES = [
 
 const PROTECTED_DYNAMIC = [
   "/prode/",
-  "/escena/",
   "/equipos/",
   "/torneos/",
   "/sbc/",

@@ -9,6 +9,42 @@ export interface TournamentLink {
   url: string;
 }
 
+export interface TournamentStanding {
+  position: number;
+  team: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  group?: string;
+}
+
+export interface TournamentMatch {
+  home: string;
+  away: string;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  date?: string;
+  round?: string;
+  stage?: string;
+  status: "finished" | "scheduled" | "live";
+}
+
+export interface TournamentScorer {
+  name: string;
+  team: string;
+  goals: number;
+  assists?: number;
+}
+
+export interface TournamentBracket {
+  stage: string;
+  matches: TournamentMatch[];
+}
+
 export interface Tournament {
   slug: string;
   name: string;
@@ -23,10 +59,17 @@ export interface Tournament {
   region: string;
   category?: string;
   logoUrl?: string;
+  format?: string;
   links: TournamentLink[];
   hasDetailPage?: boolean;
   highlight?: boolean;
   updatedAt?: string;
+  standings?: TournamentStanding[];
+  matches?: TournamentMatch[];
+  topScorers?: TournamentScorer[];
+  brackets?: TournamentBracket[];
+  groups?: { name: string; standings: TournamentStanding[] }[];
+  content?: string;
 }
 
 export async function getTournamentsFromDb(): Promise<Tournament[]> {

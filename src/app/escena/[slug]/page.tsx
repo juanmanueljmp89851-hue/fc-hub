@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getExternalLeague } from "@/lib/actions/external-leagues";
 import { getTournamentBySlug } from "@/lib/tournaments-db";
+import type { Tournament, TournamentStanding, TournamentMatch, TournamentScorer, TournamentBracket } from "@/lib/tournaments-db";
 import Link from "next/link";
 
 interface PageProps {
@@ -71,10 +72,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default async function TournamentDetailPage({ params }: PageProps) {
   const league = await getExternalLeague(params.slug);
-
-  if (league) {
-    return <ExternalLeagueDetail league={league} />;
-  }
+  if (league) return <ExternalLeagueDetail league={league} />;
 
   const tournament = await getTournamentBySlug(params.slug);
   if (!tournament) notFound();
@@ -82,11 +80,177 @@ export default async function TournamentDetailPage({ params }: PageProps) {
   return <TournamentDetail tournament={tournament} />;
 }
 
-function TournamentDetail({ tournament: t }: { tournament: NonNullable<Awaited<ReturnType<typeof getTournamentBySlug>>> }) {
+/* ─── Standings Table ─── */
+function StandingsTable({ standings, title }: { standings: TournamentStanding[]; title?: string }) {
+  return (
+    <Card className="overflow-x-auto p-0">
+      {title && (
+        <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+      )}
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-surface-light text-left text-foreground/50">
+            <th className="px-4 py-3 font-medium">#</th>
+            <th className="px-4 py-3 font-medium">Equipo</th>
+            <th className="px-4 py-3 font-medium text-center">PJ</th>
+            <th className="px-4 py-3 font-medium text-center">PG</th>
+            <th className="px-4 py-3 font-medium text-center">PE</th>
+            <th className="px-4 py-3 font-medium text-center">PP</th>
+            <th className="px-4 py-3 font-medium text-center">GF</th>
+            <th className="px-4 py-3 font-medium text-center">GC</th>
+            <th className="px-4 py-3 font-medium text-center">DIF</th>
+            <th className="px-4 py-3 font-medium text-center">PTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {standings.map((s, i) => {
+            const diff = s.goalsFor - s.goalsAgainst;
+            return (
+              <tr key={i} className="border-b border-surface-light/50 transition-colors hover:bg-surface-light/30">
+                <td className="px-4 py-3 font-bold text-foreground/60">{s.position}</td>
+                <td className="px-4 py-3 font-medium">{s.team}</td>
+                <td className="px-4 py-3 text-center text-foreground/70">{s.played}</td>
+                <td className="px-4 py-3 text-center text-green-400">{s.won}</td>
+                <td className="px-4 py-3 text-center text-foreground/70">{s.drawn}</td>
+                <td className="px-4 py-3 text-center text-red-400">{s.lost}</td>
+                <td className="px-4 py-3 text-center text-foreground/70">{s.goalsFor}</td>
+                <td className="px-4 py-3 text-center text-foreground/70">{s.goalsAgainst}</td>
+                <td className="px-4 py-3 text-center font-medium">
+                  <span className={diff > 0 ? "text-accent" : diff < 0 ? "text-red-400" : "text-foreground/70"}>
+                    {diff > 0 ? "+" : ""}{diff}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center font-bold text-accent">{s.points}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </Card>
+  );
+}
+
+/* ─── Match List ─── */
+function MatchList({ matches, title }: { matches: TournamentMatch[]; title?: string }) {
+  const finished = matches.filter((m) => m.status === "finished");
+  const scheduled = matches.filter((m) => m.status === "scheduled");
+  const live = matches.filter((m) => m.status === "live");
+
+  return (
+    <Card>
+      {title && <CardHeader><CardTitle>{title}</CardTitle></CardHeader>}
+      <div className="space-y-2 p-4">
+        {live.length > 0 && (
+          <>
+            <h4 className="text-sm font-bold text-green-400">🔴 En vivo</h4>
+            {live.map((m, i) => <MatchRow key={`live-${i}`} match={m} />)}
+          </>
+        )}
+        {finished.length > 0 && (
+          <>
+            {live.length > 0 && <h4 className="mt-4 text-sm font-semibold text-foreground/50">Resultados</h4>}
+            {finished.map((m, i) => <MatchRow key={`fin-${i}`} match={m} />)}
+          </>
+        )}
+        {scheduled.length > 0 && (
+          <>
+            <h4 className="mt-4 text-sm font-semibold text-foreground/50">Próximos</h4>
+            {scheduled.map((m, i) => <MatchRow key={`sch-${i}`} match={m} />)}
+          </>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function MatchRow({ match: m }: { match: TournamentMatch }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-surface-light/50 bg-background p-3 text-sm">
+      <div className="flex-1 text-right">
+        <span className={m.homeScore != null && m.awayScore != null && m.homeScore > m.awayScore ? "font-bold text-accent" : "text-foreground/70"}>
+          {m.home}
+        </span>
+      </div>
+      <div className="mx-4 min-w-[60px] text-center">
+        {m.homeScore != null && m.awayScore != null ? (
+          <span className="font-bold text-foreground">{m.homeScore} - {m.awayScore}</span>
+        ) : m.date ? (
+          <span className="text-xs text-foreground/40">{m.date}</span>
+        ) : (
+          <span className="text-foreground/40">vs</span>
+        )}
+      </div>
+      <div className="flex-1">
+        <span className={m.homeScore != null && m.awayScore != null && m.awayScore > m.homeScore ? "font-bold text-accent" : "text-foreground/70"}>
+          {m.away}
+        </span>
+      </div>
+      {(m.round || m.stage) && (
+        <span className="ml-3 whitespace-nowrap text-[11px] text-foreground/40">{m.stage || m.round}</span>
+      )}
+    </div>
+  );
+}
+
+/* ─── Top Scorers ─── */
+function TopScorersTable({ scorers }: { scorers: TournamentScorer[] }) {
+  return (
+    <Card className="overflow-x-auto p-0">
+      <CardHeader><CardTitle>Goleadores</CardTitle></CardHeader>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-surface-light text-left text-foreground/50">
+            <th className="px-4 py-3 font-medium">#</th>
+            <th className="px-4 py-3 font-medium">Jugador</th>
+            <th className="px-4 py-3 font-medium">Equipo</th>
+            <th className="px-4 py-3 font-medium text-center">⚽</th>
+            {scorers[0]?.assists != null && <th className="px-4 py-3 font-medium text-center">🅰️</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {scorers.map((s, i) => (
+            <tr key={i} className="border-b border-surface-light/50 transition-colors hover:bg-surface-light/30">
+              <td className="px-4 py-3 font-bold text-foreground/60">{i + 1}</td>
+              <td className="px-4 py-3 font-medium">{s.name}</td>
+              <td className="px-4 py-3 text-foreground/70">{s.team}</td>
+              <td className="px-4 py-3 text-center font-bold text-gold">{s.goals}</td>
+              {scorers[0]?.assists != null && <td className="px-4 py-3 text-center text-accent">{s.assists ?? 0}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
+  );
+}
+
+/* ─── Bracket ─── */
+function BracketSection({ brackets }: { brackets: TournamentBracket[] }) {
+  return (
+    <div className="space-y-6">
+      {brackets.map((b, i) => (
+        <Card key={i}>
+          <CardHeader><CardTitle>{b.stage}</CardTitle></CardHeader>
+          <div className="space-y-2 p-4">
+            {b.matches.map((m, j) => <MatchRow key={j} match={m} />)}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/* ─── JSON Tournament Detail Page ─── */
+function TournamentDetail({ tournament: t }: { tournament: Tournament }) {
+  const hasStandings = (t.standings && t.standings.length > 0) || (t.groups && t.groups.length > 0);
+  const hasMatches = t.matches && t.matches.length > 0;
+  const hasScorers = t.topScorers && t.topScorers.length > 0;
+  const hasBrackets = t.brackets && t.brackets.length > 0;
+  const hasContent = hasStandings || hasMatches || hasScorers || hasBrackets || t.content;
+
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main className="mx-auto max-w-4xl px-4 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-8">
         <Link href="/escena" className="mb-4 inline-flex items-center text-sm text-foreground/50 hover:text-accent">
           ← Volver a Competitivo
         </Link>
@@ -115,41 +279,79 @@ function TournamentDetail({ tournament: t }: { tournament: NonNullable<Awaited<R
 
           {/* Info cards */}
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-surface-light bg-surface/30 px-4 py-3 text-center">
-              <span className="block text-[10px] uppercase text-foreground/40">Organizador</span>
-              <span className="text-sm font-bold">{t.org}</span>
-            </div>
-            <div className="rounded-xl border border-surface-light bg-surface/30 px-4 py-3 text-center">
-              <span className="block text-[10px] uppercase text-foreground/40">Fechas</span>
-              <span className="text-sm font-bold">{t.dates}</span>
-            </div>
-            {t.prizePool && (
-              <div className="rounded-xl border border-gold/20 bg-gold/5 px-4 py-3 text-center">
-                <span className="block text-[10px] uppercase text-foreground/40">Premio</span>
-                <span className="text-sm font-bold text-gold">{t.prizePool}</span>
-              </div>
-            )}
-            <div className="rounded-xl border border-surface-light bg-surface/30 px-4 py-3 text-center">
-              <span className="block text-[10px] uppercase text-foreground/40">Estado</span>
-              <span className="text-sm font-bold">{t.statusLabel}</span>
-            </div>
+            <InfoTile label="Organizador" value={t.org} />
+            <InfoTile label="Fechas" value={t.dates} />
+            {t.prizePool && <InfoTile label="Premio" value={t.prizePool} highlight />}
+            {t.format && <InfoTile label="Formato" value={t.format} />}
           </div>
 
           {t.updatedAt && (
             <p className="mt-3 text-xs text-foreground/40">
-              Última actualización: {new Date(t.updatedAt).toLocaleString("es-AR")}
+              Última actualización: {new Date(t.updatedAt).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           )}
         </div>
 
-        {/* Content area */}
-        <Card className="p-8 text-center">
-          <span className="mb-2 block text-3xl">📡</span>
-          <h2 className="text-lg font-bold text-foreground/80">Cobertura en curso</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-foreground/50">
-            Estamos siguiendo este torneo. A medida que avance vamos a ir publicando resultados, brackets y análisis.
-          </p>
-        </Card>
+        {/* Content sections */}
+        {hasContent ? (
+          <div className="space-y-8">
+            {t.content && (
+              <div className="prose prose-invert max-w-none text-sm leading-relaxed text-foreground/70" dangerouslySetInnerHTML={{ __html: t.content }} />
+            )}
+
+            {/* Groups */}
+            {t.groups && t.groups.length > 0 && (
+              <section>
+                <h2 className="mb-4 text-lg font-bold">Fase de Grupos</h2>
+                <div className="space-y-6">
+                  {t.groups.map((g, i) => (
+                    <StandingsTable key={i} standings={g.standings} title={g.name} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Standings (no groups) */}
+            {t.standings && t.standings.length > 0 && !t.groups && (
+              <section>
+                <h2 className="mb-4 text-lg font-bold">Posiciones</h2>
+                <StandingsTable standings={t.standings} />
+              </section>
+            )}
+
+            {/* Brackets / Playoffs */}
+            {hasBrackets && (
+              <section>
+                <h2 className="mb-4 text-lg font-bold">Playoffs</h2>
+                <BracketSection brackets={t.brackets!} />
+              </section>
+            )}
+
+            {/* Matches / Fixture */}
+            {hasMatches && (
+              <section>
+                <h2 className="mb-4 text-lg font-bold">Fixture</h2>
+                <MatchList matches={t.matches!} />
+              </section>
+            )}
+
+            {/* Top Scorers */}
+            {hasScorers && (
+              <section>
+                <h2 className="mb-4 text-lg font-bold">Goleadores</h2>
+                <TopScorersTable scorers={t.topScorers!} />
+              </section>
+            )}
+          </div>
+        ) : (
+          <Card className="p-8 text-center">
+            <span className="mb-2 block text-3xl">📡</span>
+            <h2 className="text-lg font-bold text-foreground/80">Cobertura en curso</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-foreground/50">
+              Estamos siguiendo este torneo. A medida que avance vamos a ir publicando resultados, brackets y análisis.
+            </p>
+          </Card>
+        )}
 
         <p className="mt-8 text-center text-[11px] text-foreground/30">
           Cobertura de Modo Fosa · ¿Tenés info para aportar?{" "}
@@ -162,13 +364,23 @@ function TournamentDetail({ tournament: t }: { tournament: NonNullable<Awaited<R
   );
 }
 
+function InfoTile({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-xl border px-4 py-3 text-center ${highlight ? "border-gold/20 bg-gold/5" : "border-surface-light bg-surface/30"}`}>
+      <span className="block text-[10px] uppercase text-foreground/40">{label}</span>
+      <span className={`text-sm font-bold ${highlight ? "text-gold" : ""}`}>{value}</span>
+    </div>
+  );
+}
+
+/* ─── ExternalLeague Detail Page (DB-backed) ─── */
 function ExternalLeagueDetail({ league }: { league: NonNullable<Awaited<ReturnType<typeof getExternalLeague>>> }) {
   const activeSeason = league.seasons.find((s) => s.status === "IN_PROGRESS") ?? league.seasons[0];
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-8">
         <Link href="/escena" className="mb-4 inline-flex items-center text-sm text-foreground/50 hover:text-accent">
           ← Volver a Competitivo
         </Link>
@@ -188,18 +400,14 @@ function ExternalLeagueDetail({ league }: { league: NonNullable<Awaited<ReturnTy
                   {getGameModeLabel(league.gameMode)}
                 </span>
                 {league.platform.map((p) => (
-                  <span key={p} className="rounded bg-surface-light px-2 py-0.5 text-xs font-medium text-foreground/60">
-                    {p}
-                  </span>
+                  <span key={p} className="rounded bg-surface-light px-2 py-0.5 text-xs font-medium text-foreground/60">{p}</span>
                 ))}
                 <span className="text-xs text-foreground/50">{league.country}</span>
               </div>
             </div>
           </div>
 
-          {league.description && (
-            <p className="mt-4 text-foreground/70">{league.description}</p>
-          )}
+          {league.description && <p className="mt-4 text-foreground/70">{league.description}</p>}
 
           {league.lastFetchAt && (
             <p className="mt-3 text-xs text-foreground/40">
@@ -208,7 +416,6 @@ function ExternalLeagueDetail({ league }: { league: NonNullable<Awaited<ReturnTy
           )}
         </div>
 
-        {/* Seasons */}
         {league.seasons.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-foreground/50">No hay datos de temporadas todavía</p>
@@ -220,12 +427,7 @@ function ExternalLeagueDetail({ league }: { league: NonNullable<Awaited<ReturnTy
                 {league.seasons.map((season) => {
                   const statusInfo = getSeasonStatusLabel(season.status);
                   return (
-                    <span
-                      key={season.id}
-                      className={`rounded-full px-3 py-1 text-xs font-bold ${
-                        season.id === activeSeason?.id ? statusInfo.color : "bg-surface-light text-foreground/50"
-                      }`}
-                    >
+                    <span key={season.id} className={`rounded-full px-3 py-1 text-xs font-bold ${season.id === activeSeason?.id ? statusInfo.color : "bg-surface-light text-foreground/50"}`}>
                       {season.name}
                     </span>
                   );
@@ -237,9 +439,7 @@ function ExternalLeagueDetail({ league }: { league: NonNullable<Awaited<ReturnTy
               <>
                 {activeSeason.standings.length > 0 && (
                   <Card className="overflow-x-auto p-0">
-                    <CardHeader>
-                      <CardTitle>Posiciones — {activeSeason.name}</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle>Posiciones — {activeSeason.name}</CardTitle></CardHeader>
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-surface-light text-left text-foreground/50">
@@ -286,26 +486,24 @@ function ExternalLeagueDetail({ league }: { league: NonNullable<Awaited<ReturnTy
 
                 {activeSeason.matches.length > 0 && (
                   <Card>
-                    <CardHeader>
-                      <CardTitle>Resultados recientes</CardTitle>
-                    </CardHeader>
-                    <div className="space-y-2">
+                    <CardHeader><CardTitle>Resultados recientes</CardTitle></CardHeader>
+                    <div className="space-y-2 p-4">
                       {activeSeason.matches
                         .filter((m) => m.status === "FINISHED")
                         .slice(0, 20)
                         .map((match) => (
                           <div key={match.id} className="flex items-center justify-between rounded-lg border border-surface-light/50 bg-background p-3 text-sm">
-                            <span className={match.homeScore !== null && match.awayScore !== null && match.homeScore > match.awayScore ? "font-bold text-accent" : "text-foreground/70"}>
+                            <span className={match.homeScore != null && match.awayScore != null && match.homeScore > match.awayScore ? "font-bold text-accent" : "text-foreground/70"}>
                               {match.homeTeam}
                             </span>
                             <div className="mx-4 text-center">
-                              {match.homeScore !== null && match.awayScore !== null ? (
+                              {match.homeScore != null && match.awayScore != null ? (
                                 <span className="font-bold text-foreground">{match.homeScore} - {match.awayScore}</span>
                               ) : (
                                 <span className="text-foreground/40">vs</span>
                               )}
                             </div>
-                            <span className={match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore ? "font-bold text-accent" : "text-foreground/70"}>
+                            <span className={match.homeScore != null && match.awayScore != null && match.awayScore > match.homeScore ? "font-bold text-accent" : "text-foreground/70"}>
                               {match.awayTeam}
                             </span>
                             {match.round && <span className="ml-4 text-xs text-foreground/40">{match.round}</span>}
