@@ -303,13 +303,17 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
                     style={{ justifyItems: "center" }}
                   >
                     {visibleCards.map((player) => (
-                      <div key={player.id} className="w-full flex justify-center">
-                        <FutCard
-                          player={player}
-                          onClick={() => setSelectedPlayer(player)}
-                          responsive
-                        />
-                      </div>
+                      <Link
+                        key={player.id}
+                        href={`/carta/${player.eaId}`}
+                        className="w-full flex justify-center"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedPlayer(player);
+                        }}
+                      >
+                        <FutCard player={player} responsive />
+                      </Link>
                     ))}
                   </div>
                   {hasMore && !isExpanded && (
@@ -340,13 +344,17 @@ export function JugadoresClient({ players, promos, game = "27" }: Props) {
               style={{ justifyItems: "center" }}
             >
               {filtered.slice(0, gridVisible).map((player) => (
-                <div key={player.id} className="w-full flex justify-center">
-                  <FutCard
-                    player={player}
-                    onClick={() => setSelectedPlayer(player)}
-                    responsive
-                  />
-                </div>
+                <Link
+                  key={player.id}
+                  href={`/carta/${player.eaId}`}
+                  className="w-full flex justify-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedPlayer(player);
+                  }}
+                >
+                  <FutCard player={player} responsive />
+                </Link>
               ))}
             </div>
             {filtered.length > gridVisible && (

@@ -140,6 +140,17 @@ export default async function JugadoresPage({
       <div className="mx-auto max-w-7xl px-4 pb-8">
         <AdSlot format="auto" />
       </div>
+      <section className="mx-auto max-w-7xl px-4 pb-12">
+        <h2 className="mb-2 text-lg font-bold text-foreground/70">Base de datos de cartas EA FC 27</h2>
+        <p className="text-sm leading-relaxed text-foreground/50">
+          Explorá las {players.length.toLocaleString("es-AR")}+ cartas disponibles en EA Sports FC 27.
+          Filtrá por promo, posición, overall, liga o nacionalidad. Cada carta incluye estadísticas
+          completas, precio actualizado y posiciones alternativas.
+          {promos.length > 0 && (
+            <> Promos activas: {promos.slice(0, 8).join(", ")}{promos.length > 8 ? ` y ${promos.length - 8} más` : ""}.</>
+          )}
+        </p>
+      </section>
     </>
   );
 }

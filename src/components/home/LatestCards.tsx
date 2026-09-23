@@ -57,9 +57,17 @@ export function LatestCards({ cards, lastUpdated }: LatestCardsProps) {
       <div className="relative">
         <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth scrollbar-thin scrollbar-track-transparent scrollbar-thumb-surface-light touch-pan-x">
           {cards.map((card) => (
-            <div key={card.id} className="flex-shrink-0 snap-start">
-              <FutCard player={card} size="sm" onClick={() => setSelectedPlayer(card)} />
-            </div>
+            <Link
+              key={card.id}
+              href={`/carta/${card.eaId}`}
+              className="flex-shrink-0 snap-start"
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedPlayer(card);
+              }}
+            >
+              <FutCard player={card} size="sm" />
+            </Link>
           ))}
         </div>
 
