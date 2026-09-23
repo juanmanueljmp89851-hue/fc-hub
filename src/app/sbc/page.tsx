@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
-import { getActiveSbcs } from "@/lib/futgg";
+import { getActiveSbcsFromDb } from "@/lib/sbc-db";
 import { SbcGrid } from "@/components/sbc/SbcGrid";
 
 export const revalidate = 300; // ISR: regenera cada 5 min
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SbcPage() {
-  const sbcs = await getActiveSbcs();
+  const sbcs = await getActiveSbcsFromDb();
   const nuevos = sbcs.filter((s) => s.isNew);
 
   return (

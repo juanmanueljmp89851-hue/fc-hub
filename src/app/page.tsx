@@ -18,7 +18,8 @@ import { LatestCards } from "@/components/home/LatestCards";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Onboarding } from "@/components/home/Onboarding";
 import { prisma } from "@/lib/db";
-import { getLatestCardsLive, getActiveSbcs } from "@/lib/futgg";
+import { getLatestCardsLive } from "@/lib/futgg";
+import { getActiveSbcsFromDb } from "@/lib/sbc-db";
 import { HomeSbcs } from "@/components/home/HomeSbcs";
 import type { FutPlayer } from "@/types/player";
 
@@ -86,7 +87,7 @@ export default async function HomePage() {
       take: 15,
     }),
     getLatestCardsLive(3).catch(() => []),
-    getActiveSbcs().catch(() => []),
+    getActiveSbcsFromDb().catch(() => []),
   ]);
 
   const lastUpdated = latestRaw[0]?.updatedAt?.toISOString() ?? null;

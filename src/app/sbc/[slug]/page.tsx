@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { getSbcBySlug, type SbcSet, type SbcChallenge } from "@/lib/futgg";
+import { getSbcBySlugFromDb } from "@/lib/sbc-db";
+import type { SbcSet, SbcChallenge } from "@/lib/futgg";
 import { fmtCoins, timeLeft } from "@/lib/format";
 
 export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const sbc = await getSbcBySlug(params.slug);
+  const sbc = await getSbcBySlugFromDb(params.slug);
   if (!sbc) return { title: "SBC no encontrado | Modo Fosa" };
   return {
     title: `${sbc.name} — SBC EA FC 27 | Modo Fosa`,
@@ -79,7 +80,7 @@ function ChallengeCard({ ch, index }: { ch: SbcChallenge; index: number }) {
 }
 
 export default async function SbcDetailPage({ params }: { params: { slug: string } }) {
-  const sbc: SbcSet | null = await getSbcBySlug(params.slug);
+  const sbc: SbcSet | null = await getSbcBySlugFromDb(params.slug);
   if (!sbc) notFound();
 
   const total = sbc.cheapestTotal ?? sbc.cost;

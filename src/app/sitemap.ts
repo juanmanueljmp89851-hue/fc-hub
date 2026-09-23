@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
-import { getActiveSbcs } from "@/lib/futgg";
+import { getActiveSbcsFromDb } from "@/lib/sbc-db";
 
 const BASE = "https://www.modofosa.com.ar";
 
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // SBCs from external API
   let sbcPages: MetadataRoute.Sitemap = [];
   try {
-    const sbcs = await getActiveSbcs();
+    const sbcs = await getActiveSbcsFromDb();
     sbcPages = sbcs.map((s) => ({
       url: `${BASE}/sbc/${s.slug}`,
       lastModified: now,
