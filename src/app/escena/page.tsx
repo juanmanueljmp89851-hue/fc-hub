@@ -69,7 +69,6 @@ function TournamentCard({ t }: { t: Tournament }) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
                 className="text-[11px] text-accent hover:underline"
               >
                 {link.label} ↗
@@ -82,6 +81,12 @@ function TournamentCard({ t }: { t: Tournament }) {
           <div className="rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-background">
             Ver detalle →
           </div>
+        )}
+
+        {t.updatedAt && (
+          <p className="pt-1 text-[10px] text-foreground/30">
+            Actualizado: {new Date(t.updatedAt).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
+          </p>
         )}
       </div>
     </div>
