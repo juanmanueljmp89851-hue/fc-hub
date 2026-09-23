@@ -110,6 +110,7 @@ export default async function SbcDetailPage({ params }: { params: { slug: string
                 height={176}
                 className="mx-auto h-44 w-auto object-contain drop-shadow-lg sm:mx-0"
                 unoptimized
+                referrerPolicy="no-referrer"
               />
             )}
             <div className="flex-1">

@@ -44,6 +44,7 @@ export function HomeSbcs({ sbcs }: { sbcs: SbcSet[] }) {
                     alt={sbc.rewardPlayer?.commonName ?? sbc.name}
                     className="h-28 w-auto object-contain drop-shadow-lg"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
                       const el = e.currentTarget;
                       const fallbackUrl = sbc.iconUrl && el.src !== sbc.iconUrl ? sbc.iconUrl : null;

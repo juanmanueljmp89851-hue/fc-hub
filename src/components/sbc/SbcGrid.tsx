@@ -33,6 +33,7 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
             src={(sbc.imageUrl ?? sbc.iconUrl)!}
             alt={sbc.rewardPlayer?.commonName ?? sbc.name}
             className="h-40 w-auto object-contain drop-shadow-lg"
+            referrerPolicy="no-referrer"
             onError={(e) => {
               const el = e.currentTarget;
               const fallbackUrl = sbc.iconUrl && el.src !== sbc.iconUrl ? sbc.iconUrl : null;

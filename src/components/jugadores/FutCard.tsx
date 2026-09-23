@@ -75,6 +75,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
           height={h}
           loading="lazy"
           decoding="async"
+          referrerPolicy="no-referrer"
           className="h-full w-full object-contain"
           onError={() => setFaceImgErr(true)}
           draggable={false}
@@ -172,6 +173,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
             draggable={false}
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             width={w}
             height={h}
           />
@@ -199,6 +201,7 @@ export function FutCard({ player, onClick, size = "md", responsive }: FutCardPro
             height={Math.round(h * 0.55)}
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             style={{
               maxHeight: "100%",
               objectFit: "contain",
