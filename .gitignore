@@ -36,6 +36,7 @@ yarn-error.log*
 /scripts/*
 !/scripts/scrape-futbin.ts
 !/scripts/sync-futgg.ts
+!/scripts/sync-sbcs.ts
 build-log.txt
 prisma/dev.db
 
