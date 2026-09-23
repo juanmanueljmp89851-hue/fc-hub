@@ -1446,3 +1446,25 @@ model SystemConfig {
 
   @@map("system_config")
 }
+
+// ─── ARTÍCULOS / BLOG ──────────────────────────────────────
+
+model Article {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  summary     String
+  content     String
+  imageUrl    String?  @map("image_url")
+  category    String   @default("general")
+  tags        String[] @default([])
+  sourceUrl   String?  @map("source_url")
+  sourceName  String?  @map("source_name")
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([published, createdAt(sort: Desc)])
+  @@map("articles")
+}

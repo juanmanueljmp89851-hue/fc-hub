@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { prisma } from "@/lib/db";
 import { Navbar } from "@/components/layout/Navbar";
 import { NewsFeed } from "@/components/home/NewsFeed";
 import { AdSlot } from "@/components/ads/AdSlot";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Actualidad",
@@ -14,7 +18,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ActualidadPage() {
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+export default async function ActualidadPage() {
+  const articles = await prisma.article.findMany({
+    where: { published: true },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: {
+      slug: true,
+      title: true,
+      summary: true,
+      imageUrl: true,
+      category: true,
+      createdAt: true,
+    },
+  });
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -39,14 +64,57 @@ export default function ActualidadPage() {
           </p>
         </div>
 
-        {/* Ad Banner top */}
         <div className="mb-6">
           <AdSlot format="horizontal" />
         </div>
 
-        <NewsFeed limit={80} />
+        {articles.length > 0 && (
+          <section className="mb-10">
+            <h2 className="mb-4 text-lg font-bold text-accent">📝 Notas Modo Fosa</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {articles.map((a) => (
+                <Link
+                  key={a.slug}
+                  href={`/actualidad/${a.slug}`}
+                  className="group overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40"
+                >
+                  {a.imageUrl && (
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={a.imageUrl}
+                        alt={a.title}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
+                        {a.category}
+                      </span>
+                      <span className="text-[10px] text-foreground/40">
+                        {formatDate(a.createdAt)}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold leading-tight line-clamp-2 group-hover:text-accent">
+                      {a.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-foreground/50 line-clamp-2">
+                      {a.summary}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Ad bottom */}
+        <section>
+          <h2 className="mb-4 text-lg font-bold text-foreground/70">🌐 Noticias del mundo</h2>
+          <NewsFeed limit={80} />
+        </section>
+
         <div className="mt-8">
           <AdSlot format="auto" />
         </div>

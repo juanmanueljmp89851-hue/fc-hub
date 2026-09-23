@@ -36,9 +36,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let influencers: { slug: string; createdAt: Date }[] = [];
   let prodes: { id: string; createdAt: Date }[] = [];
   let cards: { eaId: number; updatedAt: Date }[] = [];
+  let articles: { slug: string; updatedAt: Date }[] = [];
 
   try {
-    [tournaments, leagues, influencers, prodes, cards] = await Promise.all([
+    [tournaments, leagues, influencers, prodes, cards, articles] = await Promise.all([
       prisma.tournament.findMany({
         select: { id: true, createdAt: true },
         where: { status: { not: "DRAFT" } },
@@ -55,6 +56,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.futCard.findMany({
         select: { eaId: true, updatedAt: true },
+      }),
+      prisma.article.findMany({
+        where: { published: true },
+        select: { slug: true, updatedAt: true },
       }),
     ]);
   } catch (e) {
@@ -110,8 +115,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  const articlePages: MetadataRoute.Sitemap = articles.map((a) => ({
+    url: `${BASE}/actualidad/${a.slug}`,
+    lastModified: a.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
   return [
     ...staticPages,
+    ...articlePages,
     ...cardPages,
     ...sbcPages,
     ...tournamentPages,
