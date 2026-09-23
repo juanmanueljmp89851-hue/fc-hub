@@ -97,9 +97,11 @@ export default async function SbcDetailPage({ params }: { params: { slug: string
         <div className="overflow-hidden rounded-2xl border border-surface-light bg-surface/30">
           <div className="flex items-center justify-between border-b border-surface-light px-5 py-4">
             <h1 className="text-xl font-black">{sbc.name}</h1>
-            <span className="rounded-full bg-gold/10 px-3 py-1 text-sm font-bold text-gold">
-              {fmtCoins(total)}
-            </span>
+            {total ? (
+              <span className="rounded-full bg-gold/10 px-3 py-1 text-sm font-bold text-gold">
+                {fmtCoins(total)}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-4 p-5 sm:flex-row">

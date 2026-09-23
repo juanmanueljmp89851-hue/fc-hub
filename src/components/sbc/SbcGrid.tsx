@@ -71,7 +71,7 @@ function SbcCard({ sbc }: { sbc: SbcSet }) {
         <div className="mt-auto grid grid-cols-2 gap-2 text-xs">
           <div className="rounded-lg bg-background/50 px-2.5 py-1.5">
             <span className="block text-[10px] uppercase text-foreground/40">Solución + barata</span>
-            <span className="font-bold text-gold">{cheapest != null ? fmtCoins(cheapest) : fmtCoins(sbc.cost)}</span>
+            <span className="font-bold text-gold">{cheapest != null ? fmtCoins(cheapest) : sbc.cost ? fmtCoins(sbc.cost) : "—"}</span>
           </div>
           <div className="rounded-lg bg-background/50 px-2.5 py-1.5">
             <span className="block text-[10px] uppercase text-foreground/40">Vence</span>
