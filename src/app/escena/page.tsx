@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { getTournamentsFromDb } from "@/lib/tournaments-db";
@@ -40,48 +41,50 @@ function TournamentCard({ t }: { t: Tournament }) {
             : "border-surface-light bg-surface/30 hover:border-accent/40"
       }`}
     >
-      <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h3 className="font-bold leading-tight">{t.name}</h3>
+      {/* Header: logo + name + status */}
+      <div className="mb-3 flex items-start gap-3">
+        {t.logoUrl ? (
+          <Image
+            src={t.logoUrl}
+            alt={t.name}
+            width={48}
+            height={48}
+            className="h-12 w-12 flex-shrink-0 rounded-lg object-contain"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-xl">
+            🏆
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold leading-tight">{t.name}</h3>
+            <StatusBadge status={t.status} label={t.statusLabel} />
+          </div>
           <p className="text-[11px] text-foreground/40">{t.org}</p>
         </div>
-        <StatusBadge status={t.status} label={t.statusLabel} />
       </div>
 
-      <p className="mb-3 text-sm leading-relaxed text-foreground/60">{t.description}</p>
+      <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-foreground/60">{t.description}</p>
 
       <div className="mt-auto space-y-2">
+        {/* Tags: modo, region */}
         <div className="flex flex-wrap gap-2 text-[11px]">
           <span className="rounded bg-accent/10 px-2 py-0.5 font-medium text-accent">{t.mode}</span>
           <span className="rounded bg-surface-light px-2 py-0.5 text-foreground/50">{t.region}</span>
         </div>
 
+        {/* Info: fecha, premio */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-foreground/40">
           <span>📅 {t.dates}</span>
           {t.prizePool && <span className="font-bold text-gold">💰 {t.prizePool}</span>}
         </div>
 
-        {!t.hasDetailPage && t.links.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {t.links.map((link) => (
-              <a
-                key={link.url}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] text-accent hover:underline"
-              >
-                {link.label} ↗
-              </a>
-            ))}
-          </div>
-        )}
-
-        {t.hasDetailPage && (
-          <div className="rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-background">
-            Ver detalle →
-          </div>
-        )}
+        {/* CTA: siempre ver detalle interno */}
+        <div className="rounded-lg bg-accent/10 py-1.5 text-center text-xs font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-background">
+          Ver cobertura →
+        </div>
 
         {t.updatedAt && (
           <p className="pt-1 text-[10px] text-foreground/30">
@@ -92,25 +95,17 @@ function TournamentCard({ t }: { t: Tournament }) {
     </div>
   );
 
-  if (t.hasDetailPage) {
-    return <Link href={`/escena/${t.slug}`}>{inner}</Link>;
-  }
-  return inner;
-}
-
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="mb-4">
-      <h2 className="text-lg font-bold">{title}</h2>
-      <p className="text-xs text-foreground/50">{subtitle}</p>
-    </div>
-  );
+  return <Link href={`/escena/${t.slug}`}>{inner}</Link>;
 }
 
 export default async function EscenaPage() {
   const all = await getTournamentsFromDb();
-  const international = all.filter((t) => t.category === "international");
-  const argentina = all.filter((t) => t.category === "argentina");
+
+  const sorted = [...all].sort((a, b) => {
+    const da = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+    const db = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+    return db - da;
+  });
 
   return (
     <div className="min-h-screen">
@@ -119,11 +114,11 @@ export default async function EscenaPage() {
         <header className="mb-8">
           <h1 className="text-2xl font-black">Competitivo</h1>
           <p className="mt-1 text-sm text-foreground/50">
-            Torneos y ligas de EA FC 27 — internacionales y argentinas.
+            Torneos y ligas de EA FC 27 — cubiertos por Modo Fosa.
           </p>
         </header>
 
-        {all.length === 0 ? (
+        {sorted.length === 0 ? (
           <div className="rounded-xl border border-surface-light bg-surface/30 p-12 text-center">
             <span className="mb-4 block text-5xl">🏆</span>
             <h2 className="text-xl font-bold text-foreground/80">Próximamente</h2>
@@ -132,38 +127,14 @@ export default async function EscenaPage() {
             </p>
           </div>
         ) : (
-          <>
-            {international.length > 0 && (
-              <section className="mb-10">
-                <SectionHeader
-                  title="🌍 Torneos Internacionales"
-                  subtitle="Circuito oficial EA, Red Bull, UEFA y más"
-                />
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {international.map((t) => (
-                    <TournamentCard key={t.slug} t={t} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {argentina.length > 0 && (
-              <section className="mb-10">
-                <SectionHeader
-                  title="🇦🇷 Argentina"
-                  subtitle="Ligas locales, torneos nacionales y representación internacional"
-                />
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {argentina.map((t) => (
-                    <TournamentCard key={t.slug} t={t} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {sorted.map((t) => (
+              <TournamentCard key={t.slug} t={t} />
+            ))}
+          </div>
         )}
 
-        <p className="text-center text-[11px] text-foreground/30">
+        <p className="mt-8 text-center text-[11px] text-foreground/30">
           ¿Conocés un torneo que falta? Escribinos por Instagram{" "}
           <a
             href="https://instagram.com/modofosa"

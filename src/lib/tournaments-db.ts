@@ -21,7 +21,8 @@ export interface Tournament {
   prizePool?: string;
   mode: string;
   region: string;
-  category: "international" | "argentina";
+  category?: string;
+  logoUrl?: string;
   links: TournamentLink[];
   hasDetailPage?: boolean;
   highlight?: boolean;
@@ -32,6 +33,11 @@ export async function getTournamentsFromDb(): Promise<Tournament[]> {
   const row = await prisma.systemConfig.findUnique({ where: { key: TOURNAMENTS_KEY } });
   if (!row?.value) return [];
   return row.value as unknown as Tournament[];
+}
+
+export async function getTournamentBySlug(slug: string): Promise<Tournament | null> {
+  const all = await getTournamentsFromDb();
+  return all.find((t) => t.slug === slug) ?? null;
 }
 
 export async function saveTournamentsToDb(tournaments: Tournament[]): Promise<void> {
