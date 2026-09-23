@@ -126,16 +126,7 @@ function RegisterForm() {
             <CardTitle>Crear cuenta</CardTitle>
           </CardHeader>
 
-          {ref && (
-            <div className="rounded-lg border border-accent/30 bg-accent/5 px-4 py-3 text-sm">
-              <span className="font-bold text-accent">🔥 Invitado por un embajador</span>
-              <p className="mt-1 text-foreground/60">
-                Código: <span className="font-mono font-bold text-foreground/80">{ref}</span>
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleRegister} className="space-y-4">
+<form onSubmit={handleRegister} className="space-y-4">
             {error && (
               <div className="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">
                 {error}
