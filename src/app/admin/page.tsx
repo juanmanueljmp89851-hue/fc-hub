@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getAdminStats } from "@/lib/actions/admin";
 
 export default async function AdminDashboard() {
