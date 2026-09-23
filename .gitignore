@@ -40,6 +40,7 @@ yarn-error.log*
 !/scripts/seed-tournaments.ts
 !/scripts/import-sbcs.ts
 !/scripts/seed-articles.ts
+!/scripts/import-articles.ts
 build-log.txt
 prisma/dev.db
 

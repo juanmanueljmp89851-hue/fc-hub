@@ -1,0 +1,38 @@
+name: Import Articles from JSON to DB
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/articles-latest.json"
+  workflow_dispatch: {}
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Import articles to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/import-articles.ts
+
+      - name: Summary
+        if: always()
+        run: echo "Article import completado $(date -u)"
