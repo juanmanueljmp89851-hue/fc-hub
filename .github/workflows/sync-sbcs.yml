@@ -2,8 +2,9 @@ name: Sync SBCs Daily
 
 on:
   schedule:
-    # Cada 4 horas — SBCs rotan más seguido que cartas
-    - cron: "0 */4 * * *"
+    # 14:30 ARG (17:30 UTC) y 16:30 ARG (19:30 UTC)
+    - cron: "30 17 * * *"
+    - cron: "30 19 * * *"
   workflow_dispatch: {}
 
 jobs:
