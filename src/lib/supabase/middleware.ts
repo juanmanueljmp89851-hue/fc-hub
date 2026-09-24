@@ -13,13 +13,16 @@ const PROTECTED_ROUTES = [
   "/mensajes",
   "/ranking",
   "/evoluciones",
+  "/sbc",
   "/admin",
 ];
 
 const PROTECTED_DYNAMIC = [
   "/prode/",
+  "/escena/",
   "/equipos/",
   "/torneos/",
+  "/sbc/",
   "/carta/",
 ];
 
