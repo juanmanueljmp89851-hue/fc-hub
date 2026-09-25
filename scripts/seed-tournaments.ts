@@ -108,7 +108,7 @@ const TOURNAMENTS: Tournament[] = [
       "Mayor evento multi-juego del mundo. FC Pro World Championship se juega acá. 2026 fue en París; 2027 será en Riad, Arabia Saudita.",
     status: "upcoming",
     statusLabel: "2026 finalizado (París) · 2027 anunciado: Riad",
-    dates: "2026: Jul—Ago (finalizado) · 2027: 20 Jul — 1 Ago (Riad)",
+    dates: "2026: Jul—Ago (finalizado) · 2027: 16 Jul — 1 Ago (Riad)",
     mode: "Ultimate Team 1v1",
     region: "Global",
     category: "international",
@@ -132,6 +132,24 @@ const TOURNAMENTS: Tournament[] = [
     category: "international",
     links: [
       { label: "Web oficial", url: "https://www.ea.com/games/ea-sports-fc/fc-pro/fc-pro-leagues" },
+    ],
+    updatedAt: now,
+  },
+  {
+    slug: "esports-nations-cup",
+    name: "Esports Nations Cup",
+    shortName: "ENC",
+    org: "Esports Foundation",
+    description:
+      "Festival de naciones (no clubes): más de 100 países compiten en 16 títulos, incluido EA Sports FC. Pospuesto de noviembre 2026 a noviembre 2027 por la situación regional en Medio Oriente.",
+    status: "tba",
+    statusLabel: "Pospuesto a nov. 2027 · fecha FC por confirmar",
+    dates: "Nov 2027 (Riad) — fecha exacta TBA",
+    mode: "Ultimate Team (selecciones)",
+    region: "Global",
+    category: "international",
+    links: [
+      { label: "Web oficial", url: "https://esportsnationscup.com/en" },
     ],
     updatedAt: now,
   },
