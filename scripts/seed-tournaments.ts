@@ -31,10 +31,10 @@ const TOURNAMENTS: Tournament[] = [
     name: "FC Pro 27 Open",
     org: "EA Sports",
     description:
-      "Circuito oficial de EA. Open Ladder clasificatoria → Regional Qualifiers → Live Event en Londres. Camino al FC Pro World Championship 2027.",
+      "Circuito oficial de EA. Open Ladder clasificatoria → Regional Qualifiers → Global Qualifier presencial en Londres (64 jugadores). Camino al FC Pro World Championship 2027.",
     status: "live",
-    statusLabel: "Open Ladder en curso · Regional Qualifiers 10-11 oct",
-    dates: "21 Sep — 11 Oct 2026 (Open Ladder + Regional Qualifiers)",
+    statusLabel: "Open Ladder en curso · Global Qualifier en Londres 5-7 nov",
+    dates: "21 Sep — 7 Nov 2026 (Open Ladder + Regional Qualifiers 10-11 oct + Global Qualifier en Londres 5-7 nov)",
     prizePool: "US$2.5M (temporada completa)",
     mode: "Ultimate Team 1v1",
     region: "Global",
