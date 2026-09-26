@@ -56,6 +56,7 @@ interface RawChallenge {
   cheapestSolutionPrice: number | null;
   cheapestSolutionPricePc: number | null;
   cheapestSolutionUrl: string | null;
+  imageUrl?: string | null;
   awards: RawAward[] | null;
 }
 
@@ -229,9 +230,10 @@ function mapSbc(r: RawSbc): SbcSet {
     name: r.name,
     description: translateDesc(r.description),
     imageUrl: r.imageUrl,
+    // Some sets (e.g. TOTW Upgrade) have no set art; fut.gg shows the first challenge's image instead.
     iconUrl: r.imagePath
       ? `https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/${r.imagePath}`
-      : null,
+      : r.challenges?.find((c) => c.imageUrl)?.imageUrl ?? null,
     cost: r.cost,
     costPc: r.costPc,
     endTime: r.endTime,

@@ -19,10 +19,26 @@ interface Tournament {
   links: { label: string; url: string }[];
   hasDetailPage?: boolean;
   highlight?: boolean;
+  logoUrl?: string;
+  // Ignored: updatedAt is computed in main() from whether the entry changed.
   updatedAt?: string;
 }
 
 const now = new Date().toISOString();
+
+const LOGOS: Record<string, string> = {
+  "fc-pro-27": "https://images.ctfassets.net/lz8ubpsr15g3/2qB3soMm6IEqEbgHBfEKQm/8cd02233b343f9c3f183c79b5be74f88/fc-pro-headerlogo.png?fm=webp&q=70&w=200&h=200",
+  "fc-pro-leagues": "https://images.ctfassets.net/lz8ubpsr15g3/2qB3soMm6IEqEbgHBfEKQm/8cd02233b343f9c3f183c79b5be74f88/fc-pro-headerlogo.png?fm=webp&q=70&w=200&h=200",
+  "red-bull-wings-cup": "https://img.redbull.com/images/c_fill,g_auto,w_450,h_450/q_auto,f_auto/redbullcom/2026/8/3/eoax1nlacot7kqu8rbq1/red-bull-wings-cup",
+  "uefa-eeuro-2026": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Uefa_logo.svg/250px-Uefa_logo.svg.png",
+  "conmebol-elibertadores": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Official_Image_of_CONMEBOL.svg/250px-Official_Image_of_CONMEBOL.svg.png",
+  "esports-world-cup": "https://d3h9qea4qy4169.cloudfront.net/EWC_26_Paris_Logo_White_a4b2f457c3.png",
+  "esports-nations-cup": "https://esportsnationscup.com/brands/enc/apple-touch-icon.png",
+  "odesur-2026": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/ODESUR_Logo.svg/250px-ODESUR_Logo.svg.png",
+  vpn: "https://www.virtualpronetwork.com/apps/global/grouplogos/9746f185d98b9cbb0d6c8a578552e970.png",
+  iesa: "https://iesa-global.com/empresa/images/logo-transparent.png",
+  vpg: "https://virtualprogaming.com/assets/vpg-icon-CucS85T0_copy-Bvqit087.png",
+};
 
 const TOURNAMENTS: Tournament[] = [
   // ─── INTERNATIONAL ────────────────────────────────────
@@ -249,13 +265,38 @@ const TOURNAMENTS: Tournament[] = [
   },
 ];
 
+// Postgres JSONB reorders object keys, so compare with sorted keys.
+function stableJson(v: unknown): string {
+  return JSON.stringify(v, (_k, x) =>
+    x && typeof x === "object" && !Array.isArray(x)
+      ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)))
+      : x,
+  );
+}
+
 async function main() {
   console.log(`Seeding ${TOURNAMENTS.length} tournaments...`);
 
+  const row = await prisma.systemConfig.findUnique({ where: { key: TOURNAMENTS_KEY } });
+  const existing = new Map(
+    ((row?.value ?? []) as Record<string, unknown>[]).map((t) => [t.slug as string, t]),
+  );
+
+  // Merge instead of replace: coverage data (standings, brackets, content, ...) lives only in
+  // the DB, so fields this file doesn't set must survive the daily reseed.
+  const merged = TOURNAMENTS.map(({ updatedAt: _ignored, ...entry }) => {
+    const seeded: Record<string, unknown> = { ...entry, logoUrl: entry.logoUrl ?? LOGOS[entry.slug] };
+    if (seeded.logoUrl === undefined) delete seeded.logoUrl;
+    const prev = existing.get(entry.slug);
+    const changed = !prev || Object.keys(seeded).some((k) => stableJson(prev[k]) !== stableJson(seeded[k]));
+    if (changed) console.log(`  ✏️  ${entry.slug} changed`);
+    return { ...prev, ...seeded, updatedAt: changed ? now : (prev?.updatedAt as string | undefined) ?? now };
+  });
+
   await prisma.systemConfig.upsert({
     where: { key: TOURNAMENTS_KEY },
-    update: { value: TOURNAMENTS as any },
-    create: { key: TOURNAMENTS_KEY, value: TOURNAMENTS as any },
+    update: { value: merged as any },
+    create: { key: TOURNAMENTS_KEY, value: merged as any },
   });
 
   console.log("✅ Tournaments saved to DB");
