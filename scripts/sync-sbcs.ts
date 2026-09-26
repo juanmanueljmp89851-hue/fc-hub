@@ -314,19 +314,27 @@ interface SbcSolution {
   total: number | null;
 }
 
-async function fetchJson<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)",
-        Accept: "application/json",
-      },
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
+const HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36",
+  Accept: "application/json, text/plain, */*",
+  "Accept-Language": "es-AR,es;q=0.9,en;q=0.8",
+  Referer: "https://www.fut.gg/sbc/",
+};
+
+async function fetchJson<T>(url: string, attempts = 3): Promise<T | null> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(30000) });
+      if (res.ok) return (await res.json()) as T;
+      const body = (await res.text()).slice(0, 160).replace(/\s+/g, " ");
+      console.log(`  ⚠ ${url} → HTTP ${res.status} cf-ray=${res.headers.get("cf-ray") ?? "-"} intento ${attempt}/${attempts} | ${body}`);
+    } catch (e) {
+      console.log(`  ⚠ ${url} → ${e instanceof Error ? e.message : e} intento ${attempt}/${attempts}`);
+    }
+    if (attempt < attempts) await new Promise((r) => setTimeout(r, 3000 * attempt));
   }
+  return null;
 }
 
 async function fetchSolution(uuid: string): Promise<SbcSolution | null> {
@@ -382,26 +390,37 @@ async function fetchSolution(uuid: string): Promise<SbcSolution | null> {
 }
 
 async function syncSolutions(sbcs: SbcSet[]): Promise<void> {
-  const uuids: string[] = [];
+  const uuids = new Set<string>();
   for (const sbc of sbcs) {
     for (const ch of sbc.challenges) {
-      if (ch.solutionUuid) uuids.push(ch.solutionUuid);
+      if (ch.solutionUuid) uuids.add(ch.solutionUuid);
     }
   }
 
-  console.log(`[sync-sbcs] Fetching ${uuids.length} solutions...`);
+  // A squad UUID is immutable, so already-stored solutions are reused; only new ones are fetched.
+  const row = await prisma.systemConfig.findUnique({ where: { key: SOLUTIONS_KEY } });
+  const stored = (row?.value ?? {}) as unknown as Record<string, SbcSolution>;
   const solutions: Record<string, SbcSolution> = {};
+  const toFetch: string[] = [];
+  for (const uuid of Array.from(uuids)) {
+    if (stored[uuid]?.players?.length) solutions[uuid] = stored[uuid];
+    else toFetch.push(uuid);
+  }
+
+  console.log(`[sync-sbcs] ${uuids.size} solutions referenced: ${uuids.size - toFetch.length} cached, fetching ${toFetch.length}...`);
   let ok = 0;
-  for (const uuid of uuids) {
+  for (const uuid of toFetch) {
     const sol = await fetchSolution(uuid);
     if (sol && sol.players.length > 0) {
       solutions[uuid] = sol;
       ok++;
     }
-    // Small delay to avoid rate limiting
     await new Promise((r) => setTimeout(r, 200));
   }
-  console.log(`[sync-sbcs] Got ${ok}/${uuids.length} solutions.`);
+  console.log(`[sync-sbcs] Got ${ok}/${toFetch.length} new solutions.`);
+  if (toFetch.length > 0 && ok < toFetch.length) {
+    console.log(`::warning::${toFetch.length - ok} SBC solutions could not be fetched from fut.gg`);
+  }
 
   await prisma.systemConfig.upsert({
     where: { key: SOLUTIONS_KEY },
@@ -415,17 +434,13 @@ async function main() {
   const all: SbcSet[] = [];
 
   for (let page = 1; page <= 5; page++) {
-    const res = await fetch(`${SBC_API}?page=${page}`, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ModoFosaBot/1.0)",
-        Accept: "application/json",
-      },
-    });
-    if (!res.ok) {
-      console.error(`[sync-sbcs] page ${page} returned ${res.status}`);
-      break;
+    const json = await fetchJson<SbcResponse>(`${SBC_API}?page=${page}`);
+    if (!json) {
+      // A partial list would drop live SBCs from the site, so abort without writing.
+      console.error(`::error::fut.gg SBC page ${page} unreachable — DB left untouched.`);
+      await prisma.$disconnect();
+      process.exit(1);
     }
-    const json = (await res.json()) as SbcResponse;
     for (const raw of json.data) {
       if (!raw.isExpired) all.push(mapSbc(raw));
     }
@@ -434,9 +449,9 @@ async function main() {
   }
 
   if (all.length === 0) {
-    console.warn("[sync-sbcs] ⚠️ Got 0 SBCs — skipping DB write to preserve existing data.");
+    console.error("::error::fut.gg returned 0 active SBCs — DB left untouched.");
     await prisma.$disconnect();
-    return;
+    process.exit(1);
   }
 
   console.log(`[sync-sbcs] Saving ${all.length} SBCs to DB...`);

@@ -5,6 +5,11 @@ on:
     # 14:30 ARG (17:30 UTC) y 16:30 ARG (19:30 UTC)
     - cron: "30 17 * * *"
     - cron: "30 19 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/sync-sbcs.ts"
+      - ".github/workflows/sync-sbcs.yml"
   workflow_dispatch: {}
 
 jobs:

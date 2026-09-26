@@ -6,6 +6,11 @@ on:
     - cron: "0 19 * * *"
     # 18:00 Argentina (UTC-3) = 21:00 UTC — segunda pasada para cartas tardías
     - cron: "0 21 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/sync-futgg.ts"
+      - ".github/workflows/sync-futgg.yml"
   workflow_dispatch:
     inputs:
       days:

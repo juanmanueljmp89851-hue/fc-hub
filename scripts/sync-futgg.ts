@@ -108,8 +108,10 @@ function displayName(p: FutggPlayer): string {
 
 // ─── Fetch con reintento ─────────────────────────────────────
 
-async function fetchPage(page: number): Promise<ApiResponse> {
-  const url = `${API}?page=${page}`;
+// Sin `sorts` la API ordena por popularidad, no por fecha: cartas nuevas de
+// media baja quedan en páginas lejanas y el corte por fecha las perdía.
+async function fetchPage(page: number, sorted: boolean): Promise<ApiResponse> {
+  const url = `${API}?page=${page}${sorted ? "&sorts=-created_at" : ""}`;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const res = await fetch(url, {
@@ -119,7 +121,7 @@ async function fetchPage(page: number): Promise<ApiResponse> {
         },
         signal: AbortSignal.timeout(30000),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status} (cf-ray ${res.headers.get("cf-ray") ?? "-"})`);
       return (await res.json()) as ApiResponse;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -212,15 +214,25 @@ async function main() {
   let created = 0, updated = 0, skipped = 0, evos = 0;
   let page = 1;
 
+  let sorted = true;
+  try {
+    await fetchPage(1, true);
+  } catch {
+    sorted = false;
+    console.log("  ⚠ Orden por fecha no disponible — escaneo completo sin orden (más lento).");
+  }
+
   while (page <= MAX_PAGES) {
-    const res = await fetchPage(page);
+    const res = await fetchPage(page, sorted);
     const cards = res.data;
     if (cards.length === 0) break;
 
     let pageAllOld = true;
     for (const p of cards) {
-      if (new Date(p.createdAt) >= cutoff) pageAllOld = false;
+      const isRecent = new Date(p.createdAt) >= cutoff;
+      if (isRecent) pageAllOld = false;
       if (p.isEvolutionPlayerItem) { evos++; continue; }
+      if (!sorted && !isRecent) continue;
       const r = await upsertPlayer(p);
       if (r === "created") created++;
       else if (r === "updated") updated++;
@@ -230,7 +242,7 @@ async function main() {
     const newest = cards[0]?.createdAt?.slice(0, 10) ?? "?";
     console.log(`  📄 Pág ${page} → ${cards.length} cartas (release ${newest}) | +${created} nuevas, ~${updated} act`);
 
-    if (pageAllOld) {
+    if (sorted && pageAllOld) {
       console.log(`  ⏹️  Página entera más vieja que cutoff — corto.`);
       break;
     }
@@ -239,7 +251,7 @@ async function main() {
     await new Promise((r) => setTimeout(r, 300));
   }
 
-  console.log(`\n✅ Hecho: ${created} nuevas, ${updated} actualizadas, ${skipped} skip, ${evos} evos ignoradas\n`);
+  console.log(`\n✅ Hecho (${sorted ? "ordenado" : "escaneo completo"}): ${created} nuevas, ${updated} actualizadas, ${skipped} skip, ${evos} evos ignoradas\n`);
   await prisma.$disconnect();
 }
 
