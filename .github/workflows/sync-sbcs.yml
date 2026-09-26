@@ -1,10 +1,11 @@
 name: Sync SBCs Daily
 
 on:
+  # EA drops content at 18:00 UK time. GitHub delays scheduled runs by up to ~3h,
+  # so crons fire early and the first step waits for the target London time.
   schedule:
-    # 14:30 ARG (17:30 UTC) y 16:30 ARG (19:30 UTC)
-    - cron: "30 17 * * *"
-    - cron: "30 19 * * *"
+    - cron: "0 15 * * *" # → 18:30 London (14:30 ARG in UK summer, 15:30 ARG in winter)
+    - cron: "0 17 * * *" # → 20:30 London (16:30 ARG in UK summer, 17:30 ARG in winter)
   push:
     branches: [main]
     paths:
@@ -15,9 +16,23 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 240
 
     steps:
+      - name: Wait for target time
+        run: |
+          zone=$(TZ=Europe/London date +%Z)
+          case "$zone" in BST|GMT) ;; *) echo "::error::Europe/London timezone unavailable (got $zone)"; exit 1 ;; esac
+          case "${{ github.event.schedule }}" in
+            "0 15 * * *") target="18:30" ;;
+            "0 17 * * *") target="20:30" ;;
+            *) echo "Not scheduled, running now"; exit 0 ;;
+          esac
+          target_ts=$(TZ=Europe/London date -d "today $target" +%s)
+          wait=$(( target_ts - $(date +%s) ))
+          echo "Target $target Europe/London = $(date -u -d @"$target_ts" +%H:%M) UTC, waiting ${wait}s"
+          if [ "$wait" -gt 0 ]; then sleep "$wait"; fi
+
       - name: Checkout repo
         uses: actions/checkout@v4
 

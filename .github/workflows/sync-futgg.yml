@@ -1,11 +1,11 @@
 name: Sync fut.gg Cards Daily
 
 on:
+  # EA drops content at 18:00 UK time. GitHub delays scheduled runs by up to ~3h,
+  # so crons fire early and the first step waits for the target London time.
   schedule:
-    # 16:00 Argentina (UTC-3) = 19:00 UTC — después del drop diario de EA (15h AR)
-    - cron: "0 19 * * *"
-    # 18:00 Argentina (UTC-3) = 21:00 UTC — segunda pasada para cartas tardías
-    - cron: "0 21 * * *"
+    - cron: "0 16 * * *" # → 19:00 London (15:00 ARG in UK summer, 16:00 ARG in winter)
+    - cron: "0 18 * * *" # → 21:00 London (17:00 ARG in UK summer, 18:00 ARG in winter), late cards
   push:
     branches: [main]
     paths:
@@ -21,9 +21,23 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 240
 
     steps:
+      - name: Wait for target time
+        run: |
+          zone=$(TZ=Europe/London date +%Z)
+          case "$zone" in BST|GMT) ;; *) echo "::error::Europe/London timezone unavailable (got $zone)"; exit 1 ;; esac
+          case "${{ github.event.schedule }}" in
+            "0 16 * * *") target="19:00" ;;
+            "0 18 * * *") target="21:00" ;;
+            *) echo "Not scheduled, running now"; exit 0 ;;
+          esac
+          target_ts=$(TZ=Europe/London date -d "today $target" +%s)
+          wait=$(( target_ts - $(date +%s) ))
+          echo "Target $target Europe/London = $(date -u -d @"$target_ts" +%H:%M) UTC, waiting ${wait}s"
+          if [ "$wait" -gt 0 ]; then sleep "$wait"; fi
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
