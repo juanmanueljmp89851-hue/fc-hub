@@ -81,14 +81,34 @@ const quickLinks = [
 ];
 
 export default async function HomePage() {
-  const [latestRaw, liveCards, sbcs] = await Promise.all([
+  const [latestRaw, liveCards, sbcs, ownArticles] = await Promise.all([
     prisma.futCard.findMany({
       orderBy: [{ promoOrder: "desc" }, { releaseDate: "desc" }, { overall: "desc" }],
       take: 15,
     }),
     getLatestCardsLive(3).catch(() => []),
     getActiveSbcsFromDb().catch(() => []),
+    prisma.article
+      .findMany({
+        where: { published: true },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+        select: { slug: true, title: true, summary: true, imageUrl: true, category: true, createdAt: true },
+      })
+      .catch(() => []),
   ]);
+
+  const ownNews = ownArticles.map((a) => ({
+    title: a.title,
+    description: a.summary,
+    link: `/actualidad/${a.slug}`,
+    imageUrl: a.imageUrl,
+    source: "Modo Fosa",
+    sourceIcon: "🟢",
+    pubDate: a.createdAt.toISOString(),
+    language: "es" as const,
+    category: a.category,
+  }));
 
   const lastUpdated = latestRaw[0]?.updatedAt?.toISOString() ?? null;
 
@@ -210,7 +230,7 @@ export default async function HomePage() {
 
         {/* News Feed */}
         <section className="mb-8">
-          <NewsFeed variant="home" />
+          <NewsFeed variant="home" ownNews={ownNews} />
         </section>
 
         {/* Ad In-Feed */}

@@ -12,6 +12,7 @@ interface NewsItem {
   sourceIcon: string;
   pubDate: string;
   language: "es" | "en";
+  category?: string;
 }
 
 function timeAgo(date: Date): string {
@@ -27,13 +28,26 @@ function timeAgo(date: Date): string {
   return `hace ${days}d`;
 }
 
-function NewsImage({ src, alt, className, fallbackSize = "text-4xl" }: {
+function NewsImage({ src, alt, className, fallbackSize = "text-4xl", brandedCategory }: {
   src: string | null;
   alt: string;
   className: string;
   fallbackSize?: string;
+  brandedCategory?: string;
 }) {
   const [error, setError] = useState(false);
+
+  if ((!src || error) && brandedCategory) {
+    return (
+      <div
+        className={`${className} flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-accent/25 via-surface to-background`}
+        style={{ aspectRatio: "16/9" }}
+      >
+        <Image src="/logo.svg" alt="" width={72} height={72} className="h-16 w-16 opacity-80" />
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-accent/80">{brandedCategory}</span>
+      </div>
+    );
+  }
 
   if (!src || error) {
     return (
@@ -62,9 +76,10 @@ function NewsImage({ src, alt, className, fallbackSize = "text-4xl" }: {
 interface NewsFeedProps {
   limit?: number;
   variant?: "home" | "full";
+  ownNews?: NewsItem[];
 }
 
-export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
+export function NewsFeed({ limit = 16, variant = "full", ownNews = [] }: NewsFeedProps) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,7 +93,7 @@ export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
       .finally(() => setLoading(false));
   }, [limit]);
 
-  if (loading) {
+  if (loading && ownNews.length === 0) {
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-bold">Últimas Noticias</h2>
@@ -97,12 +112,12 @@ export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
     );
   }
 
-  if (news.length === 0) {
+  if (news.length === 0 && ownNews.length === 0) {
     return null;
   }
 
   if (variant === "home") {
-    const [featured, ...rest] = news;
+    const [featured, ...rest] = [...ownNews, ...news];
     const sideNews = rest.slice(0, 8);
 
     return (
@@ -128,6 +143,7 @@ export function NewsFeed({ limit = 16, variant = "full" }: NewsFeedProps) {
               src={featured.imageUrl}
               alt=""
               className="absolute inset-0 h-full w-full"
+              brandedCategory={featured.source === "Modo Fosa" ? featured.category ?? "Modo Fosa" : undefined}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="relative z-10 p-6">

@@ -332,39 +332,6 @@ function deduplicateNews(items: NewsItem[]): NewsItem[] {
   });
 }
 
-// --- Pinned articles (always appear at fixed position, don't move) ---
-const PINNED_ARTICLES: Array<{
-  position: number; // 0-based index in final list
-  item: Omit<NewsItem, "pubDate"> & { pubDate: Date };
-}> = [
-  {
-    position: 0,
-    item: {
-      title: "Modo Fosa abre sus puertas a la competencia: llegan las primeras Ligas Oficiales de la comunidad",
-      description: "Durante julio se disputarán las primeras Ligas Oficiales Modo Fosa: Ultimate Team y Equipos Reales. Competí, ganá y dejá tu marca.",
-      link: "/actualidad/ligas-oficiales-modo-fosa",
-      imageUrl: "/images/liga-oficial-1.png",
-      source: "Modo Fosa",
-      sourceIcon: "🟢",
-      pubDate: new Date("2026-06-20T12:00:00Z"),
-      language: "es",
-    },
-  },
-  {
-    position: 2,
-    item: {
-      title: "EA FC 27: así es el nuevo juego de EA Sports",
-      description: "Todo lo que sabemos sobre EA Sports FC 27: novedades, modos de juego y más.",
-      link: "https://culturageek.com.ar/ea-fc-26-modo-mundial-2026/",
-      imageUrl: "https://culturageek.com.ar/wp-content/uploads/2026/05/Screenshot-2026-05-27-at-11-57-21-EA-Sports-FC-26-The-Worlds-Game-Update-details-1.webp",
-      source: "CulturaGeek",
-      sourceIcon: "🎮",
-      pubDate: new Date("2025-05-28T12:00:00Z"),
-      language: "es",
-    },
-  },
-];
-
 // --- In-memory cache (5 min TTL, avoids 6 RSS fetches per request) ---
 let cachedNews: NewsItem[] | null = null;
 let cacheTimestamp = 0;
@@ -398,20 +365,6 @@ async function fetchAllNews(): Promise<NewsItem[]> {
   return allItems;
 }
 
-function insertPinnedArticles(items: NewsItem[]): NewsItem[] {
-  // Remove any RSS items that match pinned article URLs (avoid duplicates)
-  const pinnedUrls = new Set(PINNED_ARTICLES.map((p) => p.item.link));
-  const filtered = items.filter((item) => !pinnedUrls.has(item.link));
-
-  // Insert pinned articles at their fixed positions
-  for (const pinned of PINNED_ARTICLES) {
-    const pos = Math.min(pinned.position, filtered.length);
-    filtered.splice(pos, 0, pinned.item as NewsItem);
-  }
-
-  return filtered;
-}
-
 export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   const now = Date.now();
 
@@ -419,8 +372,7 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
     return cachedNews.slice(0, limit);
   }
 
-  let news = await fetchAllNews();
-  news = insertPinnedArticles(news);
+  const news = await fetchAllNews();
   cachedNews = news;
   cacheTimestamp = now;
 
