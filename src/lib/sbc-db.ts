@@ -7,7 +7,9 @@ const SOLUTIONS_KEY = "sbc_solutions";
 export async function getActiveSbcsFromDb(): Promise<SbcSet[]> {
   const row = await prisma.systemConfig.findUnique({ where: { key: SBC_KEY } });
   if (!row?.value) return [];
-  return row.value as unknown as SbcSet[];
+  // Sync runs twice a day, so SBCs that expired since the last run are dropped here.
+  const now = Date.now();
+  return (row.value as unknown as SbcSet[]).filter((s) => !s.endTime || new Date(s.endTime).getTime() > now);
 }
 
 export async function getSbcBySlugFromDb(slug: string): Promise<SbcSet | null> {
