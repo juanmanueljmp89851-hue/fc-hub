@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { Navbar } from "@/components/layout/Navbar";
 import { NewsFeed } from "@/components/home/NewsFeed";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { isCardArt } from "@/lib/images";
 
 export const revalidate = 300;
 
@@ -79,12 +80,13 @@ export default async function ActualidadPage() {
                   className="group overflow-hidden rounded-xl border border-surface-light bg-surface/30 transition-colors hover:border-accent/40"
                 >
                   {a.imageUrl && (
-                    <div className="aspect-video overflow-hidden">
+                    <div className="aspect-video overflow-hidden bg-surface-light">
                       <img
                         src={a.imageUrl}
                         alt={a.title}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        className={`h-full w-full transition-transform group-hover:scale-105 ${isCardArt(a.imageUrl) ? "object-contain py-2" : "object-cover object-top"}`}
                         loading="lazy"
+                        referrerPolicy="no-referrer"
                       />
                     </div>
                   )}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Navbar } from "@/components/layout/Navbar";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { isCardArt } from "@/lib/images";
 
 export const revalidate = 300;
 
@@ -114,14 +115,20 @@ export default async function ArticlePage({ params }: PageProps) {
           </header>
 
           {article.imageUrl && (
-            <div className="mb-6 overflow-hidden rounded-xl">
-              <img
-                src={article.imageUrl}
-                alt={article.title}
-                className="w-full object-cover"
-                loading="eager"
-              />
-            </div>
+            <figure className="mb-6">
+              <div className="overflow-hidden rounded-xl bg-surface-light">
+                <img
+                  src={article.imageUrl}
+                  alt={article.title}
+                  className={`max-h-[460px] w-full ${isCardArt(article.imageUrl) ? "object-contain py-4" : "object-cover object-top"}`}
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              {article.imageCredit && (
+                <figcaption className="mt-1.5 text-right text-[11px] text-foreground/40">{article.imageCredit}</figcaption>
+              )}
+            </figure>
           )}
 
           <div className="mb-6">

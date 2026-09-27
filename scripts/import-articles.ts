@@ -16,6 +16,7 @@ interface ArticleData {
   summary: string;
   content: string;
   imageUrl?: string;
+  imageCredit?: string;
   category: string;
   tags: string[];
   sourceUrl?: string;
@@ -50,6 +51,7 @@ async function main() {
           summary: a.summary,
           content: a.content,
           imageUrl: a.imageUrl,
+          imageCredit: a.imageCredit,
           category: a.category,
           tags: a.tags,
           sourceUrl: a.sourceUrl,

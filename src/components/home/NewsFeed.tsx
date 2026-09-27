@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { isCardArt } from "@/lib/images";
 
 interface NewsItem {
   title: string;
@@ -64,7 +65,7 @@ function NewsImage({ src, alt, className, fallbackSize = "text-4xl", brandedCate
         alt={alt}
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        className="object-cover object-top transition-transform group-hover:scale-105"
+        className={`${isCardArt(src) ? "object-contain py-3" : "object-cover object-top"} transition-transform group-hover:scale-105`}
         onError={() => setError(true)}
         loading="lazy"
         unoptimized
