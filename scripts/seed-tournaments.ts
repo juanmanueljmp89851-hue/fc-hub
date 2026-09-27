@@ -75,6 +75,7 @@ const TOURNAMENTS: Tournament[] = [
     category: "international",
     links: [
       { label: "Web oficial", url: "https://www.redbull.com/us-en/event-series/red-bull-wings-cup-series" },
+      { label: "Argentina", url: "https://www.redbull.com/ar-es/events/red-bull-wings-cup-argentina-2026" },
     ],
     updatedAt: now,
   },
@@ -124,7 +125,7 @@ const TOURNAMENTS: Tournament[] = [
       "Mayor evento multi-juego del mundo. FC Pro World Championship se juega acá. 2026 fue en París; 2027 será en Riad, Arabia Saudita.",
     status: "upcoming",
     statusLabel: "2026 finalizado (París) · 2027 anunciado: Riad",
-    dates: "2026: Jul—Ago (finalizado) · 2027: 16 Jul — 1 Ago (Riad)",
+    dates: "2026: Jul—Ago (finalizado) · 2027: 20 Jul — 1 Ago en Riad (qualifier abierto 16-18 jul)",
     mode: "Ultimate Team 1v1",
     region: "Global",
     category: "international",
