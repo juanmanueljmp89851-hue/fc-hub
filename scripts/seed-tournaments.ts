@@ -67,8 +67,8 @@ const TOURNAMENTS: Tournament[] = [
     org: "Red Bull × EA Sports",
     description:
       "Torneo global nuevo. Clasificatorias regionales online → finales nacionales offline → Final Mundial en Miami, enero 2027.",
-    status: "upcoming",
-    statusLabel: "Clasificatorias desde 28/sep",
+    status: "live",
+    statusLabel: "Clasificatorias en curso (desde 28/9 hasta 7/11)",
     dates: "Sep 2026 — Ene 2027",
     mode: "Ultimate Team 1v1",
     region: "Global (multi-país)",
@@ -243,6 +243,25 @@ const TOURNAMENTS: Tournament[] = [
     category: "argentina",
     links: [
       { label: "Instagram", url: "https://www.instagram.com/licpargentina/" },
+    ],
+    updatedAt: now,
+  },
+  {
+    slug: "elpf",
+    name: "eLPF — Liga Profesional de Fútbol AFA",
+    shortName: "eLPF",
+    org: "AFA / Liga Profesional × IESA",
+    description:
+      "Torneo oficial de esports de la Liga Profesional de Fútbol de AFA, disputado por las 30 franquicias de Primera División. Organizado junto a IESA. La edición 2026 (FC 26) se jugó del 19 al 29 de marzo con 16 equipos.",
+    status: "tba",
+    statusLabel: "Edición FC 27 por anunciar",
+    dates: "TBA (ed. anterior fue 19-29 mar 2026)",
+    mode: "Ultimate Team competitivo (clubes AFA)",
+    region: "Argentina",
+    category: "argentina",
+    links: [
+      { label: "Web oficial", url: "https://www.ligaprofesional.ar/elpf/" },
+      { label: "Liquipedia", url: "https://liquipedia.net/easportsfc/ELPF/2026" },
     ],
     updatedAt: now,
   },
