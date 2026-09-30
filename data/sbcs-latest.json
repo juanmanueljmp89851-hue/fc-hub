@@ -1,0 +1,897 @@
+[
+  {
+    "id": 5272,
+    "name": "Davide Frattesi",
+    "description": "Earn a special Destined for Glory Davide Frattesi.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50571455.ac70abb1f42e733c4800c19d4af8ef78effdb57b1eac354bc6e7060e48aa2ce2.webp",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/30.png",
+    "cost": 34300,
+    "costPc": 34200,
+    "endTime": "2026-10-06T17:00:00.816543Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/players/27-30-davide-frattesi/",
+    "slug": "27-30-davide-frattesi",
+    "rewardPlayer": {
+      "commonName": "Davide Frattesi",
+      "cardName": "Frattesi",
+      "overall": 84,
+      "rarityName": "Destined for Glory",
+      "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-50571455.2f0ea317147b4891f3f9f4542e709db6bd5d942bc96b8d394b5f95dd1cb6ac81.webp"
+    },
+    "challenges": [
+      {
+        "name": "Davide Frattesi",
+        "description": "Earn a special Destined for Glory Davide Frattesi.",
+        "requirements": [
+          "Rating: mín. 45"
+        ],
+        "awards": [],
+        "cheapestCoins": 34300,
+        "cheapestPc": 34200,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 34300,
+    "cheapestTotalPc": 34200
+  },
+  {
+    "id": 5271,
+    "name": "83+ Upgrade",
+    "description": "Ganá un sobre con 1 oro jugador Item, de 83 o más.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/31.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/31.png",
+    "cost": 2150,
+    "costPc": 2150,
+    "endTime": "2026-10-06T17:00:00.767794Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 1,
+    "repeatRefreshText": "2 days",
+    "url": "/sbc/upgrades/27-31-83-upgrade/",
+    "slug": "27-31-83-upgrade",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "83+ Upgrade",
+        "description": "Ganá un sobre con 1 oro jugador Item, de 83 o más.",
+        "requirements": [
+          "Rating: mín. 45"
+        ],
+        "awards": [],
+        "cheapestCoins": 2150,
+        "cheapestPc": 2150,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 2150,
+    "cheapestTotalPc": 2150
+  },
+  {
+    "id": 5270,
+    "name": "Destined for Glory Challenge 2",
+    "description": "Complete this challenge to earn a reward.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/22.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/22.png",
+    "cost": 2250,
+    "costPc": 2350,
+    "endTime": "2026-10-02T17:00:00.674897Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/challenges/27-22-destined-for-glory-challenge-2/",
+    "slug": "27-22-destined-for-glory-challenge-2",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Destined for Glory Challenge 2",
+        "description": "Complete this challenge to earn a reward.",
+        "requirements": [
+          "Same league: mín. 3 jugadores",
+          "Same club: máx. 4 jugadores",
+          "Clubs: máx. 5",
+          "Quality: mín. bronce",
+          "Chemistry: mín. 16"
+        ],
+        "awards": [],
+        "cheapestCoins": 2250,
+        "cheapestPc": 2350,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/fe6bf4e5-34ec-4cfa-b8b0-d05269b7bad5/",
+        "solutionUuid": "fe6bf4e5-34ec-4cfa-b8b0-d05269b7bad5"
+      }
+    ],
+    "cheapestTotal": 2250,
+    "cheapestTotalPc": 2350
+  },
+  {
+    "id": 5269,
+    "name": "2x 79+ Upgrade",
+    "description": "Ganá un sobre con 2 jugadores oro, de 79 o más.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/23.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/23.png",
+    "cost": 6500,
+    "costPc": 6550,
+    "endTime": "2026-10-05T17:00:00.745993Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/upgrades/27-23-2x-79-upgrade/",
+    "slug": "27-23-2x-79-upgrade",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "2x 79+ Upgrade",
+        "description": "Ganá un sobre con 2 jugadores oro, de 79 o más.",
+        "requirements": [
+          "Quality: oro only",
+          "Jugadores: 10"
+        ],
+        "awards": [],
+        "cheapestCoins": 6500,
+        "cheapestPc": 6550,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/bf77e766-12ca-4210-b65d-8db88e1bc9d8/",
+        "solutionUuid": "bf77e766-12ca-4210-b65d-8db88e1bc9d8"
+      }
+    ],
+    "cheapestTotal": 6500,
+    "cheapestTotalPc": 6550
+  },
+  {
+    "id": 5268,
+    "name": "Renato Veiga",
+    "description": "Earn a special Destined for Glory Renato Veiga.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50605554.24838a12a9e5636c67745363daf28acdfdfc3ecc7d60e9bd5d359f4ea591451e.webp",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/26.png",
+    "cost": 21200,
+    "costPc": 20900,
+    "endTime": "2026-10-04T17:00:00.798694Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/players/27-26-renato-veiga/",
+    "slug": "27-26-renato-veiga",
+    "rewardPlayer": {
+      "commonName": "Renato Veiga",
+      "cardName": "Renato Veiga",
+      "overall": 84,
+      "rarityName": "Destined for Glory",
+      "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-50605554.0f2dbd81e260c8e8db705e6e1d654cc9546a1b72dba001b6ca6c993849468d8c.webp"
+    },
+    "challenges": [
+      {
+        "name": "Renato Veiga",
+        "description": "Earn a special Destined for Glory Renato Veiga.",
+        "requirements": [
+          "Rating: mín. 45"
+        ],
+        "awards": [],
+        "cheapestCoins": 21200,
+        "cheapestPc": 20900,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 21200,
+    "cheapestTotalPc": 20900
+  },
+  {
+    "id": 5266,
+    "name": "Antonio Nusa",
+    "description": "Earn a special Destined for Glory Antonio Nusa.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50594511.0d374bd32d4de7a97ad831d98d63728beb50334936a17bbfc343545006d19dd5.webp",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/challenges/55.png",
+    "cost": 65750,
+    "costPc": 66650,
+    "endTime": "2026-10-02T17:00:00.789357Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/players/27-25-antonio-nusa/",
+    "slug": "27-25-antonio-nusa",
+    "rewardPlayer": {
+      "commonName": "Antonio Nusa",
+      "cardName": "Nusa",
+      "overall": 85,
+      "rarityName": "Destined for Glory",
+      "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-50594511.98c80cf143f4373a9b3460a98e469cb7d43bb4aa853ac762388c99b46e3b7986.webp"
+    },
+    "challenges": [
+      {
+        "name": "Antonio Nusa",
+        "description": "Earn a special Destined for Glory Antonio Nusa.",
+        "requirements": [
+          "Rating: mín. 45"
+        ],
+        "awards": [],
+        "cheapestCoins": 65750,
+        "cheapestPc": 66650,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 65750,
+    "cheapestTotalPc": 66650
+  },
+  {
+    "id": 5265,
+    "name": "TOTW Upgrade",
+    "description": "Ganá un sobre con a TOTW jugador Item from TOTW 1 or 2.",
+    "imageUrl": null,
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/challenges/59.png",
+    "cost": 11700,
+    "costPc": 11050,
+    "endTime": "2026-10-02T17:00:01.018988Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/upgrades/27-29-totw-upgrade/",
+    "slug": "27-29-totw-upgrade",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "TOTW Upgrade",
+        "description": "Ganá un sobre con a TOTW jugador Item from TOTW 1 or 2.",
+        "requirements": [
+          "Rating: mín. 1 jugador rated 86+",
+          "Media del equipo: mín. 84"
+        ],
+        "awards": [],
+        "cheapestCoins": 11700,
+        "cheapestPc": 11050,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/aafe0cb2-79ce-49ec-a890-d72abaf7b092/",
+        "solutionUuid": "aafe0cb2-79ce-49ec-a890-d72abaf7b092"
+      }
+    ],
+    "cheapestTotal": 11700,
+    "cheapestTotalPc": 11050
+  },
+  {
+    "id": 5264,
+    "name": "Marquee Matchups",
+    "description": "Complete challenges themed around this week's key matchups.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/19.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/19.png",
+    "cost": 16700,
+    "costPc": 15700,
+    "endTime": "2026-10-01T17:00:00.882417Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 4,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/challenges/27-19-marquee-matchups/",
+    "slug": "27-19-marquee-matchups",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Italy v Belgium",
+        "description": "Entregá un equipo themed around Italy and Belgium.",
+        "requirements": [
+          "Nation: mín. 1 jugador de Italia or Bélgica",
+          "Clubs: mín. 3",
+          "Quality: mín. 3 plata jugadores",
+          "Quality: mín. bronce",
+          "Chemistry: mín. 14"
+        ],
+        "awards": [
+          "Mini oro sobre"
+        ],
+        "cheapestCoins": 2650,
+        "cheapestPc": 2500,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/8a53e0c3-59d1-4a38-b7c4-b6c79782743c/",
+        "solutionUuid": "8a53e0c3-59d1-4a38-b7c4-b6c79782743c"
+      },
+      {
+        "name": "Norway v Portugal",
+        "description": "Entregá un equipo themed around Norway and Portugal.",
+        "requirements": [
+          "Nation: mín. 1 jugador de Noruega or Portugal",
+          "Same club: mín. 3 jugadores",
+          "Leagues: máx. 5",
+          "Quality: mín. 2 oro jugadores",
+          "Quality: mín. plata",
+          "Chemistry: mín. 18"
+        ],
+        "awards": [
+          "pequeño Mixed sobre de jugadores"
+        ],
+        "cheapestCoins": 4800,
+        "cheapestPc": 4300,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/70cd9193-4669-470d-aa2c-d885ee79f409/",
+        "solutionUuid": "70cd9193-4669-470d-aa2c-d885ee79f409"
+      },
+      {
+        "name": "Netherlands v Germany",
+        "description": "Entregá un equipo themed around Netherlands and Germany.",
+        "requirements": [
+          "Nation: mín. 2 jugadores de Países Bajos or Alemania",
+          "Same club: máx. 2 jugadores",
+          "Same league: mín. 4 jugadores",
+          "Quality: mín. 2 oro jugadores",
+          "Quality: mín. plata",
+          "Chemistry: mín. 22"
+        ],
+        "awards": [
+          "pequeño oro sobre de jugadores"
+        ],
+        "cheapestCoins": 4750,
+        "cheapestPc": 4450,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/43b5d414-0535-445d-b7c3-0f445b7e4f30/",
+        "solutionUuid": "43b5d414-0535-445d-b7c3-0f445b7e4f30"
+      },
+      {
+        "name": "England v Spain",
+        "description": "Entregá un equipo themed around England and Spain.",
+        "requirements": [
+          "Nation: mín. 2 jugadores de Inglaterra or España",
+          "Same nation: mín. 4 jugadores",
+          "Same club: máx. 3 jugadores",
+          "Leagues: máx. 5",
+          "Media del equipo: mín. 75",
+          "Chemistry: mín. 26"
+        ],
+        "awards": [
+          "Large Electrum sobre de jugadores"
+        ],
+        "cheapestCoins": 4500,
+        "cheapestPc": 4450,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/367ef544-6322-401f-a552-190d93d96847/",
+        "solutionUuid": "367ef544-6322-401f-a552-190d93d96847"
+      }
+    ],
+    "cheapestTotal": 16700,
+    "cheapestTotalPc": 15700
+  },
+  {
+    "id": 5263,
+    "name": "Intro to Player SBCs",
+    "description": "Complete the Intro to jugador SBCs to earn equipo Foundations Cristian Espinoza.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50558033.6f5ecad666e298fecbfc0113a4c6ed0493bd1c7a7a13829c9c34af9abb375582.webp",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/20.png",
+    "cost": 3250,
+    "costPc": 3250,
+    "endTime": "2035-08-31T17:00:00.657380Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/foundations/27-20-intro-to-player-sbcs/",
+    "slug": "27-20-intro-to-player-sbcs",
+    "rewardPlayer": {
+      "commonName": "Cristian Espinoza",
+      "cardName": "Espinoza",
+      "overall": 82,
+      "rarityName": "Squad Foundations",
+      "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-50558033.a14c65e2b85c388991c3a98203505a9a650ce363e203f8f5d019b0da66d2e8c8.webp"
+    },
+    "challenges": [
+      {
+        "name": "Intro to Player SBCs",
+        "description": "Complete the Intro to jugador SBCs to earn equipo Foundations Cristian Espinoza.",
+        "requirements": [
+          "Rating: mín. 45"
+        ],
+        "awards": [],
+        "cheapestCoins": 3250,
+        "cheapestPc": 3250,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 3250,
+    "cheapestTotalPc": 3250
+  },
+  {
+    "id": 5254,
+    "name": "Gold Upgrade",
+    "description": "Exchange oro items for rewards.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/6.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/6.png",
+    "cost": 7150,
+    "costPc": 7150,
+    "endTime": "2035-08-20T17:00:01.372613Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/upgrades/27-6-gold-upgrade/",
+    "slug": "27-6-gold-upgrade",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Gold Upgrade",
+        "description": "Exchange oro items for rewards.",
+        "requirements": [
+          "Quality: mín. oro"
+        ],
+        "awards": [],
+        "cheapestCoins": 7150,
+        "cheapestPc": 7150,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/7b4ebf16-3a1e-4095-acb7-1f1bed61e2d2/",
+        "solutionUuid": "7b4ebf16-3a1e-4095-acb7-1f1bed61e2d2"
+      }
+    ],
+    "cheapestTotal": 7150,
+    "cheapestTotalPc": 7150
+  },
+  {
+    "id": 5253,
+    "name": "Silver Upgrade",
+    "description": "Exchange plata items for rewards.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/5.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/5.png",
+    "cost": 2200,
+    "costPc": 2200,
+    "endTime": "2035-08-20T11:00:00.421337Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/upgrades/27-5-silver-upgrade/",
+    "slug": "27-5-silver-upgrade",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Silver Upgrade",
+        "description": "Exchange plata items for rewards.",
+        "requirements": [
+          "Quality: plata only"
+        ],
+        "awards": [],
+        "cheapestCoins": 2200,
+        "cheapestPc": 2200,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/94345ace-5da2-4853-a2ca-bb8762ef7dbc/",
+        "solutionUuid": "94345ace-5da2-4853-a2ca-bb8762ef7dbc"
+      }
+    ],
+    "cheapestTotal": 2200,
+    "cheapestTotalPc": 2200
+  },
+  {
+    "id": 5252,
+    "name": "Bronze Upgrade",
+    "description": "Exchange bronce items for rewards.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/4.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/4.png",
+    "cost": 2200,
+    "costPc": 2200,
+    "endTime": "2035-08-20T17:00:00.626786Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/upgrades/27-4-bronze-upgrade/",
+    "slug": "27-4-bronze-upgrade",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Bronze Upgrade",
+        "description": "Exchange bronce items for rewards.",
+        "requirements": [
+          "Quality: bronce only"
+        ],
+        "awards": [],
+        "cheapestCoins": 2200,
+        "cheapestPc": 2200,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/bc19db6c-7646-4068-b9be-8fa2498524f7/",
+        "solutionUuid": "bc19db6c-7646-4068-b9be-8fa2498524f7"
+      }
+    ],
+    "cheapestTotal": 2200,
+    "cheapestTotalPc": 2200
+  },
+  {
+    "id": 5251,
+    "name": "League & Nation Advanced",
+    "description": "Complete these Puzzle-based challenges to earn rewards.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/10.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/10.png",
+    "cost": 21750,
+    "costPc": 20900,
+    "endTime": "2035-08-31T17:00:00.866050Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 3,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/challenges/27-10-league-nation-advanced/",
+    "slug": "27-10-league-nation-advanced",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "3 Leagues & 2 Nations",
+        "description": "Entregá un equipo with three leagues and two nations.",
+        "requirements": [
+          "Leagues: exactamente 3",
+          "Nations: exactamente 2",
+          "Same league: máx. 6 jugadores",
+          "Same nation: máx. 6 jugadores",
+          "Quality: oro only",
+          "Chemistry: mín. 30"
+        ],
+        "awards": [
+          "pequeño Electrum sobre de jugadores"
+        ],
+        "cheapestCoins": 7550,
+        "cheapestPc": 7400,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/0c44a611-e71f-4d16-9178-a8eba0e70b75/",
+        "solutionUuid": "0c44a611-e71f-4d16-9178-a8eba0e70b75"
+      },
+      {
+        "name": "4 Leagues & 5 Nations",
+        "description": "Entregá un equipo with four leagues and five nations.",
+        "requirements": [
+          "Leagues: exactamente 4",
+          "Nations: exactamente 5",
+          "Same league: máx. 4 jugadores",
+          "Same nation: máx. 3 jugadores",
+          "Media del equipo: mín. 78",
+          "Chemistry: mín. 25"
+        ],
+        "awards": [
+          "Large Electrum sobre de jugadores"
+        ],
+        "cheapestCoins": 6800,
+        "cheapestPc": 6000,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/feb09511-8b75-4a32-84fb-e05451ebbf7b/",
+        "solutionUuid": "feb09511-8b75-4a32-84fb-e05451ebbf7b"
+      },
+      {
+        "name": "5 Leagues & 6 Nations",
+        "description": "Entregá un equipo with five leagues and six nations.",
+        "requirements": [
+          "Leagues: exactamente 5",
+          "Nations: exactamente 6",
+          "Same club: máx. 2 jugadores",
+          "Media del equipo: mín. 81",
+          "Chemistry: mín. 25"
+        ],
+        "awards": [
+          "pequeño oro sobre de jugadores"
+        ],
+        "cheapestCoins": 7400,
+        "cheapestPc": 7500,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/442b1838-2212-4191-b60a-1a5be6196b7f/",
+        "solutionUuid": "442b1838-2212-4191-b60a-1a5be6196b7f"
+      }
+    ],
+    "cheapestTotal": 21750,
+    "cheapestTotalPc": 20900
+  },
+  {
+    "id": 5250,
+    "name": "Gold Re-Roll",
+    "description": "Submit 1,250 Score to earn Rewards.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/9.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/9.png",
+    "cost": 2150,
+    "costPc": 2150,
+    "endTime": "2035-08-20T17:00:00.650252Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/foundations/27-9-gold-re-roll/",
+    "slug": "27-9-gold-re-roll",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Gold Re-Roll",
+        "description": "Submit 1,250 Score to earn Rewards.",
+        "requirements": [
+          "Rating: mín. 83"
+        ],
+        "awards": [],
+        "cheapestCoins": 2150,
+        "cheapestPc": 2150,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 2150,
+    "cheapestTotalPc": 2150
+  },
+  {
+    "id": 5249,
+    "name": "Bronze and Silver Re-roll",
+    "description": "Submit 500 Score to earn Rewards.",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/8.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/8.png",
+    "cost": 2150,
+    "costPc": 2150,
+    "endTime": "2035-08-20T17:00:00.642071Z",
+    "isNew": false,
+    "isRepeatable": true,
+    "isExpired": false,
+    "challengesCount": 1,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/foundations/27-8-bronze-and-silver-re-roll/",
+    "slug": "27-8-bronze-and-silver-re-roll",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Bronze and Silver Re-roll",
+        "description": "Submit 500 Score to earn Rewards.",
+        "requirements": [
+          "Rating: mín. 79"
+        ],
+        "awards": [],
+        "cheapestCoins": 2150,
+        "cheapestPc": 2150,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 2150,
+    "cheapestTotalPc": 2150
+  },
+  {
+    "id": 5248,
+    "name": "Intro to Streamlined SBCs",
+    "description": "Submit any jugadores from your collection to earn rewards",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/7.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/7.png",
+    "cost": 8250,
+    "costPc": 8150,
+    "endTime": "2035-08-20T17:00:00.630379Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 4,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/foundations/27-7-getting-started/",
+    "slug": "27-7-getting-started",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "A New Signing",
+        "description": "Submit any jugadores from your collection.",
+        "requirements": [
+          "Rating: mín. 64"
+        ],
+        "awards": [
+          "pequeño plata sobre de jugadores"
+        ],
+        "cheapestCoins": 600,
+        "cheapestPc": 600,
+        "solutionUrl": null,
+        "solutionUuid": null
+      },
+      {
+        "name": "The Bronze and Silver Lining",
+        "description": "Submit any plata or bronce jugadores from your collection.",
+        "requirements": [
+          "Rating: 45 to 74"
+        ],
+        "awards": [
+          "oro sobre"
+        ],
+        "cheapestCoins": 1000,
+        "cheapestPc": 900,
+        "solutionUrl": null,
+        "solutionUuid": null
+      },
+      {
+        "name": "The Royal SBC",
+        "description": "Submit jugadores from Premier League.",
+        "requirements": [
+          "League: Premier League"
+        ],
+        "awards": [
+          "35x bronce sobre de jugadores"
+        ],
+        "cheapestCoins": 650,
+        "cheapestPc": 650,
+        "solutionUrl": null,
+        "solutionUuid": null
+      },
+      {
+        "name": "The Multi Submit",
+        "description": "Learn how to multi-submit by completing this challenge and earn rewards.",
+        "requirements": [
+          "Rating: mín. 64"
+        ],
+        "awards": [
+          "Large Electrum sobre de jugadores"
+        ],
+        "cheapestCoins": 6000,
+        "cheapestPc": 6000,
+        "solutionUrl": null,
+        "solutionUuid": null
+      }
+    ],
+    "cheapestTotal": 8250,
+    "cheapestTotalPc": 8150
+  },
+  {
+    "id": 5247,
+    "name": "Intro to Upgrade SBCs",
+    "description": "Complete these Upgrade-based challenges to earn rewards. ",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/3.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/3.png",
+    "cost": 14150,
+    "costPc": 14250,
+    "endTime": "2035-08-20T17:00:00.786094Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 3,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/foundations/27-3-intro-to-upgrade-sbcs/",
+    "slug": "27-3-intro-to-upgrade-sbcs",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Room To Grow",
+        "description": "Entregá un full equipo with a maximum OVR of 64.",
+        "requirements": [
+          "Quality: mín. 11 bronce jugadores",
+          "Media del equipo: máx. 64"
+        ],
+        "awards": [
+          "Large plata sobre de jugadores"
+        ],
+        "cheapestCoins": 2200,
+        "cheapestPc": 2300,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/e93900ad-23ca-4cf1-9a93-6487ccddfce8/",
+        "solutionUuid": "e93900ad-23ca-4cf1-9a93-6487ccddfce8"
+      },
+      {
+        "name": "Build Up Play",
+        "description": "Entregá un full equipo with OVRs between 65 and 74.",
+        "requirements": [
+          "Quality: mín. 11 plata jugadores"
+        ],
+        "awards": [
+          "oro sobre"
+        ],
+        "cheapestCoins": 4750,
+        "cheapestPc": 4700,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/d45e6f2a-e956-4512-acf8-a5cc2ef06514/",
+        "solutionUuid": "d45e6f2a-e956-4512-acf8-a5cc2ef06514"
+      },
+      {
+        "name": "Raw Power",
+        "description": "Entregá un full equipo with a maximum OVR of 85 and a minimum Team Chemistry rating of 10.",
+        "requirements": [
+          "Quality: mín. 11 oro jugadores",
+          "Media del equipo: máx. 85",
+          "Chemistry: mín. 10"
+        ],
+        "awards": [
+          "Large oro sobre"
+        ],
+        "cheapestCoins": 7200,
+        "cheapestPc": 7250,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/18c8bf95-8c43-4a1c-9c93-8d02ce886efd/",
+        "solutionUuid": "18c8bf95-8c43-4a1c-9c93-8d02ce886efd"
+      }
+    ],
+    "cheapestTotal": 14150,
+    "cheapestTotalPc": 14250
+  },
+  {
+    "id": 5246,
+    "name": "Intro to SBCs",
+    "description": "Complete these OVR-based challenges to earn rewards. ",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/1.png",
+    "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/1.png",
+    "cost": 4900,
+    "costPc": 4800,
+    "endTime": "2035-08-20T17:00:00.772091Z",
+    "isNew": false,
+    "isRepeatable": false,
+    "isExpired": false,
+    "challengesCount": 4,
+    "numberOfRepeats": 0,
+    "repeatRefreshText": null,
+    "url": "/sbc/foundations/27-1-intro-to-sbcs/",
+    "slug": "27-1-intro-to-sbcs",
+    "rewardPlayer": null,
+    "challenges": [
+      {
+        "name": "Break Away",
+        "description": "Exchange 1 jugador Item that is below 64 OVR.",
+        "requirements": [
+          "Rating: mín. 1 jugador rated 64 or lower",
+          "Jugadores: 1"
+        ],
+        "awards": [
+          "plata sobre"
+        ],
+        "cheapestCoins": 200,
+        "cheapestPc": 200,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/0156d510-ee7e-434d-b793-a3e6b274bcfa/",
+        "solutionUuid": "0156d510-ee7e-434d-b793-a3e6b274bcfa"
+      },
+      {
+        "name": "A Brace",
+        "description": "Exchange 2 jugadores with OVRs between 65 and 74.",
+        "requirements": [
+          "Rating: mín. 2 jugadores rated 65+",
+          "Rating: mín. 2 jugadores rated 74 or lower",
+          "Jugadores: 2"
+        ],
+        "awards": [
+          "plata sobre"
+        ],
+        "cheapestCoins": 800,
+        "cheapestPc": 850,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/0bcc98a1-9b8f-4e2b-a374-26f07db71ae4/",
+        "solutionUuid": "0bcc98a1-9b8f-4e2b-a374-26f07db71ae4"
+      },
+      {
+        "name": "Hat-trick",
+        "description": "Exchange 3 jugadores with OVRs between 65 and 74.",
+        "requirements": [
+          "Rating: mín. 3 jugadores rated 65+",
+          "Rating: mín. 3 jugadores rated 74 or lower",
+          "Jugadores: 3"
+        ],
+        "awards": [
+          "oro sobre"
+        ],
+        "cheapestCoins": 1300,
+        "cheapestPc": 1150,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/a82abe8f-5f46-46f6-9b9a-4a46c46a4c29/",
+        "solutionUuid": "a82abe8f-5f46-46f6-9b9a-4a46c46a4c29"
+      },
+      {
+        "name": "A Pair Of Pairs",
+        "description": "Exchange 4 jugadores with OVRs between 75 and 84.",
+        "requirements": [
+          "Rating: mín. 4 jugadores rated 75+",
+          "Rating: mín. 4 jugadores rated 84 or lower",
+          "Jugadores: 4"
+        ],
+        "awards": [
+          "x2 oro sobre de jugadores"
+        ],
+        "cheapestCoins": 2600,
+        "cheapestPc": 2600,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/e2a3a2c5-e410-4aa5-8356-16fa9eeebca1/",
+        "solutionUuid": "e2a3a2c5-e410-4aa5-8356-16fa9eeebca1"
+      }
+    ],
+    "cheapestTotal": 4900,
+    "cheapestTotalPc": 4800
+  }
+]
