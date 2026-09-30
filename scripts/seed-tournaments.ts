@@ -66,11 +66,11 @@ const TOURNAMENTS: Tournament[] = [
     name: "Red Bull Wings Cup",
     org: "Red Bull × EA Sports",
     description:
-      "Torneo global nuevo. Clasificatorias regionales online → finales nacionales offline → Final Mundial en Miami, enero 2027.",
+      "Torneo global nuevo, exclusivo PS5. Liga Abierta (Ultimate Team 11v11) y Liga Universitaria (Rush) → finales nacionales offline → Final Mundial en Miami, enero 2027 (formato Kick Off 95).",
     status: "live",
     statusLabel: "Clasificatorias en curso (Liga Abierta hasta 25/10, Liga Universitaria hasta 15/11)",
     dates: "Sep 2026 — Ene 2027 (clasificatorias regionales hasta oct/nov según categoría + Final Mundial en Miami)",
-    mode: "Ultimate Team 1v1",
+    mode: "Ultimate Team 11v11 (Liga Abierta) / Rush (Liga Universitaria)",
     region: "Global (multi-país)",
     category: "international",
     links: [
