@@ -1,60 +1,84 @@
 [
   {
-    "slug": "ea-fc-27-parche-1-0-3-correcciones-oct-2026",
-    "title": "FC 27: así es el parche 1.0.3, con arreglos en Ultimate Team y Carrera",
-    "summary": "EA Sports lanzó el Title Update v1.0.3 de FC 27, una actualización enfocada pura y exclusivamente en corregir errores: no toca el balance de gameplay, pero soluciona bugs en Ultimate Team, The Grounds y el Modo Carrera.",
-    "content": "<p><strong>EA Sports FC 27</strong> ya tiene disponible el <strong>Title Update v1.0.3</strong>, una actualización que la propia desarrolladora definió como de \"corrección de errores\" (Small Bug Fix Update). El comunicado oficial aclara algo importante para quienes le tienen miedo a los parches a mitad de temporada: <strong>no incluye cambios de balance ni de tuning en el gameplay</strong>.</p><h2>Qué se arregló en Ultimate Team</h2><ul><li>Una pantalla de carga que podía forzar el reinicio del juego al entrar a los desafíos de Moments.</li><li>Las managers mujeres podían aparecer mal representadas en las cinemáticas.</li><li>Se podían modificar configuraciones de partido sin querer en Squad Battles.</li></ul><h2>The Grounds y Modo Carrera</h2><p>En <strong>The Grounds</strong> mejoraron la confiabilidad del emparejamiento y corrigieron que algunos regates de 5 estrellas no se pudieran usar en ciertos modos, además de un bug que dejaba a los jugadores trabados contra una pared en el kickabout de Goal Control. En el <strong>Modo Carrera</strong>, resolvieron un error por el que un futbolista podía pedir la transferencia en secreto sin haber mandado ningún mensaje o queja previa, incluso con la moral alta.</p><h2>Otros arreglos</h2><p>También actualizaron temas de estadios, equipaciones y textos, solucionaron problemas de estabilidad general y corrigieron un bug en el menú de Transferencias de Club que podía duplicar a un jugador transferido.</p><h2>Análisis Modo Fosa</h2><p>Que EA haya aclarado expresamente que este parche no mete mano en el balance es una buena noticia para los que venimos armando nuestra plantilla de <a href=\"/evoluciones\">Evoluciones</a> pensando en el primer FUT Champions del año: no hay riesgo de que un cambio de jugabilidad te deje la táctica vieja de un día para el otro. Igual, si usabas algún regate de 5 estrellas que no te andaba, fijate si este parche lo solucionó. Seguí todas las actualizaciones de FC 27 en <a href=\"/actualidad\">actualidad</a>.</p>",
+    "slug": "ea-fc-27-destined-for-glory-team-2-akliouche-veiga-oct-2026",
+    "title": "Llegó el Team 2 de Destined for Glory en FC 27 con Akliouche y Veiga",
+    "summary": "La promo Destined for Glory sumó su segunda tanda de cartas en FC 27 y los creadores ya están analizando si conviene invertir fichas en las SBC de Maghnes Akliouche (85) y Renato Veiga (84).",
+    "content": "<p>La promo <strong>Destined for Glory</strong> no se detiene en <strong>FC 27</strong> y esta semana llegó su segunda tanda de cartas, conocida como Team 2. Los creadores de la escena ya empezaron a repasar si conviene o no tirar fichas en las nuevas SBC, con <strong>Maghnes Akliouche</strong> (85) y <strong>Renato Veiga</strong> (84) como las caras principales de esta ronda.</p><h2>Las cartas del Team 2</h2><p>Según confirmó fut.gg, ambas cartas pertenecen a la rareza Destined for Glory: Akliouche quedó en <strong>85 de media</strong> y Veiga en <strong>84</strong>. En su canal, <strong>FraFilter</strong> repasó carta por carta en dos videos distintos: para Akliouche se preguntó \"¿vale la pena hacerlo?\" y terminó recomendando la SBC, mientras que para Veiga fue todavía más directo con un \"si aún no lo has hecho, mirá esto\". Como mostró FraFilter en sus últimos videos, <a href=\"https://www.youtube.com/watch?v=8yg0JX6URYA\">la review de Akliouche</a> y <a href=\"https://www.youtube.com/watch?v=qwCp7eLPkt8\">la de Veiga</a> apuntan en la misma dirección: dos cartas sólidas para esta altura del año de FUT.</p><h2>Análisis Modo Fosa</h2><p>Con el primer FUT Champions del año recién arrancado, meter una carta nueva y relativamente accesible como estas dos puede ser la diferencia entre subir de división o quedarte estancado. Si estás armando o retocando tu plantilla, es un buen momento para repasar nuestra guía de <a href=\"/sbc\">SBC</a> y ver qué conviene craftear primero, y de paso chusmear <a href=\"/jugadores\">la base de jugadores</a> para comparar stats antes de gastar fichas que después no se recuperan.</p>",
     "category": "EA FC",
-    "tags": ["EA FC 27", "Parche", "Ultimate Team", "The Grounds", "Modo Carrera"],
-    "sourceUrl": "https://www.ea.com/games/ea-sports-fc/fc-27/news/title-update-v1-0-3",
-    "sourceName": "EA Sports FC (sitio oficial)",
-    "imageUrl": "https://drop-assets.ea.com/images/7nBFipZRcOV0ivySEPyGev/ab6948103b0c314849d85dc0b0ecf63b/v1.0.1.png?im=AspectCrop=(16,9),xPosition=0.5,yPosition=0.5",
-    "imageCredit": "Imagen: EA SPORTS FC"
+    "tags": [
+      "FC 27",
+      "SBC",
+      "Destined for Glory",
+      "Ultimate Team"
+    ],
+    "sourceUrl": "https://www.youtube.com/watch?v=8yg0JX6URYA",
+    "sourceName": "FraFilter",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2027/futgg-player-item-card/27-50596510.681cd34ddbc9f0a0ec7241171616a14b91a1107a9a407aa8ed425668a915d7fd.webp",
+    "imageCredit": "Imagen: EA SPORTS FC / fut.gg"
   },
   {
-    "slug": "ea-fc-27-fut-developer-notes-evoluciones-sbc-oct-2026",
-    "title": "EA reveló sus primeras notas de desarrollo de Ultimate Team en FC 27",
-    "summary": "En su primer 'FUT Developer Notes' de la temporada, EA Sports contó qué está mirando de cerca en Ultimate Team: desde la tunning de Evoluciones hasta mejoras pendientes en los SBCs Simplificados y el estado del Mercado de Transferencias.",
-    "content": "<p>EA Sports publicó sus primeras <strong>\"FUT Developer Notes\"</strong> de <strong>FC 27</strong>, un comunicado oficial donde repasa qué está viendo en Ultimate Team a días del lanzamiento y qué viene trabajando.</p><h2>Lo que están viendo</h2><p>Según el comunicado, los <strong>saldos de monedas son más de un 50% más altos</strong> que en el mismo punto del año pasado, con mucha actividad en el <strong>Mercado de Transferencias</strong> y una proporción mayor de jugadores del Once Inicial conseguidos directamente ahí. También destacaron que los <strong>Live Events</strong> (PvE) ya son el tercer modo más jugado de FUT, detrás de Rivals y Squad Battles, y que más de <strong>350.000 jugadores</strong> ya vincularon su cuenta de EA con sitios asociados como FUT.GG, FUTBIN y FUTWIZ.</p><h2>Evoluciones y SBCs, los temas calientes</h2><p>EA reconoció que uno de los debates más grandes de la comunidad pasa por las <strong>Evoluciones</strong> y el ritmo de mejora de plantillas: este año hicieron \"cambios significativos\" en su tuning para balancearlas frente a otras formas de progreso (recompensas, SBCs, mercado). Sobre los <strong>SBCs Simplificados</strong>, dijeron que la reducción de fricción fue bien recibida y que siguen escuchando pedidos como poder marcar o \"favoritear\" jugadores para no enviarlos sin querer a un SBC. El 28 de septiembre ya llevaron los SBCs Simplificados a la App Complementaria.</p><h2>Tienda y Campaña</h2><p>EA también dijo que este año apostó por una Tienda con menos ofertas pero más enfocadas, y por plantillas de Campaña más chicas y con un rango de valoración más ajustado, buscando que más cartas de Campaña terminen en el Once Inicial de los usuarios.</p><h2>Análisis Modo Fosa</h2><p>Que EA confirme que les está yendo bien con las Evoluciones y que van a seguir ajustándolas es una señal para no quemar todas tus fichas de golpe: todavía puede haber cambios en el camino. Si estás masticando qué <a href=\"/sbc\">SBC</a> conviene hacer o qué carta mandar a <a href=\"/evoluciones\">Evoluciones</a>, vale la pena esperar estas actualizaciones antes de gastar monedas. Armá o revisá tu plantilla en <a href=\"/jugadores\">jugadores</a> y seguí todas las novedades en <a href=\"/actualidad\">actualidad</a>.</p>",
+    "slug": "ea-fc-27-potm-septiembre-raphinha-gross-oct-2026",
+    "title": "FC 27: ya están las SBC del POTM de septiembre con Raphinha y Groß",
+    "summary": "Llegaron las cartas del Jugador del Mes de septiembre en FC 27: Raphinha representa a LaLiga con una carta de 89 y Pascal Groß a la Premier League con 84 de media.",
+    "content": "<p>Ya están disponibles en <strong>FC 27</strong> las SBC del <strong>Jugador del Mes (POTM)</strong> correspondientes a septiembre, con dos nombres fuertes para esta altura de la temporada de Ultimate Team: <strong>Raphinha</strong> por LaLiga y <strong>Pascal Groß</strong> por la Premier League.</p><h2>Las cartas</h2><p>Según confirmó fut.gg, la carta de Raphinha quedó en <strong>89 de media</strong> como POTM de LaLiga, mientras que la de Pascal Groß llegó a <strong>84</strong> como POTM de la Premier League. La comunidad de r/EASportsFC ya viene compartiendo ambas SBC desde que salieron, y del lado de los creadores, <strong>FraFilter</strong> fue tajante con la carta del alemán: en su video la resumió con una sola palabra, \"obligatorio\". Como mostró FraFilter en su <a href=\"https://www.youtube.com/watch?v=YA3ObO9_0hs\">review de Groß</a>, la carta se banca bien en el mediocampo según cómo armes el equipo.</p><h2>Análisis Modo Fosa</h2><p>Las SBC de POTM suelen rotar rápido del mercado, así que si te interesa alguna de las dos conviene no dejarla para último momento. Raphinha, por su perfil de extremo encarador, puede ser una pieza interesante para los que están buscando variantes de ataque en su <a href=\"/evoluciones\">evoluciones</a>, y Groß le suma llegada al mediocampo para los que ya tienen armada la base en <a href=\"/jugadores\">jugadores</a>.</p>",
     "category": "EA FC",
-    "tags": ["EA FC 27", "Ultimate Team", "Evoluciones", "SBC", "Mercado de Transferencias"],
-    "sourceUrl": "https://www.ea.com/games/ea-sports-fc/fc-27/news/fc-27-fut-developer-launch-update",
-    "sourceName": "EA Sports FC (sitio oficial)",
-    "imageUrl": "https://drop-assets.ea.com/images/wsCGTs12X5KUsFpp9XR3u/69ad7514c0c87a2e1223ccd4286d9248/fc-27-developer_notes_fut-feat-img.png?im=AspectCrop=(16,9),xPosition=0.5,yPosition=0.5",
-    "imageCredit": "Imagen: EA SPORTS FC"
+    "tags": [
+      "FC 27",
+      "SBC",
+      "POTM",
+      "Raphinha",
+      "Ultimate Team"
+    ],
+    "sourceUrl": "https://www.youtube.com/watch?v=YA3ObO9_0hs",
+    "sourceName": "FraFilter",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2027/futgg-player-item-card/27-84076845.9db8427a90d290c8a352e210f7bdf30d716a581bb3ecb3942356d67e33768813.webp",
+    "imageCredit": "Imagen: EA SPORTS FC / fut.gg"
   },
   {
-    "slug": "lionel-messi-llego-argentina-despedida-seleccion-oct-2026",
-    "title": "Llegó el capitán: Messi aterrizó en Argentina para su despedida de la Selección",
-    "summary": "Lionel Messi llegó este viernes al país junto a su familia para disputar sus últimos minutos con la camiseta de la Selección Argentina ante Benín, el martes en el Monumental.",
-    "content": "<p><strong>Lionel Messi</strong> ya está en el país. El capitán aterrizó este viernes por la mañana junto a toda su familia para lo que va a ser su <strong>despedida oficial de la Selección Argentina</strong>.</p><h2>Cuándo juega sus últimos minutos</h2><p>Según dispuso la AFA, Messi va a cerrar su ciclo con la Albiceleste en el partido ante <strong>Benín</strong>, que se juega el martes 6 de octubre a las 20 horas en el <strong>Monumental</strong>. Antes de eso, la Selección enfrenta a <strong>Burkina Faso</strong> el sábado 3 de octubre a las 21 horas en Buenos Aires, duelo en el que el 10 no va a jugar pero sí va a estar alentando a sus compañeros desde la tribuna.</p><h2>El antecedente: su último partido en el país</h2><p>La última vez que Messi jugó en la Argentina con la Selección fue el <strong>31 de marzo</strong>, cuando el equipo de Lionel Scaloni goleó 5-0 a Zambia en la Bombonera como preparación para el Mundial 2026. En ese partido, Messi también había convertido uno de los goles.</p><h2>Análisis Modo Fosa</h2><p>Después de la goleada a Bolivia y el debut soñado de Leo Flores en esta misma fecha FIFA, la despedida de Messi en el Monumental promete ser una noche cargada de emoción para toda la Selección. Para los que armamos nuestros equipos de la Liga Profesional y la Albiceleste en Ultimate Team, es la última oportunidad de ver al 10 vestido de celeste y blanco en una cancha argentina: un cierre de ciclo que seguramente EA va a querer homenajear de alguna forma en <a href=\"/jugadores\">jugadores</a>. Seguí la cobertura completa de la despedida en <a href=\"/actualidad\">actualidad</a>.</p>",
+    "slug": "ea-fc-27-tienda-fichas-fut-champions-recompensas-oct-2026",
+    "title": "FC 27: cómo aprovechar la tienda de recompensas del primer FUT Champions",
+    "summary": "Dos referentes de la escena, Luquitas Camino y FraFilter, analizaron carta por carta qué conviene comprar en la tienda de fichas de la primera semana de FUT Champions en FC 27.",
+    "content": "<p>Con el primer <strong>FUT Champions</strong> del año en marcha en <strong>FC 27</strong>, la gran pregunta en la escena es la misma de siempre: ¿en qué conviene gastar las fichas que tira la tienda de recompensas? Dos de los creadores de FUT en español se metieron de lleno en el tema esta semana.</p><h2>Qué dijeron los creadores</h2><p><strong>Luquitas Camino</strong> subió un análisis completo titulado \"¿Cuál es la mejor forma de aprovechar tus recompensas?\", repasando la tienda de Champions ítem por ítem. En paralelo, <strong>FraFilter</strong> hizo lo propio con un video sobre las mejores opciones en la tienda de fichas, apuntado directamente a la Semana 1 de recompensas. Como mostró Luquitas Camino en <a href=\"https://www.youtube.com/watch?v=7VkCSaDZ-kQ\">su último video</a>, no todas las opciones de la tienda valen lo mismo en relación a lo que cuestan, y conviene priorizar antes de gastar todo de una.</p><h2>Análisis Modo Fosa</h2><p>Esto afecta directamente a cómo armás tu economía de fichas en estas primeras semanas: gastar mal en la tienda de Champions te puede dejar sin recursos justo cuando aparezca una SBC que valga la pena. Nuestra recomendación va en la misma línea que la de los creadores: mirá primero qué te sirve para tu plantilla de <a href=\"/evoluciones\">evoluciones</a> y recién después pensá en los extras cosméticos. Si querés comparar qué conviene craftear con esas fichas, pasate por <a href=\"/sbc\">SBC</a> y por <a href=\"/escena\">la escena</a> para ver qué están armando los demás jugadores.</p>",
+    "category": "EA FC",
+    "tags": [
+      "FC 27",
+      "FUT Champions",
+      "Ultimate Team",
+      "Recompensas"
+    ],
+    "sourceUrl": "https://www.youtube.com/watch?v=7VkCSaDZ-kQ",
+    "sourceName": "Luquitas Camino"
+  },
+  {
+    "slug": "seleccion-argentina-burkina-faso-amistoso-oct-2026",
+    "title": "La Selección argentina ya tiene enfrente a Burkina Faso para el amistoso de hoy",
+    "summary": "La selección de Burkina Faso viajó durante la madrugada desde Marruecos y llega este sábado a Ezeiza, horas antes de enfrentar a la Scaloneta en un amistoso, aunque sin varias de sus figuras.",
+    "content": "<p>La <strong>Selección Argentina</strong> ya tiene a su rival de hoy prácticamente en el país: el seleccionado de <strong>Burkina Faso</strong> subió al avión durante la madrugada en Marruecos y, según informó Olé, estaba previsto que aterrice este sábado al mediodía en Ezeiza, horas antes de enfrentar a la <strong>Scaloneta</strong> en un amistoso.</p><h2>Llega con ausencias</h2><p>El dato que más se repitió en la previa del viaje es que el combinado africano salió de Marruecos <strong>sin muchas de sus principales figuras</strong>, algo que cambia bastante el análisis de lo que puede mostrar Burkina Faso una vez que pise la cancha frente a la Argentina esta misma tarde.</p><h2>Un amistoso para seguir probando</h2><p>Para el cuerpo técnico, este tipo de partidos suelen ser una oportunidad para seguir rotando nombres y dar minutos a variantes, más allá de que el rival llegue diezmado. No hay que esperar un partido de máxima exigencia, pero sí la chance de ver en acción a jugadores que pelean un lugar en la consideración.</p><h2>Análisis Modo Fosa</h2><p>Más allá del resultado, cada amistoso de la Selección es una buena excusa para repasar cómo se traducen las actuaciones de los argentinos a sus cartas en <strong>FC 27</strong>: pasate por <a href=\"/jugadores\">la base de jugadores</a> para comparar stats y por <a href=\"/actualidad\">actualidad</a> para seguir la previa y el partido en vivo.</p>",
     "category": "Fútbol Argentino",
-    "tags": ["Lionel Messi", "Selección Argentina", "Despedida", "Benín", "Burkina Faso"],
-    "sourceUrl": "https://www.ole.com.ar/messi/lionel-messi-seleccion-argentina-llego-pais-despedida_0_UahQpc8NSu.html",
-    "sourceName": "Olé",
-    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Lionel_Messi%2C_Player_of_Argentina_national_football_team.JPG/1280px-Lionel_Messi%2C_Player_of_Argentina_national_football_team.JPG",
-    "imageCredit": "Foto: Fanny Schertzer / Wikimedia Commons (CC BY-SA 3.0)"
-  },
-  {
-    "slug": "copa-argentina-platense-elimina-estudiantes-semifinales-oct-2026",
-    "title": "Copa Argentina: Platense eliminó a Estudiantes y jugará las semifinales ante Tucumán",
-    "summary": "Con gol de Gonzalo Lencina, el equipo de Martín Palermo venció 1-0 a Estudiantes y clasificó por primera vez en su historia a semifinales de la Copa Argentina, donde del otro lado espera Boca tras remontarle un 2-0 a Racing.",
-    "content": "<p><strong>Platense</strong> hizo historia: con gol de <strong>Gonzalo Lencina</strong>, le ganó 1-0 a <strong>Estudiantes</strong> en el estadio Norberto \"Tito\" Tomaghello y se metió <strong>por primera vez en semifinales de la Copa Argentina</strong>. Ya se conocen los cuatro semifinalistas de la edición 2026: el Calamar se suma a Boca, Banfield y Atlético Tucumán.</p><h2>Palermo, con sentimientos encontrados</h2><p>Para <strong>Martín Palermo</strong>, técnico del Calamar e ídolo histórico de Estudiantes, el cruce fue especial: \"Son esas sensaciones que preferís que sea otro equipo. Se generan emociones, es entendible por mi parte, pero era nuestra posibilidad de seguir en carrera\", reconoció. El Titán destacó el ingreso desde el banco de Lencina, autor del gol, y fue cauto de cara a lo que viene: \"Estamos a un partido de jugar una final nuevamente, nos ilusiona y los muchachos respondieron de la mejor manera\".</p><h2>Cómo sigue la llave</h2><p>El próximo rival de Platense será <strong>Atlético Tucumán</strong>, que eliminó a Independiente Rivadavia por penales. Del otro lado quedó un cruce de peso: <strong>Boca</strong>, que le dio vuelta un 0-2 a Racing con un triplete de Enner Valencia para ganar 3-2, se mide con <strong>Banfield</strong>. La final está anunciada para el miércoles 4 de noviembre, con sede y horario todavía por confirmar, y el campeón se asegura un lugar en la fase de grupos de la <strong>Copa Libertadores 2027</strong>.</p><h2>Análisis Modo Fosa</h2><p>Una Copa Argentina así de pareja, con el campeón vigente (Platense venía de eliminar a Independiente Rivadavia en la ronda anterior) chocando contra Estudiantes y Boca remontándole a Racing, es puro material para armar tu Modo Carrera o tu equipo de la Liga Profesional en Ultimate Team. Repasá a las figuras de este torneo en <a href=\"/jugadores\">jugadores</a> y seguí la agenda de semifinales en <a href=\"/actualidad\">actualidad</a>.</p>",
-    "category": "Fútbol Argentino",
-    "tags": ["Copa Argentina", "Platense", "Martín Palermo", "Estudiantes", "Boca Juniors", "Atlético Tucumán"],
-    "sourceUrl": "https://www.ole.com.ar/copa-argentina/martin-palermo-conferencia-platense-clasificacion-semifinales-copa-argentina_0_IuTOsE3xyD.html",
-    "sourceName": "Olé",
-    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Mart%C3%ADn_Palermo_contra_Ghana.jpg/1280px-Mart%C3%ADn_Palermo_contra_Ghana.jpg",
-    "imageCredit": "Foto: Damian Zanini / Wikimedia Commons (CC BY-SA 2.0)"
-  },
-  {
-    "slug": "hojlund-festejo-cristiano-ronaldo-nations-league-oct-2026",
-    "title": "Hojlund volvió a festejar como Cristiano Ronaldo y reveló el motivo del gesto",
-    "summary": "El delantero danés convirtió ante Portugal en la Nations League y repitió el clásico 'Siuu' de Cristiano Ronaldo, en medio de la salida del astro portugués de su selección. Después del partido, explicó por qué lo hizo.",
-    "content": "<p>El partido entre <strong>Portugal</strong> y <strong>Dinamarca</strong>, por la tercera fecha de la Nations League, dejó un episodio particular. Tras convertir el 2-2 parcial en la caída 4-2 de los daneses, el delantero <strong>Rasmus Hojlund</strong> metió un festejo a lo <strong>Cristiano Ronaldo</strong>, con el clásico \"Siuu\", justo en medio de la polémica por la salida del astro luso de su selección.</p><h2>\"Es mi gran ídolo\"</h2><p>Consultado después del partido sobre el festejo, el atacante del Napoli fue claro: \"Fue simplemente un homenaje a un hombre que probablemente haya terminado su carrera en la Selección tras lo sucedido ayer\". Hojlund, que fue sucesor de Cristiano en el Manchester United, aclaró que el gesto \"no tiene que ver con una falta de respeto ni mucho menos\" y remarcó: \"Es mi gran ídolo\".</p><h2>No es la primera vez</h2><p>No es la primera vez que Hojlund festeja así frente a Portugal: en marzo de 2025 ya había anotado el único gol en un triunfo 1-0 de Dinamarca ante los lusos, con Cristiano en cancha, y había repetido el mismo festejo. En esa oportunidad también explicó que no buscaba burlarse, sino que el portugués tuvo una enorme influencia en su carrera desde que lo veía por tele de chico.</p><h2>Análisis Modo Fosa</h2><p>Más allá de la anécdota, el gesto de Hojlund confirma el peso que tiene Cristiano incluso para los delanteros de la nueva generación, justo en el momento en que se empieza a hablar de su salida de la selección portuguesa. Para los que seguimos de cerca a las figuras de la Serie A y la Premier en Ultimate Team, es un buen recordatorio de que Hojlund viene entonado de cara a los próximos partidos con Napoli. Seguí toda la actualidad del fútbol internacional en <a href=\"/actualidad\">actualidad</a>.</p>",
-    "category": "Fútbol Internacional",
-    "tags": ["Rasmus Hojlund", "Cristiano Ronaldo", "Nations League", "Portugal", "Dinamarca"],
-    "sourceUrl": "https://www.ole.com.ar/futbol-internacional/cristiano-ronaldo-hojlund-delantero-noruega-festejo-gol-siu-dijo-declaraciones_0_hC7vIEdlbT.html",
+    "tags": [
+      "Selección Argentina",
+      "Scaloneta",
+      "Burkina Faso",
+      "Amistoso"
+    ],
+    "sourceUrl": "https://www.ole.com.ar/seleccion/burkinafaso-argentina-seleccion_0_cS2JXpZtAq.html",
     "sourceName": "Olé"
+  },
+  {
+    "slug": "instituto-goleo-independiente-diego-flores-boca-oct-2026",
+    "title": "Instituto goleó 4-1 a Independiente y ya mira de cerca el cruce con Boca",
+    "summary": "Instituto aplastó 4-1 a Independiente en Avellaneda y el entrenador Diego Flores ya habló de cara al partido que viene como líder de zona: Boca Juniors.",
+    "content": "<p><strong>Instituto</strong> dio un golpe en Avellaneda: le ganó <strong>4-1 a Independiente</strong> y llega a puro envión al próximo compromiso, nada menos que contra <strong>Boca Juniors</strong>, al que recibirá como líder de su zona en el torneo.</p><h2>Lo que dijo Diego Flores</h2><p>El entrenador de la Gloria, <strong>Diego Flores</strong> -apodado \"El Traductor\"- habló tras la goleada y marcó el tono de cómo piensa el duelo que se viene: <strong>\"No hay equipo sensación\"</strong>, lanzó, bajándole las expectativas a su propio equipo pese al resultado. Sobre el Xeneize, fue respetuoso pero sin bajar los brazos: <strong>\"Es un rival al que le tenemos mucho respeto\"</strong>, aseguró, según recogió Olé.</p><h2>Instituto, puntero de su zona</h2><p>El 4-1 no solo dejó una goleada contundente de visitante, sino que además consolidó a Instituto como líder de su grupo, algo que le pone un condimento extra al partido ante Boca: el que viene de atrás necesita puntos, y el que está arriba quiere seguir ahí.</p><h2>Análisis Modo Fosa</h2><p>Un Boca que llega de visitante a la casa del líder es siempre un partido lindo para seguir, más allá de las categorías de cada plantel en el papel. Si seguís de cerca a los jugadores de ambos equipos para tu once ideal, dale una vuelta por <a href=\"/jugadores\">la base de jugadores</a> y por nuestras notas de <a href=\"/escena\">la escena</a> del fútbol argentino.</p>",
+    "category": "Fútbol Argentino",
+    "tags": [
+      "Instituto",
+      "Boca Juniors",
+      "Diego Flores",
+      "Liga Profesional"
+    ],
+    "sourceUrl": "https://www.ole.com.ar/instituto/diego-flores-traductor-instituto-goleada-independiente-boca-equipo-sensacion_0_AZhwZnwGKo.html",
+    "sourceName": "Olé",
+    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Instituto_Atl%C3%A9tico_Central_C%C3%B3rdoba_Escudo.png/1280px-Instituto_Atl%C3%A9tico_Central_C%C3%B3rdoba_Escudo.png",
+    "imageCredit": "Foto: Instituto Atlético Central Córdoba / Wikimedia Commons (Public domain)"
   }
 ]
