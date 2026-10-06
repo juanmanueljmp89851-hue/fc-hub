@@ -124,7 +124,7 @@ const TOURNAMENTS: Tournament[] = [
     description:
       "Mayor evento multi-juego del mundo. FC Pro World Championship se juega acá. 2026 fue en París; 2027 será en Riad, Arabia Saudita.",
     status: "upcoming",
-    statusLabel: "2026 finalizado (París) · 2027 anunciado: Riad",
+    statusLabel: "2026 finalizado (París) · EA SPORTS FC 27 confirmado para 2027 en Riad",
     dates: "2026: Jul—Ago (finalizado) · 2027: 20 Jul — 1 Ago en Riad (qualifier abierto 16-18 jul)",
     mode: "Ultimate Team 1v1",
     region: "Global",
