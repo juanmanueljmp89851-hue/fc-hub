@@ -38,7 +38,8 @@
     "height": 160,
     "game": "27",
     "source": "futgg",
-    "sourceUrl": "https://www.fut.gg/players/262531-claudia-pina/27-50594179/"
+    "sourceUrl": "https://www.fut.gg/players/262531-claudia-pina/27-50594179/",
+    "isEvolutionPlayerItem": false
   },
   {
     "eaId": 84112442,
@@ -79,6 +80,7 @@
     "height": 168,
     "game": "27",
     "source": "futgg",
-    "sourceUrl": "https://www.fut.gg/players/226362-louisa-necib/27-84112442/"
+    "sourceUrl": "https://www.fut.gg/players/226362-louisa-necib/27-84112442/",
+    "isEvolutionPlayerItem": false
   }
 ]
