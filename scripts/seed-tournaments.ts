@@ -68,7 +68,7 @@ const TOURNAMENTS: Tournament[] = [
     description:
       "Torneo global nuevo, exclusivo PS5. Liga Abierta (Ultimate Team 11v11) y Liga Universitaria (Rush) → finales nacionales offline → Final Mundial en Miami, enero 2027 (formato Kick Off 95).",
     status: "live",
-    statusLabel: "Liga Abierta Argentina (online) hasta el 18/10 · Final Nacional Argentina el 7/11 · Liga Universitaria con calendario a confirmar",
+    statusLabel: "Liga Abierta Argentina (online) finalizada (28 sep–18 oct) · Final Nacional Argentina el 7/11 · Liga Universitaria con calendario a confirmar",
     dates: "Sep 2026 — Ene 2027 (Liga Abierta Argentina: clasificatorias online 28 sep – 18 oct; Liga Universitaria: fechas a confirmar por IG; Final Nacional Argentina: 7 nov; Final Mundial en Miami, ene 2027)",
     mode: "Ultimate Team 11v11 (Liga Abierta) / Rush (Liga Universitaria)",
     region: "Global (multi-país)",
@@ -87,8 +87,8 @@ const TOURNAMENTS: Tournament[] = [
     description:
       "Competencia de selecciones europeas de EA FC. Clasificatorias nacionales → evento clasificatorio online (Swiss + eliminación doble) define top 8 → final presencial en Londres. Edición FC 27.",
     status: "upcoming",
-    statusLabel: "Evento clasificatorio 17-18 oct · Final presencial 12 dic en Londres",
-    dates: "17-18 Oct 2026 (clasificatorio) · 12 Dic 2026 (final en BBC Studios, Londres)",
+    statusLabel: "Evento clasificatorio finalizado (17-18 oct) · Final presencial 12 dic en Londres",
+    dates: "17-18 Oct 2026 (clasificatorio, finalizado) · 12 Dic 2026 (final en BBC Studios, Londres)",
     mode: "Ultimate Team 1v1",
     region: "Europa",
     category: "international",
