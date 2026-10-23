@@ -5,9 +5,9 @@
     "description": "Complete challenges themed around this week's key matchups.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/59.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/59.png",
-    "cost": 23850,
-    "costPc": 34400,
-    "endTime": "2026-10-29T18:00:00.750580Z",
+    "cost": 18400,
+    "costPc": 21250,
+    "endTime": "2026-10-29T18:00:01.082441Z",
     "isNew": true,
     "isRepeatable": false,
     "isExpired": false,
@@ -31,10 +31,10 @@
         "awards": [
           "Large plata sobre de jugadores"
         ],
-        "cheapestCoins": 4350,
-        "cheapestPc": 13400,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/917894e5-7f9e-4bd8-af84-0d1a9cd5b046/",
-        "solutionUuid": "917894e5-7f9e-4bd8-af84-0d1a9cd5b046"
+        "cheapestCoins": 3500,
+        "cheapestPc": 4000,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/f1b02ae6-3af6-477f-8e93-182166554c45/",
+        "solutionUuid": "f1b02ae6-3af6-477f-8e93-182166554c45"
       },
       {
         "name": "SSC Napoli v AS Roma",
@@ -50,10 +50,10 @@
         "awards": [
           "pequeño Electrum sobre de jugadores"
         ],
-        "cheapestCoins": 7100,
-        "cheapestPc": 8500,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/3fef0f32-b2a9-4ed5-8be4-8a4e6e283c27/",
-        "solutionUuid": "3fef0f32-b2a9-4ed5-8be4-8a4e6e283c27"
+        "cheapestCoins": 4900,
+        "cheapestPc": 6200,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/628793cb-8706-44f8-8f1f-41a478667eaf/",
+        "solutionUuid": "628793cb-8706-44f8-8f1f-41a478667eaf"
       },
       {
         "name": "Chelsea v Tottenham Hotspur",
@@ -69,10 +69,10 @@
         "awards": [
           "Mixed sobre de jugadores"
         ],
-        "cheapestCoins": 7100,
-        "cheapestPc": 7750,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/ff8fce40-fdef-42f4-a08e-d1459b3195ac/",
-        "solutionUuid": "ff8fce40-fdef-42f4-a08e-d1459b3195ac"
+        "cheapestCoins": 5450,
+        "cheapestPc": 6150,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/c6bb2aa5-47b2-44d0-b1c0-84ead1dfc92f/",
+        "solutionUuid": "c6bb2aa5-47b2-44d0-b1c0-84ead1dfc92f"
       },
       {
         "name": "FC Barcelona v Real Madrid",
@@ -88,14 +88,14 @@
         "awards": [
           "pequeño oro sobre de jugadores"
         ],
-        "cheapestCoins": 5300,
-        "cheapestPc": 4750,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/5ed9417d-7a52-4e96-9255-9b988ffb248d/",
-        "solutionUuid": "5ed9417d-7a52-4e96-9255-9b988ffb248d"
+        "cheapestCoins": 4550,
+        "cheapestPc": 4900,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/576ef12f-9630-4df9-bc9e-80fc1389a4e5/",
+        "solutionUuid": "576ef12f-9630-4df9-bc9e-80fc1389a4e5"
       }
     ],
-    "cheapestTotal": 23850,
-    "cheapestTotalPc": 34400
+    "cheapestTotal": 18400,
+    "cheapestTotalPc": 21250
   },
   {
     "id": 5316,
@@ -103,9 +103,9 @@
     "description": "Earn an NWSL Future Stars Pick between Tordin, Van Zanten, Rader and Jackson. (See Reward Details).",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/67.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/67.png",
-    "cost": 18225,
-    "costPc": 20695,
-    "endTime": "2026-10-28T18:00:01.149863Z",
+    "cost": 18605,
+    "costPc": 23080,
+    "endTime": "2026-10-28T18:00:01.557419Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -123,14 +123,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 18225,
-        "cheapestPc": 20695,
+        "cheapestCoins": 18605,
+        "cheapestPc": 23080,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 18225,
-    "cheapestTotalPc": 20695
+    "cheapestTotal": 18605,
+    "cheapestTotalPc": 23080
   },
   {
     "id": 5315,
@@ -138,9 +138,9 @@
     "description": "Complete this challenge to earn a reward.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/65.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/65.png",
-    "cost": 7650,
-    "costPc": 8100,
-    "endTime": "2026-10-24T17:00:00.760470Z",
+    "cost": 5850,
+    "costPc": 6500,
+    "endTime": "2026-10-24T17:00:01.090016Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -163,14 +163,14 @@
           "Chemistry: mín. 22"
         ],
         "awards": [],
-        "cheapestCoins": 7650,
-        "cheapestPc": 8100,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/d1057b36-914c-418c-89f7-827ed76f841d/",
-        "solutionUuid": "d1057b36-914c-418c-89f7-827ed76f841d"
+        "cheapestCoins": 5850,
+        "cheapestPc": 6500,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/8b2cfa98-8da5-48a9-974f-a31c83585261/",
+        "solutionUuid": "8b2cfa98-8da5-48a9-974f-a31c83585261"
       }
     ],
-    "cheapestTotal": 7650,
-    "cheapestTotalPc": 8100
+    "cheapestTotal": 5850,
+    "cheapestTotalPc": 6500
   },
   {
     "id": 5314,
@@ -178,9 +178,9 @@
     "description": "Earn an MLS Future Stars Pick between Niko Tsakiris, Tate Johnson, Manu Duah and Frankie Westfield. (See Reward Details).",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/64.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/64.png",
-    "cost": 14800,
-    "costPc": 16880,
-    "endTime": "2026-10-27T18:00:01.121053Z",
+    "cost": 15120,
+    "costPc": 18340,
+    "endTime": "2026-10-27T18:00:01.543779Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -198,14 +198,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 14800,
-        "cheapestPc": 16880,
+        "cheapestCoins": 15120,
+        "cheapestPc": 18340,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 14800,
-    "cheapestTotalPc": 16880
+    "cheapestTotal": 15120,
+    "cheapestTotalPc": 18340
   },
   {
     "id": 5313,
@@ -213,9 +213,9 @@
     "description": "Ganá un sobre con 2 jugadores oro, de 83 o más.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/71.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/71.png",
-    "cost": 6475,
-    "costPc": 7385,
-    "endTime": "2026-10-27T18:00:00.851108Z",
+    "cost": 6615,
+    "costPc": 8380,
+    "endTime": "2026-10-27T18:00:01.294048Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -233,14 +233,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 6475,
-        "cheapestPc": 7385,
+        "cheapestCoins": 6615,
+        "cheapestPc": 8380,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 6475,
-    "cheapestTotalPc": 7385
+    "cheapestTotal": 6615,
+    "cheapestTotalPc": 8380
   },
   {
     "id": 5312,
@@ -248,9 +248,9 @@
     "description": "Ganá un sobre con 1 Base Hero jugador Item, rated 87 or lower.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/69.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/69.png",
-    "cost": 128575,
-    "costPc": 146480,
-    "endTime": "2026-10-25T18:00:00.824702Z",
+    "cost": 131355,
+    "costPc": 161260,
+    "endTime": "2026-10-25T18:00:01.285426Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -268,14 +268,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 128575,
-        "cheapestPc": 146480,
+        "cheapestCoins": 131355,
+        "cheapestPc": 161260,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 128575,
-    "cheapestTotalPc": 146480
+    "cheapestTotal": 131355,
+    "cheapestTotalPc": 161260
   },
   {
     "id": 5311,
@@ -283,9 +283,9 @@
     "description": "Earn 1 of 3 jugadores oro, de 79 o más.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/66.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/66.png",
-    "cost": 6550,
-    "costPc": 7200,
-    "endTime": "2026-10-26T18:00:00.802603Z",
+    "cost": 6500,
+    "costPc": 7350,
+    "endTime": "2026-10-26T18:00:01.255713Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -304,14 +304,14 @@
           "Jugadores: 10"
         ],
         "awards": [],
-        "cheapestCoins": 6550,
-        "cheapestPc": 7200,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/1826f4d0-52f6-485e-9a23-3d0a8cbb5a29/",
-        "solutionUuid": "1826f4d0-52f6-485e-9a23-3d0a8cbb5a29"
+        "cheapestCoins": 6500,
+        "cheapestPc": 7350,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/bc38392e-957f-4c41-b410-6ad4e045b9e2/",
+        "solutionUuid": "bc38392e-957f-4c41-b410-6ad4e045b9e2"
       }
     ],
-    "cheapestTotal": 6550,
-    "cheapestTotalPc": 7200
+    "cheapestTotal": 6500,
+    "cheapestTotalPc": 7350
   },
   {
     "id": 5310,
@@ -319,9 +319,9 @@
     "description": "Earn a special Future Stars Assane Diao.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50606972.d8d3597b2b580624b0f5a55336ba025260792c600c48e3c1a65121ad773e39dd.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/63.png",
-    "cost": 46020,
-    "costPc": 52385,
-    "endTime": "2026-10-25T18:00:01.095030Z",
+    "cost": 46995,
+    "costPc": 57770,
+    "endTime": "2026-10-25T18:00:01.531494Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -345,14 +345,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 46020,
-        "cheapestPc": 52385,
+        "cheapestCoins": 46995,
+        "cheapestPc": 57770,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 46020,
-    "cheapestTotalPc": 52385
+    "cheapestTotal": 46995,
+    "cheapestTotalPc": 57770
   },
   {
     "id": 5308,
@@ -360,9 +360,9 @@
     "description": "Earn a Liga Portugal Future Stars Pick between William Gomes, Mathias de Amorim, Gilberto and Flávio Gonçalves. (See Reward Details).",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/62.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/62.png",
-    "cost": 20350,
-    "costPc": 23210,
-    "endTime": "2026-10-24T17:00:01.072263Z",
+    "cost": 20790,
+    "costPc": 25470,
+    "endTime": "2026-10-24T17:00:01.510070Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -380,14 +380,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 20350,
-        "cheapestPc": 23210,
+        "cheapestCoins": 20790,
+        "cheapestPc": 25470,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 20350,
-    "cheapestTotalPc": 23210
+    "cheapestTotal": 20790,
+    "cheapestTotalPc": 25470
   },
   {
     "id": 5307,
@@ -395,9 +395,9 @@
     "description": "Earn a special Future Stars Johan Manzambi.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50608342.f51161e3fe08365eb0d953bda06d1490beaa141499045a08998a730a320fd6c7.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/60.png",
-    "cost": 56150,
-    "costPc": 63950,
-    "endTime": "2026-10-23T17:00:01.031232Z",
+    "cost": 57350,
+    "costPc": 70520,
+    "endTime": "2026-10-23T17:00:01.460272Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -421,14 +421,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 56150,
-        "cheapestPc": 63950,
+        "cheapestCoins": 57350,
+        "cheapestPc": 70520,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 56150,
-    "cheapestTotalPc": 63950
+    "cheapestTotal": 57350,
+    "cheapestTotalPc": 70520
   },
   {
     "id": 5306,
@@ -436,9 +436,9 @@
     "description": "Ganá un sobre con 1 TOTW jugador Item, from TOTW 1 to 5.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/68.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/68.png",
-    "cost": 13645,
-    "costPc": 15460,
-    "endTime": "2026-10-23T17:00:00.809111Z",
+    "cost": 13930,
+    "costPc": 17200,
+    "endTime": "2026-10-23T17:00:01.276813Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -456,14 +456,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 13645,
-        "cheapestPc": 15460,
+        "cheapestCoins": 13930,
+        "cheapestPc": 17200,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 13645,
-    "cheapestTotalPc": 15460
+    "cheapestTotal": 13930,
+    "cheapestTotalPc": 17200
   },
   {
     "id": 5300,
@@ -471,9 +471,9 @@
     "description": "Earn the Ligue 1 jugador of the Month for September.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-67350325.d79a6ce2647bb953a03cc1af8af7763a95de765467e2912d26ec52ec081e7e2e.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/58.png",
-    "cost": 137550,
-    "costPc": 156790,
-    "endTime": "2026-11-10T17:00:01.010262Z",
+    "cost": 140510,
+    "costPc": 172470,
+    "endTime": "2026-11-10T17:00:01.440284Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -497,14 +497,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 137550,
-        "cheapestPc": 156790,
+        "cheapestCoins": 140510,
+        "cheapestPc": 172470,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 137550,
-    "cheapestTotalPc": 156790
+    "cheapestTotal": 140510,
+    "cheapestTotalPc": 172470
   },
   {
     "id": 5288,
@@ -512,9 +512,9 @@
     "description": "Earn the Liga F jugador of the Month for September.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50594179.9447499fe5558a8c0e83c63103c4ba51937a9243dfe6118cffb36680e6456a12.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/42.png",
-    "cost": 1254070,
-    "costPc": 1430215,
-    "endTime": "2026-11-03T17:00:00.970995Z",
+    "cost": 1281175,
+    "costPc": 1575400,
+    "endTime": "2026-11-03T17:00:01.412588Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -538,14 +538,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 1254070,
-        "cheapestPc": 1430215,
+        "cheapestCoins": 1281175,
+        "cheapestPc": 1575400,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 1254070,
-    "cheapestTotalPc": 1430215
+    "cheapestTotal": 1281175,
+    "cheapestTotalPc": 1575400
   },
   {
     "id": 5281,
@@ -553,9 +553,9 @@
     "description": "Earn the LALIGA jugador of the Month for September.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-84119499.7a6aea0c90db6877916a3c6dfb219c8029a56cbf11bdebcf527d14dd7c895e05.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/33.png",
-    "cost": 1449200,
-    "costPc": 1652780,
-    "endTime": "2026-10-30T16:00:00.897965Z",
+    "cost": 1480520,
+    "costPc": 1820520,
+    "endTime": "2026-10-30T16:00:01.324619Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -579,14 +579,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 1449200,
-        "cheapestPc": 1652780,
+        "cheapestCoins": 1480520,
+        "cheapestPc": 1820520,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 1449200,
-    "cheapestTotalPc": 1652780
+    "cheapestTotal": 1480520,
+    "cheapestTotalPc": 1820520
   },
   {
     "id": 5276,
@@ -594,9 +594,9 @@
     "description": "Earn the Premier League jugador of the Month for September.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-84076845.9db8427a90d290c8a352e210f7bdf30d716a581bb3ecb3942356d67e33768813.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/34.png",
-    "cost": 21275,
-    "costPc": 24225,
-    "endTime": "2026-10-30T11:00:00.914206Z",
+    "cost": 21735,
+    "costPc": 26460,
+    "endTime": "2026-10-30T11:00:01.345759Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -620,14 +620,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 21275,
-        "cheapestPc": 24225,
+        "cheapestCoins": 21735,
+        "cheapestPc": 26460,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 21275,
-    "cheapestTotalPc": 24225
+    "cheapestTotal": 21735,
+    "cheapestTotalPc": 26460
   },
   {
     "id": 5274,
@@ -635,9 +635,9 @@
     "description": "Earn the Bundesliga jugador of the Month for September.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-84133907.e6e71a8e74bed727591545b59d935c340f8643c17838253b8f598479d995ec17.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/39.png",
-    "cost": 780470,
-    "costPc": 890055,
-    "endTime": "2026-10-29T15:00:00.945720Z",
+    "cost": 797325,
+    "costPc": 980270,
+    "endTime": "2026-10-29T15:00:01.378081Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -661,14 +661,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 780470,
-        "cheapestPc": 890055,
+        "cheapestCoins": 797325,
+        "cheapestPc": 980270,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 780470,
-    "cheapestTotalPc": 890055
+    "cheapestTotal": 797325,
+    "cheapestTotalPc": 980270
   },
   {
     "id": 5273,
@@ -676,9 +676,9 @@
     "description": "Earn the Serie A jugador of the Month for September.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50563095.e8a634499a3a4edca7650a86222f0289a05eedad34a5dab89578cb9be7bfd9df.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/32.png",
-    "cost": 100595,
-    "costPc": 114630,
-    "endTime": "2026-10-29T13:00:00.885605Z",
+    "cost": 102760,
+    "costPc": 126420,
+    "endTime": "2026-10-29T13:00:01.312101Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -702,14 +702,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 100595,
-        "cheapestPc": 114630,
+        "cheapestCoins": 102760,
+        "cheapestPc": 126420,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 100595,
-    "cheapestTotalPc": 114630
+    "cheapestTotal": 102760,
+    "cheapestTotalPc": 126420
   },
   {
     "id": 5263,
@@ -717,9 +717,9 @@
     "description": "Complete the Intro to jugador SBCs to earn equipo Foundations Cristian Espinoza.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/futgg-player-item-card/27-50558033.6f5ecad666e298fecbfc0113a4c6ed0493bd1c7a7a13829c9c34af9abb375582.webp",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/20.png",
-    "cost": 4625,
-    "costPc": 5275,
-    "endTime": "2035-08-31T17:00:00.481418Z",
+    "cost": 4725,
+    "costPc": 5880,
+    "endTime": "2035-08-31T17:00:00.958220Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -743,14 +743,14 @@
           "Rating: mín. 45"
         ],
         "awards": [],
-        "cheapestCoins": 4625,
-        "cheapestPc": 5275,
+        "cheapestCoins": 4725,
+        "cheapestPc": 5880,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 4625,
-    "cheapestTotalPc": 5275
+    "cheapestTotal": 4725,
+    "cheapestTotalPc": 5880
   },
   {
     "id": 5254,
@@ -758,9 +758,9 @@
     "description": "Exchange oro items for rewards.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/6.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/6.png",
-    "cost": 7150,
-    "costPc": 7700,
-    "endTime": "2035-08-20T17:00:00.795326Z",
+    "cost": 7200,
+    "costPc": 8200,
+    "endTime": "2035-08-20T17:00:01.223117Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -778,14 +778,14 @@
           "Quality: mín. oro"
         ],
         "awards": [],
-        "cheapestCoins": 7150,
-        "cheapestPc": 7700,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/02daf0a3-c93b-4258-bd02-bee8ec7b24a2/",
-        "solutionUuid": "02daf0a3-c93b-4258-bd02-bee8ec7b24a2"
+        "cheapestCoins": 7200,
+        "cheapestPc": 8200,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/7fd19304-af71-4a64-b06f-b722a738ace9/",
+        "solutionUuid": "7fd19304-af71-4a64-b06f-b722a738ace9"
       }
     ],
-    "cheapestTotal": 7150,
-    "cheapestTotalPc": 7700
+    "cheapestTotal": 7200,
+    "cheapestTotalPc": 8200
   },
   {
     "id": 5253,
@@ -795,7 +795,7 @@
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/5.png",
     "cost": 2200,
     "costPc": 2200,
-    "endTime": "2035-08-20T11:00:00.788037Z",
+    "endTime": "2035-08-20T11:00:00.869272Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -830,7 +830,7 @@
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/4.png",
     "cost": 2200,
     "costPc": 2200,
-    "endTime": "2035-08-20T17:00:01.204778Z",
+    "endTime": "2035-08-20T17:00:01.109005Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -863,9 +863,9 @@
     "description": "Complete these Puzzle-based challenges to earn rewards.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/10.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/10.png",
-    "cost": 20900,
-    "costPc": 22750,
-    "endTime": "2035-08-31T17:00:00.740566Z",
+    "cost": 20350,
+    "costPc": 22650,
+    "endTime": "2035-08-31T17:00:01.035087Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -890,10 +890,10 @@
         "awards": [
           "pequeño Electrum sobre de jugadores"
         ],
-        "cheapestCoins": 7400,
-        "cheapestPc": 9000,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/59231013-4a82-4fcf-a598-58131f0feec3/",
-        "solutionUuid": "59231013-4a82-4fcf-a598-58131f0feec3"
+        "cheapestCoins": 7600,
+        "cheapestPc": 8350,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/29c09950-516e-4d2a-ab59-4a59cdf78811/",
+        "solutionUuid": "29c09950-516e-4d2a-ab59-4a59cdf78811"
       },
       {
         "name": "4 Leagues & 5 Nations",
@@ -909,10 +909,10 @@
         "awards": [
           "Large Electrum sobre de jugadores"
         ],
-        "cheapestCoins": 6150,
-        "cheapestPc": 5650,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/0ecdd4c5-43c7-43dc-8a28-1a003a4ebdff/",
-        "solutionUuid": "0ecdd4c5-43c7-43dc-8a28-1a003a4ebdff"
+        "cheapestCoins": 5300,
+        "cheapestPc": 6700,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/733e5979-9233-4e82-8ee7-a04ee87f533e/",
+        "solutionUuid": "733e5979-9233-4e82-8ee7-a04ee87f533e"
       },
       {
         "name": "5 Leagues & 6 Nations",
@@ -927,14 +927,14 @@
         "awards": [
           "pequeño oro sobre de jugadores"
         ],
-        "cheapestCoins": 7350,
-        "cheapestPc": 8100,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/feffc527-d552-4ea8-996b-99da4c15a3f0/",
-        "solutionUuid": "feffc527-d552-4ea8-996b-99da4c15a3f0"
+        "cheapestCoins": 7450,
+        "cheapestPc": 7600,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/fb86c245-8927-4ae1-9323-cabd28d88201/",
+        "solutionUuid": "fb86c245-8927-4ae1-9323-cabd28d88201"
       }
     ],
-    "cheapestTotal": 20900,
-    "cheapestTotalPc": 22750
+    "cheapestTotal": 20350,
+    "cheapestTotalPc": 22650
   },
   {
     "id": 5250,
@@ -942,9 +942,9 @@
     "description": "Submit 1,250 Score to earn Rewards.",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/9.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/9.png",
-    "cost": 2285,
-    "costPc": 2285,
-    "endTime": "2035-08-20T17:00:00.451639Z",
+    "cost": 2300,
+    "costPc": 2300,
+    "endTime": "2035-08-20T17:00:00.937523Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -962,14 +962,14 @@
           "Rating: mín. 83"
         ],
         "awards": [],
-        "cheapestCoins": 2285,
-        "cheapestPc": 2285,
+        "cheapestCoins": 2300,
+        "cheapestPc": 2300,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
-    "cheapestTotal": 2285,
-    "cheapestTotalPc": 2285
+    "cheapestTotal": 2300,
+    "cheapestTotalPc": 2300
   },
   {
     "id": 5249,
@@ -978,8 +978,8 @@
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/8.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/8.png",
     "cost": 2150,
-    "costPc": 2150,
-    "endTime": "2035-08-20T17:00:00.432555Z",
+    "costPc": 2180,
+    "endTime": "2035-08-20T17:00:00.926221Z",
     "isNew": false,
     "isRepeatable": true,
     "isExpired": false,
@@ -998,13 +998,13 @@
         ],
         "awards": [],
         "cheapestCoins": 2150,
-        "cheapestPc": 2150,
+        "cheapestPc": 2180,
         "solutionUrl": null,
         "solutionUuid": null
       }
     ],
     "cheapestTotal": 2150,
-    "cheapestTotalPc": 2150
+    "cheapestTotalPc": 2180
   },
   {
     "id": 5248,
@@ -1013,8 +1013,8 @@
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/7.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/7.png",
     "cost": 8250,
-    "costPc": 8285,
-    "endTime": "2035-08-20T17:00:00.410547Z",
+    "costPc": 8300,
+    "endTime": "2035-08-20T17:00:00.916341Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -1063,7 +1063,7 @@
           "35x bronce sobre de jugadores"
         ],
         "cheapestCoins": 650,
-        "cheapestPc": 685,
+        "cheapestPc": 700,
         "solutionUrl": null,
         "solutionUuid": null
       },
@@ -1083,7 +1083,7 @@
       }
     ],
     "cheapestTotal": 8250,
-    "cheapestTotalPc": 8285
+    "cheapestTotalPc": 8300
   },
   {
     "id": 5247,
@@ -1091,9 +1091,9 @@
     "description": "Complete these Upgrade-based challenges to earn rewards. ",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/3.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/3.png",
-    "cost": 14850,
-    "costPc": 17100,
-    "endTime": "2035-08-20T17:00:00.370260Z",
+    "cost": 16450,
+    "costPc": 16450,
+    "endTime": "2035-08-20T17:00:00.908814Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -1128,10 +1128,10 @@
         "awards": [
           "oro sobre"
         ],
-        "cheapestCoins": 5250,
-        "cheapestPc": 7250,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/a9ace7ec-d4e3-4255-9992-b1ae9e858133/",
-        "solutionUuid": "a9ace7ec-d4e3-4255-9992-b1ae9e858133"
+        "cheapestCoins": 6700,
+        "cheapestPc": 5950,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/6f07f966-c692-45fa-97fa-aee7e4b02459/",
+        "solutionUuid": "6f07f966-c692-45fa-97fa-aee7e4b02459"
       },
       {
         "name": "Raw Power",
@@ -1144,14 +1144,14 @@
         "awards": [
           "Large oro sobre"
         ],
-        "cheapestCoins": 7400,
-        "cheapestPc": 7650,
-        "solutionUrl": "https://www.fut.gg/27/squad-builder/e03e9160-763b-4750-8b3d-7173b519b2e7/",
-        "solutionUuid": "e03e9160-763b-4750-8b3d-7173b519b2e7"
+        "cheapestCoins": 7550,
+        "cheapestPc": 8300,
+        "solutionUrl": "https://www.fut.gg/27/squad-builder/10adede4-6767-47cd-ad12-22c3c2668be2/",
+        "solutionUuid": "10adede4-6767-47cd-ad12-22c3c2668be2"
       }
     ],
-    "cheapestTotal": 14850,
-    "cheapestTotalPc": 17100
+    "cheapestTotal": 16450,
+    "cheapestTotalPc": 16450
   },
   {
     "id": 5246,
@@ -1159,9 +1159,9 @@
     "description": "Complete these OVR-based challenges to earn rewards. ",
     "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/1.png",
     "iconUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=400/2027/sbcs/1.png",
-    "cost": 5200,
-    "costPc": 5800,
-    "endTime": "2035-08-20T17:00:00.337721Z",
+    "cost": 5350,
+    "costPc": 6150,
+    "endTime": "2035-08-20T17:00:00.900069Z",
     "isNew": false,
     "isRepeatable": false,
     "isExpired": false,
@@ -1198,8 +1198,8 @@
         "awards": [
           "plata sobre"
         ],
-        "cheapestCoins": 900,
-        "cheapestPc": 1350,
+        "cheapestCoins": 1000,
+        "cheapestPc": 1200,
         "solutionUrl": "https://www.fut.gg/27/squad-builder/b4f65571-b1ab-4c3e-830c-82f1e49509f7/",
         "solutionUuid": "b4f65571-b1ab-4c3e-830c-82f1e49509f7"
       },
@@ -1215,7 +1215,7 @@
           "oro sobre"
         ],
         "cheapestCoins": 1500,
-        "cheapestPc": 1600,
+        "cheapestPc": 1700,
         "solutionUrl": "https://www.fut.gg/27/squad-builder/bf844eab-8ac0-4544-83e3-eaaee0c6f730/",
         "solutionUuid": "bf844eab-8ac0-4544-83e3-eaaee0c6f730"
       },
@@ -1230,13 +1230,13 @@
         "awards": [
           "x2 oro sobre de jugadores"
         ],
-        "cheapestCoins": 2600,
-        "cheapestPc": 2600,
+        "cheapestCoins": 2650,
+        "cheapestPc": 3000,
         "solutionUrl": "https://www.fut.gg/27/squad-builder/9cd6810b-850e-4a2a-a1d3-14a91a001d64/",
         "solutionUuid": "9cd6810b-850e-4a2a-a1d3-14a91a001d64"
       }
     ],
-    "cheapestTotal": 5200,
-    "cheapestTotalPc": 5800
+    "cheapestTotal": 5350,
+    "cheapestTotalPc": 6150
   }
 ]
