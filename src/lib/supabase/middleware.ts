@@ -4,17 +4,35 @@ import { NextResponse, type NextRequest } from "next/server";
 // Only private areas redirect to login. Content stays public so crawlers (which never have a
 // session) can index it; actions that need an account are gated inside each page instead.
 // Never add /api (backend) or /auth (must stay reachable to log in).
-const PROTECTED_PREFIXES = ["/perfil", "/admin", "/equipos", "/duelo", "/mensajes"];
+const PROTECTED_PREFIXES = [
+  "/perfil",
+  "/admin",
+  "/equipos",
+  "/duelo",
+  "/mensajes",
+  "/notificaciones",
+  "/prode/unirse",
+];
+
+// Private sub-pages under otherwise public dynamic routes.
+const PROTECTED_PATTERNS = [
+  /^\/prode\/[^/]+\/editar\/?$/,
+  /^\/torneos\/[^/]+\/(editar|sorteo)\/?$/,
+];
 
 function isProtectedPath(pathname: string) {
-  return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  return (
+    PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
+    PROTECTED_PATTERNS.some((re) => re.test(pathname))
+  );
 }
 
+// Keeps the query string so links like /prode/unirse?code=XXX still work after logging in.
 function loginRedirect(request: NextRequest) {
   const url = request.nextUrl.clone();
   url.pathname = "/auth/login";
   url.search = "";
-  url.searchParams.set("redirect", request.nextUrl.pathname);
+  url.searchParams.set("redirect", request.nextUrl.pathname + request.nextUrl.search);
   return NextResponse.redirect(url);
 }
 
