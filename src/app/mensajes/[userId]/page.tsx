@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function ConversationPage({ params }: { params: { userId: string } }) {
   const currentUser = await getCurrentUser();
-  if (!currentUser) redirect("/login");
+  if (!currentUser) redirect(`/auth/login?redirect=${encodeURIComponent(`/mensajes/${params.userId}`)}`);
 
   const { messages, partner, currentUserId } = await getConversation(params.userId);
   if (!partner) redirect("/mensajes");

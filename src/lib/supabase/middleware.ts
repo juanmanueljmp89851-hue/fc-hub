@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // Only private areas redirect to login. Content stays public so crawlers (which never have a
 // session) can index it; actions that need an account are gated inside each page instead.
 // Never add /api (backend) or /auth (must stay reachable to log in).
-const PROTECTED_PREFIXES = ["/perfil", "/admin"];
+const PROTECTED_PREFIXES = ["/perfil", "/admin", "/equipos", "/duelo", "/mensajes"];
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));

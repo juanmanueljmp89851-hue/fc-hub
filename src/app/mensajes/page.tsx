@@ -27,7 +27,7 @@ function timeAgo(date: Date) {
 
 export default async function MensajesPage() {
   const currentUser = await getCurrentUser();
-  if (!currentUser) redirect("/login");
+  if (!currentUser) redirect("/auth/login?redirect=/mensajes");
 
   const conversations = await getConversations();
 
