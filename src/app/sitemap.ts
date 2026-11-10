@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { getActiveSbcsFromDb } from "@/lib/sbc-db";
+import { getActiveEvolutionsFromDb } from "@/lib/evolutions-db";
 
 const BASE = "https://www.modofosa.com.ar";
 
@@ -81,6 +82,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // SBC sitemap optional
   }
 
+  let evolutionPages: MetadataRoute.Sitemap = [];
+  try {
+    const evolutions = await getActiveEvolutionsFromDb();
+    evolutionPages = evolutions.map((e) => ({
+      url: `${BASE}/evoluciones/${e.slug}`,
+      lastModified: new Date(e.createdAt),
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // Evolutions sitemap optional
+  }
+
   const tournamentPages: MetadataRoute.Sitemap = tournaments.map((t) => ({
     url: `${BASE}/torneos/${t.id}`,
     lastModified: t.createdAt,
@@ -128,6 +142,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...articlePages,
     ...cardPages,
     ...sbcPages,
+    ...evolutionPages,
     ...tournamentPages,
     ...leaguePages,
     ...influencerPages,
