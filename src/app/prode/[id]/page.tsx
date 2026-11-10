@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title: prode.name,
     description: prode.description || `Prode ${prode.name} — Predecí resultados y competí con amigos en Modo Fosa.`,
     alternates: { canonical: `/prode/${prode.id}` },
+    ...(prode.visibility !== "PUBLIC" && { robots: { index: false, follow: false } }),
     openGraph: {
       title: `${prode.name} | Modo Fosa`,
       description: prode.description || `Prode de fútbol en Modo Fosa`,

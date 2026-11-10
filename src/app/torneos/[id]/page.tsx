@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title: tournament.name,
     description: tournament.description || `Torneo ${tournament.name} en Modo Fosa. Formato: ${tournament.format}. ${tournament.maxPlayers} jugadores.`,
     alternates: { canonical: `/torneos/${tournament.id}` },
+    ...(tournament.visibility !== "PUBLIC" && { robots: { index: false, follow: false } }),
     openGraph: {
       title: `${tournament.name} | Modo Fosa`,
       description: tournament.description || `Torneo de EA FC en Modo Fosa`,

@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     [tournaments, leagues, influencers, prodes, cards, articles] = await Promise.all([
       prisma.tournament.findMany({
         select: { id: true, createdAt: true },
-        where: { status: { not: "DRAFT" } },
+        where: { status: { not: "DRAFT" }, visibility: "PUBLIC", deletedAt: null },
       }),
       prisma.externalLeague.findMany({
         select: { slug: true, createdAt: true },
@@ -53,6 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.prode.findMany({
         select: { id: true, createdAt: true },
+        where: { visibility: "PUBLIC" },
       }),
       prisma.futCard.findMany({
         select: { eaId: true, updatedAt: true },
