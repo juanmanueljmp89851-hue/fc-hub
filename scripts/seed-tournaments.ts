@@ -49,9 +49,9 @@ const TOURNAMENTS: Tournament[] = [
     description:
       "Circuito oficial de EA. Open Ladder clasificatoria → Regional Qualifiers → Global Qualifier presencial en Londres (64 jugadores) → FC Pro Open (24 jugadores). Camino al FC Pro World Championship 2027.",
     status: "live",
-    statusLabel: "Global Qualifier finalizado en BBC Studios, Londres (5-7 nov) · 16 clasificados se suman a los 8 ya confirmados para el FC Pro Open",
-    dates: "21 Sep — 3 Oct 2026 (Open Ladder, finalizado) + Regional Qualifiers 10-11 oct (finalizado) + Global Qualifier en BBC Studios, Londres, 5-7 nov (finalizado) + FC Pro Open (24 jugadores, fecha por confirmar)",
-    prizePool: "US$2.5M (temporada completa)",
+    statusLabel: "Global Qualifier finalizado en BBC Studios, Londres (5-7 nov) · FC Pro Open (24 jugadores) arranca el 30 de noviembre",
+    dates: "21 Sep — 3 Oct 2026 (Open Ladder, finalizado) + Regional Qualifiers 10-11 oct (finalizado) + Global Qualifier en BBC Studios, Londres, 5-7 nov (finalizado) + FC Pro Open: fase de grupos 30 nov 2026 — 18 ene 2027, final 25 ene 2027",
+    prizePool: "US$2.5M (temporada completa) · FC Pro Open: US$533K",
     mode: "Ultimate Team 1v1",
     region: "Global",
     category: "international",
