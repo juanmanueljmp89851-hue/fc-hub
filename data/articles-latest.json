@@ -1,68 +1,48 @@
 [
   {
-    "slug": "ea-fc-27-developer-notes-evoluciones-campana-nov-2026",
-    "title": "EA FC 27: confirmaron cambios en Evoluciones y más acceso a cartas de Campaña",
-    "summary": "EA Sports publicó sus Developer Notes de noviembre y confirmó que va a ajustar las Evoluciones para hacerlas \"más gratificantes\" y dará más acceso a cartas de Campañas como UEFA Road to the Knockouts.",
-    "content": "<p>EA Sports publicó sus <strong>Developer Notes de noviembre</strong> para FC 27 y confirmó que le va a meter mano a dos de los pilares de Ultimate Team: el acceso a las cartas de Campaña y el funcionamiento de las <strong>Evoluciones</strong>.</p><h2>Más acceso a las cartas de Campaña</h2><p>Según el comunicado oficial, desde la semana pasada con el arranque de UEFA Road to the Knockouts y durante las próximas Campañas, EA va a \"hacer ajustes para aumentar el acceso a Items de Jugador seleccionados\" sin que el contenido deje de sentirse especial. La idea, explicaron, es mantener el equilibrio entre que una carta importante siga siendo un logro significativo, pero que también esté un poco más a mano al salir.</p><h2>Evoluciones, en la mira</h2><p>El otro punto fuerte del comunicado son las <strong>Evoluciones</strong>. EA reconoció que, mirando los datos y el feedback de la comunidad, hay una \"oportunidad para afinarlas y hacerlas sentir más gratificantes\" dentro del armado de equipo. Todavía no dieron detalles concretos de qué va a cambiar, pero avisaron que van a seguir testeando ajustes a medida que salgan nuevas Evoluciones durante la temporada.</p><h2>Análisis Modo Fosa</h2><p>Que EA hable de equilibrio entre Mercado, SBC y <a href=\"/evoluciones\">Evoluciones</a> no es casualidad: viene después de que en FC 26 las Evos se volvieran la forma más popular de armar jugadores personalizados, y ahora quieren ordenar esa fiesta sin matarla. Si estás guardando fichas esperando la próxima tanda de <a href=\"/evoluciones\">evoluciones</a>, puede que valga la pena esperar un poco a ver qué anuncian antes de gastar todo en el <a href=\"/sbc\">SBC</a> de turno.</p>",
-    "category": "EA FC",
-    "tags": [
-      "FC 27",
-      "Evoluciones",
-      "FUT",
-      "Developer Notes"
-    ],
-    "sourceUrl": "https://www.ea.com/games/ea-sports-fc/fc-27/news/fc27-november-gameplay-developer-notes",
-    "sourceName": "EA SPORTS",
-    "imageUrl": "https://drop-assets.ea.com/images/zKX1VGO0zsYpLWXmQtJ4P/c3872f7d949ab324413155099bdc10b6/FC27_DevNotes_FullBleedImage_EvoGreen_16x9.png?im=AspectCrop=(16,9),xPosition=0.5,yPosition=0.5",
-    "imageCredit": "Imagen: EA SPORTS FC"
+    "slug": "estudiantes-supercopa-argentina-alario-palmeiras-nov-2026",
+    "title": "Estudiantes es campeón de la Supercopa Argentina y ya mira la final de la Libertadores",
+    "summary": "El Pincha venció 3-2 en el alargue a Independiente Rivadavia en Córdoba con un gol de Lucas Alario y sumó su 20° estrella, a dos semanas de la final de la Copa Libertadores ante Palmeiras.",
+    "content": "<p>Estudiantes de La Plata se consagró <strong>campeón de la Supercopa Argentina</strong> tras vencer 3-2 en el alargue a Independiente Rivadavia en el Gigante de Alberdi, en Córdoba, y sumó así la <strong>20° estrella</strong> de su historia.</p><p>El partido se definió sobre la hora: Lucas Alario, que ya había sido clave en el Trofeo de Campeones 2025 ante Platense, puso el 3-2 en el alargue y evitó que el título se resolviera por penales. \"Por suerte sirven para ganar títulos\", dijo el delantero sobre sus goles en los momentos decisivos.</p><h2>Fiesta en La Plata</h2><p>Apenas el árbitro Yael Falcón Pérez marcó el final, miles de hinchas del Pincha salieron a festejar a la esquina de 7 y 50, en pleno centro platense, con cánticos dedicados a la próxima cita: la <strong>final de la Copa Libertadores</strong> ante Palmeiras, que se juega el domingo 28 de noviembre en Montevideo.</p><h2>Análisis Modo Fosa</h2><p>Estudiantes llega de la mejor manera posible a la definición continental: con un título bajo el brazo y la confianza de haber ganado un partido que se resolvió por carácter, no por penales. Para los que arman a los jugadores del Pincha en <a href=\"/sbc\">SBCs</a> o los suben de nivel con <a href=\"/evoluciones\">evoluciones</a> en EA FC 27, este envión también suele traducirse en mejoras de rating si la racha sigue. Ya quedan pocos días para saber si el León vuelve a levantar una Libertadores en la cancha.</p>",
+    "category": "Fútbol Argentino",
+    "tags": ["Estudiantes de La Plata", "Supercopa Argentina", "Lucas Alario", "Copa Libertadores"],
+    "sourceUrl": "https://www.ole.com.ar/estudiantes/estudiantes-plata-campeon-supercopa-festejos-independiente-rivadavia-final-copa-libertadores-palmeiras_0_r6FRCrU25v.html",
+    "sourceName": "Olé",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Lucas_alario_2024.jpg",
+    "imageCredit": "Foto: Franss34 / Wikimedia Commons (CC0)"
   },
   {
-    "slug": "fc27-liga-argentina-bugueada-parche-gabogames-nov-2026",
-    "title": "GaboGames destapó que la Liga Argentina de FC 27 sigue rota tras el parche 1.2.0",
-    "summary": "El creador de contenido mostró que varios clubes y copas de la Liga Profesional Argentina siguen sin activarse bien en FC 27 incluso después del parche de noviembre, y también repasó el impacto del update en la defensa de la CPU.",
-    "content": "<p>Mientras la mayoría de los canales analizaba los cambios de gameplay del parche 1.2.0, <strong>GaboGames</strong> puso el foco en otro problema que sigue sin resolverse: las plantillas y copas de la <strong>Liga Profesional Argentina</strong> en FC 27.</p><h2>Qué mostró GaboGames</h2><p>En su último video, el creador explicó que, pese a la actualización de noviembre, EA todavía no activó correctamente varios contenidos y plantillas, y apuntó puntualmente a la <strong>Liga Argentina y sus copas</strong>, que según mostró siguen \"bugueadas\" en el juego. También repasó rostros y contenidos que, según dijo, siguen pendientes de activación pese al parche ya instalado.</p><h2>El parche, bajo la lupa</h2><p>Además del tema de las plantillas, GaboGames analizó el impacto del update en el gameplay y marcó lo que llamó un error grave en la defensa de la CPU, en línea con lo que otros creadores vienen comentando sobre cómo cambió el juego puertas adentro después del parche.</p><h2>Análisis Modo Fosa</h2><p>Para la base de usuarios argentinos de FC 27, que una liga tan seguida como la nuestra tenga problemas de licencias o de actualización pega directo en la fidelidad de los planteles de <a href=\"/jugadores\">jugadores</a>. Como siempre con estos temas, lo más sano es no tocar nada relacionado hasta que EA confirme una corrección oficial, porque meterle mano a <a href=\"/sbc\">SBC</a> o plantillas con bugs de por medio suele traer más dolores de cabeza que soluciones. Como mostró GaboGames en su último video, todavía queda contenido pendiente de activar.</p>",
+    "slug": "marcelo-gallardo-ecuador-critica-hurtado-convocatoria-nov-2026",
+    "title": "Una leyenda del fútbol ecuatoriano cruzó fuerte a Marcelo Gallardo por la convocatoria",
+    "summary": "Iván \"Bam Bam\" Hurtado, máximo referente histórico de la selección de Ecuador, cuestionó públicamente al Muñeco por la escasa presencia de jugadores de la LigaPro en la nómina para los amistosos ante Costa Rica y Bolivia.",
+    "content": "<p>Marcelo Gallardo, hoy al mando de la <strong>Selección de Ecuador</strong>, recibió una crítica pública de peso: Iván \"Bam Bam\" Hurtado, el futbolista con más partidos en la historia de la Tri (168), cuestionó la última convocatoria del Muñeco de cara a los amistosos ante Costa Rica y Bolivia.</p><p>\"Reconocemos que eres un buen técnico, pero no me parece que estés actuando como deberías actuar\", disparó el exdefensor en el programa <em>La Banda</em>. El reclamo apunta a la escasa presencia de futbolistas de la LigaPro: de los 29 citados originalmente, solo tres pertenecen al torneo local (Gonzalo Valle, Jordy Alcívar y Martín Tello).</p><h2>\"Le vas a sacar el sueño\"</h2><p>Hurtado fue más allá y advirtió sobre el impacto en los jugadores que quedan afuera: \"¿Para qué se van a esmerar si no hay posibilidades? El jugador se va a desmotivar, le vas a sacar el sueño, la mayor ilusión para un jugador es representar al país\". Gallardo, por su parte, explicó que prefiere observar personalmente a los convocados más allá de su nivel de continuidad en los clubes, lo que justificó la inclusión de nombres como Kendry Páez y Óscar Zambrano.</p><h2>Agenda de la Tri</h2><p>Ecuador recibe este viernes a Costa Rica a las 21:00 (hora argentina) en el estadio Olímpico Atahualpa de Quito, y el martes 17 visitará a Bolivia en Guayaquil.</p><h2>Análisis Modo Fosa</h2><p>Que un ídolo histórico le marque la cancha públicamente a un entrenador de la talla de Gallardo no es poca cosa, y deja en evidencia que en Ecuador la convivencia entre el cuerpo técnico argentino y el folklore local todavía se está acomodando.</p>",
+    "category": "Fútbol Internacional",
+    "tags": ["Marcelo Gallardo", "Selección de Ecuador", "Iván Hurtado"],
+    "sourceUrl": "https://www.ole.com.ar/futbol-internacional/america/marcelo-gallardo-critica-ecuador-convocados-amistosos-ivan-hurtado-entrenador_0_BD0szq43lW.html",
+    "sourceName": "Olé",
+    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Marcelo_Gallardo_120520-1279-jikatu.jpg/1280px-Marcelo_Gallardo_120520-1279-jikatu.jpg",
+    "imageCredit": "Foto: Jimmy Baikovicius / Wikimedia Commons (CC BY-SA 2.0)"
+  },
+  {
+    "slug": "fc27-error-denuvo-showcase-pc-modo-carrera-gratis-nov-2026",
+    "title": "Glitch: EA Sports habría eliminado por error la protección anti-piratería de FC 27 en PC",
+    "summary": "El creador de contenido GaboGames mostró que, tras el parche 1.2.0, la versión Showcase de FC 27 para PC se quedó sin la protección Denuvo, lo que permitiría acceder gratis al Modo Carrera y a mods sin pagar el juego completo.",
+    "content": "<p><strong>Glitch:</strong> así lo mostró el creador de contenido <strong>GaboGames</strong> en su canal de YouTube: tras el parche 1.2.0 de noviembre, la versión <em>Showcase</em> de FC 27 en PC se quedó sin la protección anti-piratería Denuvo. Según su análisis, esto habilitaría el acceso gratuito al <strong>Modo Carrera</strong> y a mods, sin necesidad de comprar el juego completo.</p><h2>¿Error o jugada calculada?</h2><p>Como mostró GaboGames en su último video, el episodio se suma a otros problemas que viene arrastrando la actualización 1.2.0, como el retraso en la activación de ciertos contenidos y planteles. El creador dejó la pregunta abierta a su comunidad: \"¿Creés que fue un error o una jugada calculada?\", y repasó las teorías que circulan sobre un descuido de este calibre en un juego con protección comercial.</p><p>Por ahora, <strong>EA Sports no se pronunció oficialmente</strong> sobre el tema, por lo que todo lo que se sabe proviene del testeo y el análisis de la comunidad de creadores, no de un comunicado de la compañía.</p><h2>Análisis Modo Fosa</h2><p>Más allá de si fue un desliz técnico o no, el episodio vuelve a poner el foco en lo mismo que viene señalando buena parte de la comunidad de FC 27: la ventana entre que sale un parche grande como el 1.2.0 y que todo el contenido (planteles, caras, modos) se termina de activar correctamente sigue siendo un problema recurrente. Si jugás en PC y te cruzás con algo raro en el Modo Carrera o en <a href=\"/sbc\">Ultimate Team</a> estos días, no es casualidad: es la cola del mismo parche.</p>",
     "category": "EA FC",
-    "tags": [
-      "FC 27",
-      "Liga Argentina",
-      "Bugs",
-      "Parche"
-    ],
-    "sourceUrl": "https://www.youtube.com/watch?v=f_P1MDaqYes",
+    "tags": ["FC 27", "Glitch", "Parche 1.2.0", "Modo Carrera"],
+    "sourceUrl": "https://www.youtube.com/watch?v=XtOkk_KJf9U",
     "sourceName": "GaboGames"
   },
   {
-    "slug": "nashville-sc-record-mls-cristian-espinoza-nov-2026",
-    "title": "Nashville SC hizo historia en la MLS con el argentino Cristian Espinoza como figura",
-    "summary": "El equipo de Tennessee ganó el Supporters' Shield con el mejor registro de puntos de la historia de la MLS, y el extremo argentino Cristian Espinoza fue pieza clave con 4 goles y 14 asistencias.",
-    "content": "<p>En una MLS donde la atención suele estar toda puesta en el Inter Miami de Messi o en Los Angeles FC, <strong>Nashville SC</strong> se metió en la conversación por mérito propio: terminó la fase regular 2026 con <strong>77 puntos</strong>, la mejor marca de la historia de la liga, y ya se quedó con el Supporters' Shield.</p><h2>Una campaña histórica</h2><p>El equipo de Tennessee cerró con 23 victorias, ocho empates y solo tres derrotas, y además tuvo la defensa más sólida que vio la MLS, con apenas 25 goles recibidos en toda la fase regular. Terminó con 13 puntos de ventaja sobre su perseguidor más cercano, otro récord para la competencia.</p><h2>Un argentino, pieza clave</h2><p>En ese equipo aparece <strong>Cristian Espinoza</strong>, el extremo argentino que aportó <strong>4 goles y 14 asistencias</strong> en la temporada. Según repasó Olé, le dio profundidad y velocidad por la banda derecha a un ataque que también tiene al alemán Hany Mukhtar, MVP de la MLS en 2022, y al inglés Sam Surridge, que cerró con 21 goles.</p><h2>Análisis Modo Fosa</h2><p>Más allá de lo deportivo, este tipo de temporadas suelen traducirse en mejoras de carta para los <a href=\"/jugadores\">jugadores</a> en FUT: si Espinoza sigue firme de cara a los playoffs, no sería raro verlo aparecer en algún objetivo especial dentro de FC 27 en las próximas semanas.</p>",
-    "category": "Fútbol Internacional",
-    "tags": [
-      "MLS",
-      "Nashville SC",
-      "Cristian Espinoza",
-      "Fútbol Argentino en el exterior"
-    ],
-    "sourceUrl": "https://www.ole.com.ar/futbol-internacional/mls/nashville-record-puntos-mls-equipo-sensacion-espinoza-playoffs_0_YL3ClcP8yF.html",
-    "sourceName": "Olé",
-    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Cristian_Espinoza_NYCFC_v_Nashville_4_Sep_2026-082.jpg/1280px-Cristian_Espinoza_NYCFC_v_Nashville_4_Sep_2026-082.jpg",
-    "imageCredit": "Foto: Bryan Berlin / Wikimedia Commons (CC BY-SA 4.0)"
-  },
-  {
-    "slug": "lamine-yamal-baja-espana-republica-checa-de-la-fuente-nov-2026",
-    "title": "Polémica en España: De la Fuente defendió a Lamine Yamal por su baja ante Checa",
-    "summary": "El entrenador de la Selección de España salió a bancar a su figura luego de las críticas por dejarlo afuera del partido ante República Checa por una molestia en la rodilla, en la recta final de la fase de grupos de la Nations League.",
-    "content": "<p><strong>Luis de la Fuente</strong> salió con los tapones de punta a defender a <strong>Lamine Yamal</strong> después de las críticas que recibió el delantero del Barcelona por quedar afuera de la convocatoria de España para enfrentar a República Checa este jueves por la Nations League.</p><h2>Qué dijo el DT español</h2><p>\"Lo que más me duele es la mentira, la falta de rigor, la falta de veracidad y el invento\", lanzó De la Fuente, visiblemente molesto, ante una pregunta del Diario Marca. El entrenador campeón del mundo explicó que la decisión de dejarlo afuera del primer compromiso fue suya, en acuerdo con los médicos de la Selección y del Barcelona, para cuidarlo de una molestia en la rodilla derecha que arrastra desde el partido ante el Atlético de Madrid.</p><h2>Sin privilegios, según De la Fuente</h2><p>El técnico también negó que Yamal tenga un trato especial dentro del plantel: \"Lamine no tiene ningún privilegio. Esto lo hubiéramos hecho por cualquier otro jugador\". Según el propio DT, la recuperación del juvenil viene bien y hay expectativa de que esté disponible para el cierre de la fase de grupos, el domingo ante Inglaterra en el Metropolitano, en un duelo clave por el liderazgo del Grupo C.</p><h2>Análisis Modo Fosa</h2><p>Yamal es de esas cartas que no pueden faltar en ningún equipo competitivo de FUT, así que cualquier molestia física de la vida real siempre genera ruido entre quienes siguen de cerca a los <a href=\"/jugadores\">jugadores</a> top de FC 27. Por ahora es solo prevención, pero vale la pena seguir de cerca si llega a tiempo para el partido clave ante Inglaterra.</p>",
-    "category": "Fútbol Internacional",
-    "tags": [
-      "Selección de España",
-      "Lamine Yamal",
-      "Nations League",
-      "Luis de la Fuente"
-    ],
-    "sourceUrl": "https://www.ole.com.ar/futbol-internacional/espana/lamineyamal-selecciondeespana-luisdelafuente-republicacheca_0_VkQjHrlppB.html",
-    "sourceName": "Olé",
-    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Lamine_Yamal_Argentina_v_Spain_19_July_2026-133.jpg/1280px-Lamine_Yamal_Argentina_v_Spain_19_July_2026-133.jpg",
-    "imageCredit": "Foto: Bryan Berlin / Wikimedia Commons (CC BY-SA 4.0)"
+    "slug": "fc27-parche-1-2-0-meta-sbc-lacey-star-performer-nov-2026",
+    "title": "FC 27: los creadores debaten el meta tras el parche y el SBC de Lacey",
+    "summary": "Gravesen, Obrun y Clausinho analizaron el impacto del parche 1.2.0 de FC 27 en el gameplay y en las Weekend League, mientras Gravesen señaló el SBC de Lacey Star Performer como \"el primer obligatorio del año\".",
+    "content": "<p>El parche 1.2.0 de noviembre sigue siendo tema de debate entre los creadores de FC 27. <strong>Gravesen</strong> dedicó dos videos a analizar si la actualización cambió el meta y cómo se siente ahora Rivals en Élite, mientras que el italiano <strong>Obrun</strong> comparó el meta del último Global Qualifier antes y después del parche. Del otro lado, <strong>Clausinho</strong> fue más cauto en su repaso semanal y sostuvo que, para su gusto, \"el parche no ha cambiado nada\".</p><h2>El SBC que señalan como obligatorio</h2><p>En medio de ese debate, Gravesen marcó un SBC puntual para no dejar pasar: <strong>Lacey Star Performer</strong>, al que calificó como \"mi primer obligatorio del año\". La carta corresponde al extremo del Manchester United Shea Lacey, con una media de <strong>85</strong>.</p><h2>Análisis Modo Fosa</h2><p>Que tres creadores de perfiles distintos —un español, un italiano y un mexicano— estén hablando del mismo parche en simultáneo confirma que el 1.2.0 todavía no terminó de asentarse en la comunidad. Si todavía no probaste cómo se siente el juego después de la actualización, puede ser un buen momento para revisar tu <a href=\"/evoluciones\">plantilla de evoluciones</a> y chequear si el SBC de Lacey entra en tu <a href=\"/sbc\">lista de SBCs</a> pendientes antes de que suba de precio.</p>",
+    "category": "EA FC",
+    "tags": ["FC 27", "Parche 1.2.0", "Meta", "SBC", "Star Performer"],
+    "sourceUrl": "https://www.youtube.com/watch?v=Gd4VBxVHIAQ",
+    "sourceName": "Gravesen",
+    "imageUrl": "https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2027/futgg-player-item-card/27-50609772.f640e4db4b022e99c0409e26b4a19e5710a0cfb139df4b86395d4ecc7838b0df.webp",
+    "imageCredit": "Imagen: EA SPORTS FC / fut.gg"
   }
 ]
