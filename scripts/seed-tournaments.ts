@@ -66,10 +66,10 @@ const TOURNAMENTS: Tournament[] = [
     name: "Red Bull Wings Cup",
     org: "Red Bull × EA Sports",
     description:
-      "Torneo global nuevo, exclusivo PS5. Liga Abierta (Ultimate Team 11v11) y Liga Universitaria (Rush) → finales nacionales offline → Final Mundial en el Nu Stadium de Miami (sede de Inter Miami), 16 de enero de 2027 (formato Kick Off 95). Facundo Cowen (La Plata) se consagró campeón argentino tras vencer a Demián V en la Final Nacional (3-1 y 2-0) y representará al país en Miami.",
+      "Torneo global nuevo, exclusivo PS5. Liga Abierta (Ultimate Team 11v11) y Liga Universitaria (Rush) → finales nacionales offline → Final Mundial en el Nu Stadium de Miami (sede de Inter Miami), 16 al 19 de enero de 2027 (formato Kick Off 95). Facundo Cowen (La Plata) se consagró campeón argentino tras vencer a Demián V en la Final Nacional (3-1 y 2-0) y representará al país en Miami.",
     status: "live",
-    statusLabel: "Facundo Cowen, campeón de la Final Nacional Argentina (7/11) · representará al país en la Final Mundial del 16/1 en Miami",
-    dates: "Sep 2026 — Ene 2027 (Liga Abierta Argentina: clasificatorias online 28 sep – 18 oct; Liga Universitaria: fechas a confirmar por IG; Final Nacional Argentina: 7 nov, finalizada; Final Mundial en Nu Stadium, Miami, 16 ene 2027)",
+    statusLabel: "Facundo Cowen, campeón de la Final Nacional Argentina (7/11) · representará al país en la Final Mundial del 16 al 19/1 en Miami",
+    dates: "Sep 2026 — Ene 2027 (Liga Abierta Argentina: clasificatorias online 28 sep – 18 oct; Liga Universitaria: fechas a confirmar por IG; Final Nacional Argentina: 7 nov, finalizada; Final Mundial en Nu Stadium, Miami, 16-19 ene 2027)",
     mode: "Ultimate Team 11v11 (Liga Abierta) / Rush (Liga Universitaria)",
     region: "Global (multi-país)",
     category: "international",
